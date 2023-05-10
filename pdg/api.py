@@ -116,7 +116,7 @@ class PdgApi:
                     cls = PdgProperty
                 yield cls(self, item.pdgid, edition)
 
-    def get_particle_by_name(self, name, case_sensitive=False, edition=None):
+    def get_particle_by_name(self, name, case_sensitive=True, edition=None):
         """Get particle by its name.
 
         case_sensitive can be set True to indicate that the particle name should be
@@ -149,7 +149,7 @@ class PdgApi:
         query = select(distinct(pdgparticle_table.c.pdgid))
         query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
         with self.engine.connect() as conn:
-            matches = [p.pdgid for p in conn.execute(query, {'mcid': abs(mcid)})]
+            matches = [p.pdgid for p in conn.execute(query, {'mcid': mcid})]
         if len(matches) == 0:
             raise ValueError('No particle found with MC ID %s' % mcid)
         elif len(matches) == 1:
