@@ -61,7 +61,7 @@ class PdgApi:
             return conn.execute(query, {'key': key}).scalar()
 
     def editions(self):
-        """Return list of all editions of the Review of Particle Physics for which the database has data."""
+        """Return list of all editions of the Review for which the database has data."""
         pdgdata_table = self.db.tables['pdgdata']
         query = select(distinct(pdgdata_table.c.edition)).order_by(desc(pdgdata_table.c.edition))
         with self.engine.connect() as conn:

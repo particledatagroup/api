@@ -61,7 +61,15 @@ class PdgSummaryValue(dict):
 
     def is_limit(self):
         """Return True if value is a limit."""
-        return self['confidence_level'] is not None
+        return self['confidence_level'] is not None or self['limit_type'] is not None
+
+    def is_upper_limit(self):
+        """Return True if value is an upper limit."""
+        return self['limit_type'] == 'U'
+
+    def is_lower_limit(self):
+        """Return True if value is an upper limit."""
+        return self['limit_type'] == 'L'
 
     def comment(self):
         """Get details for or comments on this value."""
