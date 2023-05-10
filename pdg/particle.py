@@ -25,6 +25,9 @@ class PdgParticle(PdgData):
         if set_mcid is not None and set_mcid < 0:
             self.cc_type_flag = 'A'
 
+    def __str__(self):
+        return 'Data for PDG Particle %s: %s' % (self.pdgid, self.name())
+
     def _get_particle_data(self):
         """Get particle data."""
         if 'pdgparticle' not in self.cache:
