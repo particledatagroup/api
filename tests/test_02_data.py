@@ -22,17 +22,21 @@ class TestData(unittest.TestCase):
         self.assertRaises(PdgInvalidPdgId, self.api.get, 'nonexistent')
 
     def test_edition(self):
+        if '2018' not in self.api.editions():
+            return
         self.assertEqual(self.api.get('s008').edition, self.api.default_edition())
         self.assertEqual(self.api.get('s008/2018').pdgid, 'S008/2018')
         self.assertEqual(self.api.get('s008/2018').baseid, 'S008')
         self.assertEqual(self.api.get('s008/2018').parent_pdgid(), None)
         self.assertEqual(self.api.get('s008.1/2018').parent_pdgid(), 'S008/2018')
 
-    def test_charged_pion(self):
+    def test_charged_pion_2022(self):
+        if '2022' not in self.api.editions():
+            return
         pion = self.api.get('S008/2022')
         self.assertIsInstance(pion, PdgParticle)
         self.assertEqual(pion.pdgid, 'S008/2022')
-        self.assertEqual(pion.data_edition(), self.api.info('edition'))
+        self.assertEqual(pion.data_edition(), '2022')
         self.assertEqual(pion.description(), 'pi+-')
         self.assertEqual(pion.data_type(), 'PART')
         self.assertEqual(pion.parent_pdgid(), None)
@@ -49,7 +53,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions()), 9)
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions(include_subdecays=True)), 11)
 
-    def test_charged_pion_mass(self):
+    def test_charged_pion_mass_2022(self):
+        if '2022' not in self.api.editions():
+            return
         m = self.api.get('S008M/2022')
         self.assertEqual(m._count_data_entries('S008m', 2022), 2)
         self.assertIsInstance(m, PdgMass)
@@ -75,7 +81,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(best_value_GeV.scale_factor(), 1), 1.8)
         self.assertEqual(best_value_GeV.unit_text(), 'GeV')
 
-    def test_neutral_pion_decay(self):
+    def test_neutral_pion_decay_2022(self):
+        if '2022' not in self.api.editions():
+            return
         b = self.api.get('S009.1/2022')
         self.assertIsInstance(b, PdgBranchingFraction)
         self.assertEqual(b.description(), 'pi0 --> 2gamma')
@@ -100,6 +108,19 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('S008.3').is_subdecay(), True)
         self.assertEqual(self.api.get('S008.1').subdecay_level(), 0)
         self.assertEqual(self.api.get('S008.3').subdecay_level(), 1)
+
+    def test_limit_2022(self):
+        if '2022' not in self.api.editions():
+            return
+        self.assertEqual(self.api.get('S008.11').best_value().is_limit(), True)
+        self.assertEqual(self.api.get('S008.11').best_value().is_upper_limit(), True)
+        self.assertEqual(self.api.get('S008.11').best_value().is_lower_limit(), False)
+        self.assertEqual(self.api.get('S008FV').best_value().is_limit(), False)
+        self.assertEqual(self.api.get('S008FV').best_value().is_upper_limit(), False)
+        self.assertEqual(self.api.get('S008FV').best_value().is_lower_limit(), False)
+
+
+
 
 
 if __name__ == '__main__':

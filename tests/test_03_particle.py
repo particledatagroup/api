@@ -26,9 +26,11 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get_particle_by_mcid(-5).mcid(), -5)
         self.assertEqual(self.api.get_particle_by_mcid(-30323).mcid(), -30323)
 
-    def test_mass(self):
+    def test_mass_2022(self):
+        if '2022' not in self.api.editions():
+            return
         self.assertRaises(PdgAmbiguousValue, self.api.get('q007').mass)
-        masses = list(self.api.get('q007').masses())
+        masses = list(self.api.get('q007/2022').masses())
         self.assertEqual(masses[0].pdgid, 'Q007TP/2022')
         self.assertEqual(masses[0].best_value().value(), 172.687433377613)
         self.assertEqual(masses[1].pdgid, 'Q007TP2/2022')
