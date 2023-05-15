@@ -22,7 +22,7 @@ class TestMetaData(unittest.TestCase):
         print(header)
         print('*'*len(header))
         cls.api = pdg.connect()
-        if len(cls.api.editions()) == 1:
+        if len(cls.api.editions) == 1:
             print('WARNING: testing with single-edition database - not all tests can be run')
         print()
         print(cls.api)
