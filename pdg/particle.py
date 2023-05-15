@@ -4,8 +4,8 @@ Definition of top-level particle container class.
 
 from sqlalchemy import select, bindparam, distinct
 from sqlalchemy import and_, or_
-from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValue
-from pdg.utils import make_id
+from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
+from pdg.utils import make_id, best
 from pdg.data import PdgData
 
 
@@ -51,40 +51,62 @@ class PdgParticle(PdgData):
                     mcid_string = ', MC ID = %s' % self.set_mcid if self.set_mcid else ''
                     raise PdgNoDataError('Particle data for %s%s not found' % (self.pdgid, mcid_string))
                 else:
-                    raise PdgAmbiguousValue('Multiple particles for %s - please set MC ID' % self.pdgid)
+                    raise PdgAmbiguousValueError('Multiple particles for %s - please set MC ID' % self.pdgid)
         return self.cache['pdgparticle']
 
-    def properties(self, data_type_key=None, require_summary_data=False):
+    def properties(self,
+                   data_type_key=None,
+                   require_summary_data=False,
+                   in_summary_table=None,
+                   omit_branching_ratios=False):
         """Return iterator over specified particle property data.
 
-        By default, all properties excluding branching fractions and branching fraction ratios
-        are returned (these should be retrieved via the specific branching fraction methods).
+        By default, all properties excluding branching fractions and branching fraction ratios are returned.
 
-        By setting data_type_key, only the properties of the corresponding type are returned.
-        For example, using data_type_key='M' will return particle masses. Use PdgApi.doc_data_type_keys()
-        to get a list of possible data_type_key values.
+        data_type_key can be set to select specific properties. Possible keys are given by the list printed
+        by PdgApi.doc_data_type_keys. The SQL wildcard character ('%') is allowed, so to select all properties,
+        including branching fractions and ratios, set data_type_key='%'. As another example, to get all mass
+        properties, use data_type_key='M'.
 
-        require_summary_data can be set True to request only properties where the current edition has
-        summary value(s) in the Particle Listings or Summary Table.
+        require_summary_data can be used to select only properties, where the selected edition of the Review
+        of Particle Physics has summary value(s) in Particle Listings or Summary Table.
+
+        in_summary_table can be set to select properties, where a summary value is (True) or is not (False) included
+        in the Summary Table for the selected edition. Setting in_summary_table to a value other than None
+        implies require_summary_data=True.
+
+        omit_branching_ratios can be set to True to exclude any branching fraction ratio properties that would
+        be selected otherwise.
         """
         pdgid_table = self.api.db.tables['pdgid']
         query = select(distinct(pdgid_table.c.pdgid))
-        if require_summary_data:
+        if require_summary_data or in_summary_table is not None:
             pdgdata_table = self.api.db.tables['pdgdata']
             query = query.join(pdgdata_table)
             query = query.where(pdgdata_table.c.edition == bindparam('edition'))
-        query = query.where(pdgid_table.c.parent_pdgid == bindparam('parent_id'))
+            if in_summary_table is not None:
+                query = query.where(pdgdata_table.c.in_summary_table == bindparam('in_summary_table'))
+        query = query.where(pdgid_table.c.parent_pdgid.like(bindparam('parent_id')))
         if data_type_key is None:
             # NOTE: like/notlike SQL operators never match null values
             query = query.where((pdgid_table.c.data_type.notlike('BF%')) | (pdgid_table.c.data_type.is_(None)))
             query = query.where((pdgid_table.c.data_type.notlike('BR%')) | (pdgid_table.c.data_type.is_(None)))
         else:
-            query = query.where(pdgid_table.c.data_type == bindparam('data_type_key'))
+            # NOTE: like may or may not be case-sensitive, depending on database, so use it only for BR* and BF*
+            # NOTE: like will not match null values, so data_type='%' must be treated separately
+            if '%' in data_type_key:
+                if data_type_key != '%':
+                    query = query.where(pdgid_table.c.data_type.like(bindparam('data_type_key')))
+            else:
+                query = query.where(pdgid_table.c.data_type == bindparam('data_type_key'))
+            if omit_branching_ratios:
+                query = query.where((pdgid_table.c.data_type.notlike('BR%')) | (pdgid_table.c.data_type.is_(None)))
         query = query.order_by(pdgid_table.c.sort)
         with self.api.engine.connect() as conn:
-            for entry in conn.execute(query, {'parent_id': self.baseid,
+            for entry in conn.execute(query, {'parent_id': self.baseid+'%',
                                               'edition': self.edition,
-                                              'data_type_key': data_type_key}):
+                                              'data_type_key': data_type_key,
+                                              'in_summary_table': in_summary_table}):
                 yield self.api.get(make_id(entry.pdgid, self.edition))
 
     def masses(self, require_summary_data=False):
@@ -100,21 +122,6 @@ class PdgParticle(PdgData):
         """
         return self.properties('M', require_summary_data)
 
-    def mass(self):
-        """Return PDG "best" mass in GeV.
-
-        mass() returns the PDG "best" mass value in cases where the choice of value is unambiguous.
-        If the choice of value is ambiguous, Exception PdgAmbiguousValue is raised.
-        If no mass value is available, None is returned.
-        """
-        masses = list(self.masses())
-        if len(masses) == 0:
-            return None
-        if len(masses) == 1:
-            return masses[0].best_value_in_GeV()     # May also raise PdgAmbiguousValue
-        else:
-            raise PdgAmbiguousValue('%s (%s) has multiple mass properties' % (self.pdgid, self.description()))
-
     def lifetimes(self, require_summary_data=False):
         """Return iterator over lifetime data."""
         return self.properties('T', require_summary_data)
@@ -129,20 +136,7 @@ class PdgParticle(PdgData):
         """
         if data_type_key[0:2] != 'BF':
             raise PdgApiError('illegal branching fraction data type key %s' % data_type_key)
-        pdgid_table = self.api.db.tables['pdgid']
-        query = select(distinct(pdgid_table.c.pdgid))
-        if require_summary_data:
-            pdgdata_table = self.api.db.tables['pdgdata']
-            query = query.join(pdgdata_table)
-            query = query.where(pdgdata_table.c.edition == bindparam('edition'))
-        query = query.where(pdgid_table.c.parent_pdgid.like(bindparam('parent_id')))
-        query = query.where(pdgid_table.c.data_type.like(bindparam('data_type_key')))
-        query = query.order_by(pdgid_table.c.sort)
-        with self.api.engine.connect() as conn:
-            for entry in conn.execute(query, {'parent_id': self.baseid+'%',
-                                              'data_type_key': data_type_key,
-                                              'edition': self.edition}):
-                yield self.api.get(make_id(entry.pdgid, self.edition))
+        return self.properties(data_type_key, require_summary_data)
 
     def exclusive_branching_fractions(self, include_subdecays=False, require_summary_data=False):
         """Return iterator over exclusive branching fraction data.
@@ -172,54 +166,80 @@ class PdgParticle(PdgData):
         else:
             return self.branching_fractions('BFI', require_summary_data)
 
+    @property
     def name(self):
-        """Get particle name."""
+        """Name of particle (ASCII format)."""
         return self._get_particle_data()['name']
 
+    @property
     def mcid(self):
-        """Get the particle's MC ID."""
+        """Monte Carlo ID of particle."""
         return self._get_particle_data()['mcid']
 
+    @property
     def charge(self):
-        """Get the particle's charge."""
+        """Charge of article."""
         return self._get_particle_data()['charge']
 
+    @property
     def quantum_I(self):
-        """Get the particle's quantum number I"""
+        """Quantum number I of particle."""
         return self._get_particle_data()['quantum_i']
 
+    @property
     def quantum_G(self):
-        """Get the particle's quantum number G"""
+        """Quantum number G of particle."""
         return self._get_particle_data()['quantum_g']
 
+    @property
     def quantum_J(self):
-        """Get the particle's quantum number J"""
+        """Quantum number J of particle."""
         return self._get_particle_data()['quantum_j']
 
+    @property
     def quantum_P(self):
-        """Get the particle's quantum number P"""
+        """Quantum number P of particle."""
         return self._get_particle_data()['quantum_p']
 
+    @property
     def quantum_C(self):
-        """Get the particle's quantum number C"""
+        """Quantum number C of particle."""
         return self._get_particle_data()['quantum_c']
 
+    @property
     def is_boson(self):
-        """Return True if particle is a gauge boson."""
-        return 'G' in self.data_flags()
+        """True if particle is a gauge boson."""
+        return 'G' in self.data_flags
 
+    @property
     def is_quark(self):
-        """Return True if particle is a quark."""
-        return 'Q' in self.data_flags()
+        """True if particle is a quark."""
+        return 'Q' in self.data_flags
 
+    @property
     def is_lepton(self):
-        """Return True if particle is a lepton."""
-        return 'L' in self.data_flags()
+        """True if particle is a lepton."""
+        return 'L' in self.data_flags
 
+    @property
     def is_meson(self):
-        """Return True if particle is a meson."""
-        return 'M' in self.data_flags()
+        """True if particle is a meson."""
+        return 'M' in self.data_flags
 
+    @property
     def is_baryon(self):
-        """Return True if particle is a baryon."""
-        return 'B' in self.data_flags()
+        """True if particle is a baryon."""
+        return 'B' in self.data_flags
+
+    @property
+    def mass(self):
+        """Mass of the particle in GeV."""
+        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+        return best_mass_property.best_summary().get_value('GeV')
+
+    @property
+    def mass_error(self):
+        """Symmetric error on mass of particle in GeV, or None if mass error are asymmetric or mass is a limit."""
+        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+        return best_mass_property.best_summary().get_error('GeV')
+

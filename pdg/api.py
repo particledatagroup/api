@@ -5,11 +5,10 @@ PDG API top-level class.
 import sqlalchemy
 from sqlalchemy import func, select, bindparam, distinct, desc
 import pdg
-from pdg.errors import PdgInvalidPdgId, PdgNoDataError
+from pdg.errors import PdgInvalidPdgIdError, PdgNoDataError
 from pdg.utils import base_id
-from pdg.data import PdgProperty
+from pdg.data import PdgProperty, PdgMass
 from pdg.decay import PdgBranchingFraction
-from pdg.mass import PdgMass
 from pdg.particle import PdgParticle
 
 
@@ -34,12 +33,21 @@ DATA_TYPE_MAP = {
 
 class PdgApi:
 
-    def __init__(self, database_url):
+    def __init__(self, database_url, pedantic=False):
+        """Initialize PDG API.
+
+        database_url is the URL of the PDG database to connect to. The default database is the SQLite file
+        installed together with package pdg.
+
+        pedantic can be set True to enable pedantic mode, where, in cases where the choice of "PDG best value" might
+        be ambiguous, no assumptions are made and instead a PdgAmbiguousValue exception is raised.
+        """
         self.database_url = database_url
         self.engine = sqlalchemy.create_engine(self.database_url)
         self.db = sqlalchemy.MetaData()
         self.db.reflect(self.engine)
         self.edition = self.info('edition')
+        self.pedantic = pedantic
 
     def __str__(self):
         s = ['WARNING: THIS VERSION OF THE PDG PACKAGE IS UNDER DEVELOPMENT - DO NOT USE FOR PUBLICATIONS',
@@ -60,13 +68,15 @@ class PdgApi:
         with self.engine.connect() as conn:
             return conn.execute(query, {'key': key}).scalar()
 
+    @property
     def editions(self):
-        """Return list of all editions of the Review for which the database has data."""
+        """List of all editions of the Review for which the database has data."""
         pdgdata_table = self.db.tables['pdgdata']
         query = select(distinct(pdgdata_table.c.edition)).order_by(desc(pdgdata_table.c.edition))
         with self.engine.connect() as conn:
             return [e[0] for e in conn.execute(query).fetchall()]
 
+    @property
     def default_edition(self):
         """Return the default edition for this database."""
         return self.info('edition')
@@ -88,7 +98,7 @@ class PdgApi:
             with self.engine.connect() as conn:
                 data_type = conn.execute(query, {'pdgid': base_id(pdgid)}).fetchone()[0]
         except Exception:
-            raise PdgInvalidPdgId('PDG Identifier %s not found' % pdgid)
+            raise PdgInvalidPdgIdError('PDG Identifier %s not found' % pdgid)
         try:
             cls = DATA_TYPE_MAP[data_type]
         except KeyError:
