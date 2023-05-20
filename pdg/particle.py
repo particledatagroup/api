@@ -56,7 +56,7 @@ class PdgParticle(PdgData):
 
     def properties(self,
                    data_type_key=None,
-                   require_summary_data=False,
+                   require_summary_data=True,
                    in_summary_table=None,
                    omit_branching_ratios=False):
         """Return iterator over specified particle property data.
@@ -68,8 +68,8 @@ class PdgParticle(PdgData):
         including branching fractions and ratios, set data_type_key='%'. As another example, to get all mass
         properties, use data_type_key='M'.
 
-        require_summary_data can be used to select only properties, where the selected edition of the Review
-        of Particle Physics has summary value(s) in Particle Listings or Summary Table.
+        require_summary_data can be set False to also include properties, where the selected edition of the Review
+        of Particle Physics has no summary value(s) in Particle Listings or Summary Table.
 
         in_summary_table can be set to select properties, where a summary value is (True) or is not (False) included
         in the Summary Table for the selected edition. Setting in_summary_table to a value other than None
@@ -109,7 +109,7 @@ class PdgParticle(PdgData):
                                               'in_summary_table': in_summary_table}):
                 yield self.api.get(make_id(entry.pdgid, self.edition))
 
-    def masses(self, require_summary_data=False):
+    def masses(self, require_summary_data=True):
         """Return iterator over mass data.
 
         For most particles, there is only a single mass property, and so the particle's
@@ -122,37 +122,37 @@ class PdgParticle(PdgData):
         """
         return self.properties('M', require_summary_data)
 
-    def lifetimes(self, require_summary_data=False):
+    def lifetimes(self, require_summary_data=True):
         """Return iterator over lifetime data."""
         return self.properties('T', require_summary_data)
 
-    def branching_fractions(self, data_type_key='BF%', require_summary_data=False):
+    def branching_fractions(self, data_type_key='BF%', require_summary_data=True):
         """Return iterator over given type(s) of branching fraction data.
 
         With data_type_key='BF%' (default), all branching fractions, including subdecay modes, are returned.
 
-        require_summary_data can be set True to request only branching fractions where the current edition has
+        require_summary_data can be set False to include branching fractions where the current edition has no
         summary value(s) in the Particle Listings or Summary Table.
         """
         if data_type_key[0:2] != 'BF':
             raise PdgApiError('illegal branching fraction data type key %s' % data_type_key)
         return self.properties(data_type_key, require_summary_data)
 
-    def exclusive_branching_fractions(self, include_subdecays=False, require_summary_data=False):
+    def exclusive_branching_fractions(self, include_subdecays=False, require_summary_data=True):
         """Return iterator over exclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
         subdecay modes (i.e. modes shown indented in the Summary Tables).
 
-        require_summary_data can be set True to request only branching fractions where the current edition has
-        summary value(s) in the Particle Listings or Summary Table.
+        require_summary_data can be set False to include branching fractions where the current edition has
+        no summary value(s) in the Particle Listings or Summary Table.
         """
         if include_subdecays:
             return self.branching_fractions('BFX%', require_summary_data)
         else:
             return self.branching_fractions('BFX', require_summary_data)
 
-    def inclusive_branching_fractions(self, include_subdecays=False, require_summary_data=False):
+    def inclusive_branching_fractions(self, include_subdecays=False, require_summary_data=True):
         """Return iterator over inclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
@@ -178,32 +178,32 @@ class PdgParticle(PdgData):
 
     @property
     def charge(self):
-        """Charge of article."""
+        """Charge of particle in units of e."""
         return self._get_particle_data()['charge']
 
     @property
     def quantum_I(self):
-        """Quantum number I of particle."""
+        """Quantum number I (isospin) of particle."""
         return self._get_particle_data()['quantum_i']
 
     @property
     def quantum_G(self):
-        """Quantum number G of particle."""
+        """Quantum number G (G parity) of particle."""
         return self._get_particle_data()['quantum_g']
 
     @property
     def quantum_J(self):
-        """Quantum number J of particle."""
+        """Quantum number J (spin) of particle."""
         return self._get_particle_data()['quantum_j']
 
     @property
     def quantum_P(self):
-        """Quantum number P of particle."""
+        """Quantum number P (parity) of particle."""
         return self._get_particle_data()['quantum_p']
 
     @property
     def quantum_C(self):
-        """Quantum number C of particle."""
+        """Quantum number C (C parity) of particle."""
         return self._get_particle_data()['quantum_c']
 
     @property
@@ -234,7 +234,7 @@ class PdgParticle(PdgData):
     @property
     def mass(self):
         """Mass of the particle in GeV."""
-        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+        best_mass_property = best(self.masses(), self.api.pedantic, '%s mass (%s)' % (self.name, self.pdgid))
         return best_mass_property.best_summary().get_value('GeV')
 
     @property

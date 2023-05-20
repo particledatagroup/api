@@ -391,6 +391,56 @@ class PdgProperty(PdgData):
         except PdgAmbiguousValueError:
             return False
 
+    @property
+    def confidence_level(self):
+        """Shortcut for best_summary().confidence_level."""
+        return self.best_summary().confidence_level
+
+    @property
+    def is_limit(self):
+        """Shortcut for best_summary().is_limit."""
+        return self.best_summary().is_limit
+
+    @property
+    def value(self):
+        """Shortcut for best_summary().value."""
+        return self.best_summary().value
+
+    @property
+    def error(self):
+        """Shortcut for best_summary().error."""
+        return self.best_summary().error
+
+    @property
+    def error_positive(self):
+        """Shortcut for best_summary().error."""
+        return self.best_summary().error_positive
+
+    @property
+    def error_negative(self):
+        """Shortcut for best_summary().error."""
+        return self.best_summary().error_negative
+
+    @property
+    def scale_factor(self):
+        """Shortcut for best_summary().scale_factor."""
+        return self.best_summary().scale_factor
+
+    @property
+    def units(self):
+        """Shortcut for best_summary().units."""
+        return self.best_summary().units
+
+    @property
+    def comment(self):
+        """Shortcut for best_summary().comment."""
+        return self.best_summary().comment
+
+    @property
+    def display_value_text(self):
+        """Shortcut for best_summary().display_value_text."""
+        return self.best_summary().display_value_text
+
 
 class PdgMass(PdgProperty):
     pass

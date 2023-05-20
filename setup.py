@@ -31,7 +31,7 @@ setup(
     package_data={"pdg": ["pdg.sqlite"]},
     install_requires = ['SQLAlchemy>=1.4'],
     classifiers = [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
