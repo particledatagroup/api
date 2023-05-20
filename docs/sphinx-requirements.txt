@@ -1,0 +1,7 @@
+sphinx
+sphinx-rtd-theme
+myst-parser
+
+# The following is required to automatically document package pdg
+SQLAlchemy<2.0
+
