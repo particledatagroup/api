@@ -14,6 +14,10 @@ class TestData(unittest.TestCase):
     def setUpClass(cls):
         cls.api = pdg.connect(pedantic=False)
 
+    def test_name(self):
+        self.assertEqual(self.api.get_particle_by_name('p').mcid, 2212)
+        self.assertEqual(self.api.get_particle_by_name('pbar').mcid, -2212)
+
     def test_mcid(self):
         self.assertEqual(self.api.get_particle_by_mcid(5).name, 'b')
         self.assertEqual(self.api.get_particle_by_mcid(-5).name, 'bbar')
@@ -24,6 +28,19 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get_particle_by_mcid(100211).name, 'pi(1300)+')
         self.assertEqual(self.api.get_particle_by_mcid(-30323).name, 'K^*(1680)-')
         self.assertEqual(self.api.get_particle_by_mcid(-30323).mcid, -30323)
+
+    def test_quantum_P(self):
+        self.assertEqual(self.api.get_particle_by_name('u').quantum_P, '+')
+        self.assertEqual(self.api.get_particle_by_name('ubar').quantum_P, '-')
+        self.assertEqual(self.api.get_particle_by_name('t').quantum_P, '+')
+        self.assertEqual(self.api.get_particle_by_name('tbar').quantum_P, '-')
+        self.assertEqual(self.api.get_particle_by_name('p').quantum_P, '+')
+        self.assertEqual(self.api.get_particle_by_name('pbar').quantum_P, '-')
+        self.assertEqual(self.api.get_particle_by_name('n').quantum_P, '+')
+        self.assertEqual(self.api.get_particle_by_name('nbar').quantum_P, '-')
+        self.assertEqual(self.api.get_particle_by_mcid(3122).quantum_P, '+')
+        self.assertEqual(self.api.get_particle_by_mcid(-3122).quantum_P, '-')
+
 
     def test_mass_2022(self):
         if '2022' not in self.api.editions:

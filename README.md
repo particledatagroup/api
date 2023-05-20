@@ -5,7 +5,7 @@ The Python package `pdg` provides programmatic access to the data
 published by the  Particle Data Group (PDG) in the
 *Review of Particle Physics*.
 
-**Please note: This software is a beta release and is still under active development.
+**PLEASE NOTE: This software is a beta release for testing and is still under active development.
 The data provided by the present version should not be used in any scientific publications
 without careful checking of every single data item retrieved from the PDG API.**
 

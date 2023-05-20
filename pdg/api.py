@@ -68,6 +68,13 @@ class PdgApi:
         with self.engine.connect() as conn:
             return conn.execute(query, {'key': key}).scalar()
 
+    def info_keys(self):
+        """Return list of all metadata keys."""
+        pdginfo_table = self.db.tables['pdginfo']
+        query = select(pdginfo_table.c.name)
+        with self.engine.connect() as conn:
+            return [k[0] for k in conn.execute(query).fetchall()]
+
     @property
     def editions(self):
         """List of all editions of the Review for which the database has data."""
@@ -106,7 +113,7 @@ class PdgApi:
         return cls(self, pdgid, edition)
 
     def get_all(self, data_type_key=None, edition=None):
-        """Return iterator over all PDG Identifiers / quantities.
+        """Return iterator over all PDG Identifiers / quantities. Returns PdgProperties or derived classes.
 
         If data_type_key is set, only quantities of the given type are returned.
         See doc_data_type_keys() for the list of possible data type codes.
@@ -129,24 +136,24 @@ class PdgApi:
     def get_particle_by_name(self, name, case_sensitive=True, edition=None):
         """Get particle by its name.
 
-        case_sensitive can be set True to indicate that the particle name should be
-        considered case-sensitive.
+        case_sensitive can be set False to indicate that the particle name should be
+        considered not case-sensitive.
 
         edition can be set to a specific edition, from which data should later be retrieved.
         """
         pdgparticle_table = self.db.tables['pdgparticle']
-        query = select(distinct(pdgparticle_table.c.pdgid))
+        query = select(pdgparticle_table.c.pdgid, pdgparticle_table.c.mcid)
         if case_sensitive:
             query = query.where(pdgparticle_table.c.name == bindparam('name'))
         else:
             name = name.lower()
             query = query.where(func.lower(pdgparticle_table.c.name) == bindparam('name'))
         with self.engine.connect() as conn:
-            matches = [p.pdgid for p in conn.execute(query, {'name': name})]
+            matches = conn.execute(query, {'name': name}).fetchall()
         if len(matches) == 0:
             raise ValueError('No particle found with name %s' % name)
         elif len(matches) == 1:
-            return PdgParticle(self, matches[0], edition)
+            return PdgParticle(self, matches[0].pdgid, edition, set_mcid=matches[0].mcid)
         else:
             raise ValueError('%s matches %i particles with PDG Identifiers %s' % (name, len(matches), matches))
 

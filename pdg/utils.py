@@ -2,7 +2,32 @@
 Utilities for PDG API.
 """
 
-from pdg.errors import PdgNoDataError, PdgAmbiguousValueError
+from pdg.errors import PdgNoDataError, PdgAmbiguousValueError, PdgRoundingError
+import math
+
+
+def pdg_round(value, error):
+    """Return (value, error) as numbers rounded following PDG rounding rules."""
+    # FIXME: might switch to returning decimal.Decimal rather than floats
+    if error <= 0.:
+        raise PdgRoundingError('PDG rounding requires error larger than zero')
+    log = math.log10(abs(error))
+    if abs(error) < 1.0 and int(log) != log:
+        power = int(log)
+    else:
+        power = int(log) + 1
+    reduced_error = error * 10 ** (-power)
+    if reduced_error < 0.355:
+        n_digits = 2
+    elif reduced_error < 0.950:
+        n_digits = 1
+    else:
+        reduced_error = 0.1
+        power += 1
+        n_digits = 2
+    new_error = round(reduced_error, n_digits) * 10 ** power
+    new_value = round(value * 10 ** (-power), n_digits) * 10 ** power
+    return new_value, new_error
 
 
 def parse_id(pdgid):

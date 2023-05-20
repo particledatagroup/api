@@ -48,7 +48,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(pion.quantum_J, '0')
         self.assertEqual(pion.quantum_P, '-')
         self.assertEqual(pion.quantum_C, None)
-        self.assertEqual(sum(1 for _ in pion.properties()), 12)
+        self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=False)), 12)
         self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=True)), 10)
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions()), 9)
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions(include_subdecays=True)), 11)
