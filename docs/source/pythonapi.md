@@ -32,13 +32,11 @@ For the time being, Python 2.7 is still supported.
 ## Installation
 
 The PDG Python API can be installed like any other Python package.
-For example, the following command will download and install the  
-[`pdg` package from PyPI](https://pypi.org/project/pdg/):
+For example, the following command will download and install package `pdg` and its dependencies:
 ```
-pip install [--user] pdg
+python -m pip install pdg
 ```
-where the optional `--user` indicates that the package should be installed to the Python user install directory
-rather than system-wide in case one does not use a virtual Python environment. 
+
 
 ## Usage
 
