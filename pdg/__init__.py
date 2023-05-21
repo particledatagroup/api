@@ -7,7 +7,7 @@ For general information about PDG and the Review of Particle Physics
 please visit https://pdg.lbl.gov.
 """
 __author__ = 'Particle Data Group'
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 import os
