@@ -19,10 +19,8 @@ Since [SQLAlchemy](https://www.sqlalchemy.org/) is used for all database access,
 the necessary database tables could be copied from the SQLite database file into an existing database
 system (as long as it is supported by SQLAlchemy), and the Python API could then be used with that database system.
 
-The `pdg` package is released as open source software.
-The source code will be available on [github](https://github.com/particledatagroup/api).
-Once the current beta development phase will be completed, community contributions to
-extend the functionality of the `pdg` package will be encouraged.
+The `pdg` package is released as open source software and can be found at
+[github.com/particledatagroup/api](https://github.com/particledatagroup/api).
 
 
 ## Requirements
@@ -54,10 +52,10 @@ As discussed below, `connect()` takes two optional arguments:
 2. Whether the API should operate in pedantic mode or not. Pedantic mode is disabled by default.
 
 ### Connecting to a different database
-To connect e.g. to a SQLite database file `pdgall-2023-v0.sqlite`, which was downloaded from the
+To connect e.g. to a SQLite database file `pdgall-2023-v0.1.sqlite`, which was downloaded from the
 [PDG website](https://pdg.lbl.gov/api) into the current directory, one would use
 ```python
-api = pdg.connect('sqlite:///pdgall-2023-v0.sqlite')
+api = pdg.connect('sqlite:///pdgall-2023-v0.1.sqlite')
 ```
 
 ### Pedantic mode

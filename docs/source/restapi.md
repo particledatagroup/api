@@ -38,12 +38,12 @@ https://pdgapi.lbl.gov/PATH
 where PATH is one of the paths given in the table below, and
 PDGID is the PDG Identifier of the desired quantity.
 
-| Path                     | Example                                                                                      | Description                                        |
-|--------------------------|----------------------------------------------------------------------------------------------|----------------------------------------------------|
-| /info                    | [https://pdgapi.lbl.gov/info](https://pdgapi.lbl.gov/info)                                   | Get metadata (edition, citation, version, license) |
-| /summaries/PDGID         | [https://pdgapi.lbl.gov/summaries/S0126M](https://pdgapi.lbl.gov/summaries/S0126M)           | Get summary data for PDG Identifiers               |
-| /summaries/PDGID/EDITION | [https://pdgapi.lbl.gov/summaries/S0126M/2020](https://pdgapi.lbl.gov/summaries/S0126M/2020) | Get summary data from an earlier edition           |
-| /doc                     | [https://pdgapi.lbl.gov/doc](https://pdgapi.lbl.gov/doc)                                     | This documentation (regular web page, not JSON)    |
+| Path                     | Example                                                                                    | Description                                        |
+|--------------------------|--------------------------------------------------------------------------------------------|----------------------------------------------------|
+| /info                    | [https://pdgapi.lbl.gov/info](https://pdgapi.lbl.gov/info)                                 | Get metadata (edition, citation, version, license) |
+| /summaries/PDGID         | [https://pdgapi.lbl.gov/summaries/S126M](https://pdgapi.lbl.gov/summaries/S126M)           | Get summary data for PDG Identifiers               |
+| /summaries/PDGID/EDITION | [https://pdgapi.lbl.gov/summaries/S126M/2020](https://pdgapi.lbl.gov/summaries/S126M/2020) | Get summary data from an earlier edition           |
+| /doc                     | [https://pdgapi.lbl.gov/doc](https://pdgapi.lbl.gov/doc)                                   | This documentation (regular web page, not JSON)    |
 
 Except for the documentation pages under `/doc`, all paths return JSON documents.
 
