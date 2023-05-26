@@ -6,8 +6,8 @@ to access the data published in the _Review of Particle Physics_.
 
 **PLEASE NOTE: THIS API IS STILL UNDER DEVELOPMENT AND CURRENTLY ONLY AVAILABLE AS A BETA RELEASE FOR TESTING.**
 
-The new API provides three
-options for accessing PDG data in machine-readable format. These three options are aimed at different use cases.
+The new API provides three tools for accessing PDG data in machine-readable format.
+These three tools are aimed at different use cases.
 They are:
 
 * a REST API,
@@ -34,10 +34,12 @@ This option is intended for users who wish to incorporate PDG data into their ow
 an application, where the Python API is not suitable (e.g. because their software is written in a different
 programming language such as C++), and who have the necessary technical expertise to correctly query the data.
 
-All three of these options use digital object identifiers termed [PDG Identifiers](pdgidentifiers) in order
-to reference specific items of PDG data.
+Internally, these tools use digital object identifiers termed [PDG Identifiers](pdgidentifiers) in order
+to reference specific items of PDG data. In most cases, the user does not need to know specific PDG Identifiers
+and can instead either navigate to the quantity of interest in pdgLive or start with customary references such as
+Monte Carlo particle numbers or ASCII particle names to look up and navigate to the quantities of interest.
 
-The following chapters provide details on PDG Identifiers and on how to use the different options for
+The following chapters provide details on PDG Identifiers and on how to use the different tools for
 programmatic access to PDG data.
 
 The PDG API is still under development and is currently only available as a beta release.
