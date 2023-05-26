@@ -22,10 +22,12 @@ future development. As a result, **future releases may or may not be compatible 
   Summary Table values
 
 ## Features under development (not yet available in this beta version)
+* Improvement to contents of underlying data tables (e.g., some customary particle names are currently missing, some
+  descriptions are incomplete or wrong, some flags are missing, etc)
 * Extension of Python API with more methods to directly access most frequently used particle properties,
   convenient navigation to decay products in a given decay, ...
 * Processing of aliases such as \ell in branching fractions
 * Access to data published in the Particle Listings
-* Searching (other than by low-level SQL querying of the data in the SQLite file)
+* Searching of PDG Identifiers and associated data (other than by low-level SQL querying of the data in the SQLite file)
 * Improved documentation, especially on using the SQLite database file
 * ...
