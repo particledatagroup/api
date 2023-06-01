@@ -126,5 +126,15 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('S066M2E/2022').best_summary().error, None)
         self.assertEqual(self.api.get('M013.4/2022').best_summary().error, 0.0218379495175522 )
 
+    def test_data_flags(self):
+        self.assertEqual(self.api.get('S003AMU').data_flags, 'A')
+        self.assertEqual(self.api.get('S004AMU').data_flags, 'A')
+        self.assertEqual(self.api.get('S016AMU').data_flags, 'A')
+        self.assertEqual(self.api.get('S017AMU').data_flags, 'A')
+        self.assertEqual(self.api.get('Q007TP').data_flags, 'D')
+        self.assertEqual(self.api.get('Q007TP2').data_flags, None)
+        self.assertEqual(self.api.get('Q007TP4').data_flags, None)
+
+
 if __name__ == '__main__':
     unittest.main()
