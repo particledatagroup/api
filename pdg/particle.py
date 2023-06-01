@@ -26,16 +26,17 @@ class PdgParticle(PdgData):
             self.cc_type_flag = 'A'
 
     def __str__(self):
-        return 'Data for PDG Particle %s: %s' % (self.pdgid, self.name())
+        try:
+            return 'Data for PDG Particle %s: %s' % (self.pdgid, self.name)
+        except PdgAmbiguousValueError:
+            return 'Data for PDG Particle %s: multiple particle matches' % self.pdgid
 
     def _get_particle_data(self):
         """Get particle data."""
         if 'pdgparticle' not in self.cache:
-            # FIXME: if we keep PDGPARTICLE.PDGID, don't need to join with PDGID table
-            pdgid_table = self.api.db.tables['pdgid']
             pdgparticle_table = self.api.db.tables['pdgparticle']
-            query = select(pdgparticle_table).join(pdgid_table)
-            query = query.where(pdgid_table.c.pdgid == bindparam('pdgid'))
+            query = select(pdgparticle_table)
+            query = query.where(pdgparticle_table.c.pdgid == bindparam('pdgid'))
             if self.set_mcid is not None:
                 query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
             query = query.where(pdgparticle_table.c.entry_type == 'P')
@@ -45,13 +46,30 @@ class PdgParticle(PdgData):
             with self.api.engine.connect() as conn:
                 params = {'pdgid': self.baseid, 'cc_type': self.cc_type_flag, 'mcid': self.set_mcid}
                 matches = conn.execute(query, params).fetchall()
-                if len(matches) == 1:
-                    self.cache['pdgparticle'] = matches[0]._mapping
-                elif len(matches) == 0:
+            if len(matches) == 1:
+                self.cache['pdgparticle'] = matches[0]._mapping
+            else:
+                # Charge-specific state either not found or ambiguous - try looking for entry with CHARGE_TYPE='G'
+                query = select(pdgparticle_table)
+                query = query.where(pdgparticle_table.c.pdgid == bindparam('pdgid'))
+                if self.set_mcid is not None:
+                    query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
+                query = query.where(pdgparticle_table.c.entry_type == 'P')
+                query = query.where(pdgparticle_table.c.charge_type == 'G')
+                query = query.where(pdgparticle_table.c.cc_type.is_(None))
+                query = query.where(pdgparticle_table.c.name.notlike('%bar%'))   # Exclude generic "*bar" states
+                with self.api.engine.connect() as conn:
+                    params = {'pdgid': self.baseid, 'mcid': self.set_mcid}
+                    matches_g = conn.execute(query, params).fetchall()
+                if len(matches_g) == 0:
                     mcid_string = ', MC ID = %s' % self.set_mcid if self.set_mcid else ''
                     raise PdgNoDataError('Particle data for %s%s not found' % (self.pdgid, mcid_string))
+                elif len(matches_g) == 1:
+                    self.cache['pdgparticle'] = matches_g[0]._mapping
                 else:
-                    raise PdgAmbiguousValueError('Multiple particles for %s - please set MC ID' % self.pdgid)
+                    names = [p.name for p in matches_g]
+                    mcids = list(set([p.mcid for p in matches]))
+                    raise PdgAmbiguousValueError('Multiple particles for %s: MCID %s, names %s' % (self.baseid, mcids, names))
         return self.cache['pdgparticle']
 
     def properties(self,
