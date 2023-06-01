@@ -172,7 +172,7 @@ class PdgApi:
         elif len(matches) == 1:
             return PdgParticle(self, matches[0], edition, set_mcid=mcid)
         else:
-            raise ValueError('%s matches %i particles with PDG Identifiers %s' % (mcid, len(matches), matches))
+            raise ValueError('MC number %s matches %i particles with PDG Identifiers %s' % (mcid, len(matches), matches))
 
     def get_particles(self, edition=None):
         """Return iterator over all particles.
@@ -180,7 +180,9 @@ class PdgApi:
         edition can be set to a specific edition, from which data should later be retrieved.
         """
         pdgid_table = self.db.tables['pdgid']
-        query = select(distinct(pdgid_table.c.pdgid)).where(pdgid_table.c.data_type == 'PART')
+        pdgparticle_table = self.db.tables['pdgparticle']
+        query = select(distinct(pdgid_table.c.pdgid)).join(pdgparticle_table)
+        query = query.where(pdgid_table.c.data_type == 'PART')
         query = query.order_by(pdgid_table.c.sort)
         with self.engine.connect() as conn:
             for item in conn.execute(query):
