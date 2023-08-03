@@ -4,6 +4,7 @@ Test cases for the info table and other metadata.
 from __future__ import print_function
 
 import sys
+import os
 import unittest
 import time
 import sqlalchemy
@@ -44,6 +45,8 @@ class TestMetaData(unittest.TestCase):
 
     def test_has_created_timestamp(self):
         self.assertIsNotNone(self.api.info('data_release_timestamp'), 'database does not have data_release timestamp')
+        os.environ['TZ'] = 'America/Los_Angeles'
+        time.tzset()
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(float(self.api.info('data_release'))))
         self.assertEqual(self.api.info('data_release_timestamp'), timestamp)
 
