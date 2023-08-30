@@ -9,6 +9,9 @@ from pdg.utils import make_id, best
 from pdg.data import PdgData
 
 
+HBAR_IN_GEV_S = 6.582E-25
+
+
 class PdgParticle(PdgData):
     """Container class for all information about a given particle.
 
@@ -140,6 +143,10 @@ class PdgParticle(PdgData):
         """
         return self.properties('M', require_summary_data)
 
+    def widths(self, require_summary_data=True):
+        """Return iterator over width data."""
+        return self.properties('G', require_summary_data)
+
     def lifetimes(self, require_summary_data=True):
         """Return iterator over lifetime data."""
         return self.properties('T', require_summary_data)
@@ -261,3 +268,72 @@ class PdgParticle(PdgData):
         best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
         return best_mass_property.best_summary().get_error('GeV')
 
+    @property
+    def width(self):
+        """Width of the particle in GeV."""
+        try:
+            best_width_property = best(self.widths(), self.api.pedantic, '%s width (%s)' % (self.name, self.pdgid))
+            return best_width_property.best_summary().get_value('GeV')
+        except PdgNoDataError:
+            if self.api.pedantic:
+                raise
+            # S063 has a lifetime entry but it's NULL
+            if (not self.has_lifetime_entry) or (self.lifetime is None):
+                return 0.
+            return HBAR_IN_GEV_S / self.lifetime
+
+    @property
+    def width_error(self):
+        """Symmetric error on width of particle in GeV, or None if width error are asymmetric or width is a limit."""
+        try:
+            best_width_property = best(self.widths(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+            return best_width_property.best_summary().get_error('GeV')
+        except PdgNoDataError:
+            if self.api.pedantic:
+                raise
+            # S063 has a lifetime entry but it's NULL
+            if (not self.has_lifetime_entry) or (self.lifetime is None):
+                return 0.
+            return self.lifetime_error * HBAR_IN_GEV_S / self.lifetime**2
+
+    @property
+    def lifetime(self):
+        """Lifetime of the particle in seconds."""
+        try:
+            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s lifetime (%s)' % (self.name, self.pdgid))
+            return best_lifetime_property.best_summary().get_value('s')
+        except PdgNoDataError:
+            if self.api.pedantic:
+                raise
+            if not self.has_width_entry:
+                return float('inf')
+            return HBAR_IN_GEV_S / self.width
+
+    @property
+    def lifetime_error(self):
+        """Symmetric error on lifetime of particle in seconds, or None if lifetime error are asymmetric or lifetime is a limit."""
+        try:
+            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+            err = best_lifetime_property.best_summary().get_error('s')
+            if err is None:
+                err = 0.
+            return err
+        except PdgNoDataError:
+            if self.api.pedantic:
+                raise
+            if not self.has_width_entry:
+                return 0.
+            return self.width_error * HBAR_IN_GEV_S / self.width**2
+
+
+    @property
+    def has_width_entry(self):
+        return next(self.widths(), None) is not None
+
+    @property
+    def has_lifetime_entry(self):
+        return next(self.lifetimes(), None) is not None
+
+    @property
+    def is_stable(self):
+        return not (self.has_width_entry() or self.has_lifetime_entry())
