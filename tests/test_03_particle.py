@@ -6,6 +6,7 @@ from __future__ import print_function
 import unittest
 
 import pdg
+from pdg.errors import PdgNoDataError
 
 
 class TestData(unittest.TestCase):
@@ -83,3 +84,32 @@ class TestData(unittest.TestCase):
     def test_ambiguous_defaults(self):
         self.assertEqual(round(self.api.get('Q007').mass, 1), 172.7)
         self.assertEqual(self.api.get('S013D').best_summary().comment, 'Assuming CPT')
+
+    def test_best_widths_and_lifetimes(self):
+        saved_pedantic = self.api.pedantic
+
+        pi0 = self.api.get_particle_by_name('pi0')
+        self.assertTrue(pi0.has_lifetime_entry)
+        self.assertFalse(pi0.has_width_entry)
+        self.assertEqual(pi0.lifetime, 8.42551220525037e-17)
+        self.assertEqual(pi0.lifetime_error, 1.34474888523086e-18)
+        self.api.pedantic = True
+        self.assertRaises(PdgNoDataError, lambda: pi0.width)
+        self.assertRaises(PdgNoDataError, lambda: pi0.width_error)
+        self.api.pedantic = False
+        self.assertEqual(pi0.width, 7.81198797136442e-09)
+        self.assertEqual(pi0.width_error, 1.2468277132615016e-10)
+
+        W = self.api.get_particle_by_name('W')
+        self.assertTrue(W.has_width_entry)
+        self.assertFalse(W.has_lifetime_entry)
+        self.assertEqual(W.width, 2.085)
+        self.assertEqual(W.width_error, 0.042)
+        self.api.pedantic = True
+        self.assertRaises(PdgNoDataError, lambda: W.lifetime)
+        self.assertRaises(PdgNoDataError, lambda: W.lifetime_error)
+        self.api.pedantic = False
+        self.assertEqual(W.lifetime, 3.156834532374101e-25)
+        self.assertEqual(W.lifetime_error, 6.359091144350707e-27)
+
+        self.api.pedantic = saved_pedantic
