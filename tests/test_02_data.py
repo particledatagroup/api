@@ -135,6 +135,10 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('Q007TP2').data_flags, None)
         self.assertEqual(self.api.get('Q007TP4').data_flags, None)
 
+    def test_old_bugs(self):
+        # Check fix for metadata bug in v0.0.5
+        self.assertIsNotNone(self.api.get('S086DRA').best_summary())
+        self.assertIsNotNone(self.api.get('S086DGS').best_summary())
 
 if __name__ == '__main__':
     unittest.main()
