@@ -21,17 +21,8 @@ class PdgSummaryValue(dict):
     """Container for a single value from the Summary Tables."""
 
     def __str__(self):
-        if self.value_type_key in ('AC', 'D', 'E'):
-            indicator = 'OUR AVERAGE'
-        elif self.value_type_key in ('L',):
-            indicator = 'BEST LIMIT'
-        elif self.value_type_key in ('OL',):
-            indicator = 'OUR LIMIT'
-        elif self.value_type_key in ('FC', 'DR'):
-            indicator = 'OUR FIT'
-        elif self.value_type_key in ('V', 'DV'):
-            indicator = 'OUR EVALUATION'
-        else:
+        indicator = self.value_type
+        if not indicator:
             indicator = '[key = %s]' % self.value_type_key
         return '%-20s %-20s  %s' % (self.display_value_text, indicator, self.comment if self.comment else '')
 
@@ -107,6 +98,22 @@ class PdgSummaryValue(dict):
 
         See PdgApi.doc_value_type_keys() for the meaning of the different value type keys."""
         return self['value_type']
+
+    @property
+    def value_type(self):
+        """Type of value, given as the PDG indicator string."""
+        if self.value_type_key in ('AC', 'D', 'E'):
+            return 'OUR AVERAGE'
+        elif self.value_type_key in ('L',):
+            return 'BEST LIMIT'
+        elif self.value_type_key in ('OL',):
+            return 'OUR LIMIT'
+        elif self.value_type_key in ('FC', 'DR'):
+            return 'OUR FIT'
+        elif self.value_type_key in ('V', 'DV'):
+            return 'OUR EVALUATION'
+        else:
+            return ''
 
     @property
     def in_summary_table(self):
