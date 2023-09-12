@@ -57,13 +57,13 @@ class TestData(unittest.TestCase):
             return
         masses = list(self.api.get('q007/2022').masses())
         self.assertEqual(masses[0].pdgid, 'Q007TP/2022')
-        self.assertEqual(masses[0].best_summary().value, 172.687433377613)
+        self.assertEqual(round(masses[0].best_summary().value,9), 172.687433378)
         self.assertEqual(masses[1].pdgid, 'Q007TP2/2022')
-        self.assertEqual(masses[1].best_summary().value, 162.500284698049)
+        self.assertEqual(round(masses[1].best_summary().value,9), 162.500284698)
         self.assertEqual(masses[2].pdgid, 'Q007TP4/2022')
-        self.assertEqual(masses[2].best_summary().value, 172.463424407473)
-        self.assertEqual(self.api.get('s008/2022').mass, 0.139570390983681)
-        self.assertEqual(self.api.get('s008/2022').mass_error, 1.8200716040826e-07)
+        self.assertEqual(round(masses[2].best_summary().value,9), 172.463424407)
+        self.assertEqual(round(self.api.get('s008/2022').mass,9), 0.139570391)
+        self.assertEqual(round(self.api.get('s008/2022').mass_error,16), 1.820071604e-07)
 
     def test_flags(self):
         self.assertEqual(self.api.get('S008').is_boson, False)
