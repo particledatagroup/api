@@ -283,22 +283,30 @@ class PdgParticle(PdgData):
         return 'B' in self.data_flags
 
     @property
+    def is_generic(self):
+        """True if particle represents a generic charge state."""
+        return self._get_particle_data()['charge_type'] == 'G'
+
+    @property
     def mass(self):
         """Mass of the particle in GeV."""
-        best_mass_property = best(self.masses(), self.api.pedantic, '%s mass (%s)' % (self.name, self.pdgid))
+        best_mass_property = best(self.masses(), self.api.pedantic, '%s mass (%s)' % (self.name, self.pdgid),
+                                  self.is_generic)
         return best_mass_property.best_summary().get_value('GeV')
 
     @property
     def mass_error(self):
         """Symmetric error on mass of particle in GeV, or None if mass error are asymmetric or mass is a limit."""
-        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description),
+                                  self.is_generic)
         return best_mass_property.best_summary().get_error('GeV')
 
     @property
     def width(self):
         """Width of the particle in GeV."""
         try:
-            best_width_property = best(self.widths(), self.api.pedantic, '%s width (%s)' % (self.name, self.pdgid))
+            best_width_property = best(self.widths(), self.api.pedantic, '%s width (%s)' % (self.name, self.pdgid),
+                                       self.is_generic)
             return best_width_property.best_summary().get_value('GeV')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -312,7 +320,8 @@ class PdgParticle(PdgData):
     def width_error(self):
         """Symmetric error on width of particle in GeV, or None if width error are asymmetric or width is a limit."""
         try:
-            best_width_property = best(self.widths(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+            best_width_property = best(self.widths(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description),
+                                       self.is_generic)
             return best_width_property.best_summary().get_error('GeV')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -326,7 +335,8 @@ class PdgParticle(PdgData):
     def lifetime(self):
         """Lifetime of the particle in seconds."""
         try:
-            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s lifetime (%s)' % (self.name, self.pdgid))
+            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s lifetime (%s)' % (self.name, self.pdgid),
+                                          self.is_generic)
             return best_lifetime_property.best_summary().get_value('s')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -339,7 +349,8 @@ class PdgParticle(PdgData):
     def lifetime_error(self):
         """Symmetric error on lifetime of particle in seconds, or None if lifetime error are asymmetric or lifetime is a limit."""
         try:
-            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description),
+                                          self.is_generic)
             err = best_lifetime_property.best_summary().get_error('s')
             if err is None:
                 err = 0.
