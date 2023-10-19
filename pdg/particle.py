@@ -128,7 +128,26 @@ class PdgParticle(PdgData):
                                               'edition': self.edition,
                                               'data_type_key': data_type_key,
                                               'in_summary_table': in_summary_table}):
-                yield self.api.get(make_id(entry.pdgid, self.edition))
+                prop = self.api.get(make_id(entry.pdgid, self.edition))
+
+                # For masses, widths, and lifetimes, we must take care to choose
+                # the appropriate entry according to the particle's charge
+
+                if prop.data_type not in 'MGT':
+                    yield prop
+
+                if 's' in prop.data_flags:
+                    continue
+
+                if not any(flag in prop.data_flags for flag in '012'):
+                    yield prop
+
+                if ((self.charge in [None, 0] and '0' in prop.data_flags)
+                    or (self.charge is not None and abs(self.charge) == 1 and '1' in prop.data_flags)
+                    or (self.charge is not None and abs(self.charge) == 2 and '2' in prop.data_flags)):
+
+                    yield prop
+
 
     def masses(self, require_summary_data=True):
         """Return iterator over mass data.
