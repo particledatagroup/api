@@ -135,16 +135,23 @@ class PdgParticle(PdgData):
 
                 if prop.data_type not in 'MGT':
                     yield prop
+                    continue
 
                 if 's' in prop.data_flags:
                     continue
 
                 if not any(flag in prop.data_flags for flag in '012'):
                     yield prop
+                    continue
 
-                if ((self.charge in [None, 0] and '0' in prop.data_flags)
-                    or (self.charge is not None and abs(self.charge) == 1 and '1' in prop.data_flags)
-                    or (self.charge is not None and abs(self.charge) == 2 and '2' in prop.data_flags)):
+                # Yield all masses etc if this is a generic charge state
+                if self.charge is None:
+                    yield prop
+                    continue
+
+                if ((self.charge == 0 and '0' in prop.data_flags)
+                    or (abs(self.charge) == 1 and '1' in prop.data_flags)
+                    or (abs(self.charge) == 2 and '2' in prop.data_flags)):
 
                     yield prop
 
