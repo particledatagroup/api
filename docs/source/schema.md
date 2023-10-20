@@ -1,7 +1,7 @@
 # PDG database file
 
 The PDG database file contains the data from one edition of the *Review of Particle Physics*
-in a single file in [SQLite](https://sqlite.org/index.html) format.
+in a single file in [SQLite (version 3)](https://sqlite.org/index.html) format.
 Depending on what version of the file was obtained, Summary Table values from previous
 editions may also be included.
 The database file provides the default data store for the [Python API](pythonapi.md) and a copy is bundled
