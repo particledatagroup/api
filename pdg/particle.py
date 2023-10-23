@@ -137,8 +137,9 @@ class PdgParticle(PdgData):
                     yield prop
                     continue
 
-                if 's' in prop.data_flags:
-                    continue
+                # Now that 's' properties are sorted last, we can safely include them
+                # if 's' in prop.data_flags:
+                #     continue
 
                 if not any(flag in prop.data_flags for flag in '012'):
                     yield prop
