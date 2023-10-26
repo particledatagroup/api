@@ -4,6 +4,8 @@ Constants and utilities for handling HEP units.
 
 from pdg.errors import PdgApiError
 
+HBAR_IN_GEV_S = 6.582E-25
+
 UNIT_CONVERSION_FACTORS = {
     'meV': (1E-3, 'eV'),
     'eV': (1E0, 'eV'),
