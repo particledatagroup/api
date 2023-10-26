@@ -7,9 +7,7 @@ from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
 from pdg.utils import make_id, best
 from pdg.data import PdgData
-
-
-HBAR_IN_GEV_S = 6.582E-25
+from pdg.units import HBAR_IN_GEV_S
 
 
 class PdgParticle(PdgData):
@@ -131,29 +129,25 @@ class PdgParticle(PdgData):
                 prop = self.api.get(make_id(entry.pdgid, self.edition))
 
                 # For masses, widths, and lifetimes, we must take care to choose
-                # the appropriate entry according to the particle's charge
-
+                # the appropriate entry according to the particle's charge.
+                # Other types of properties don't require further checks.
                 if prop.data_type not in 'MGT':
                     yield prop
-                    continue
 
-                # Now that 's' properties are sorted last, we can safely include them
-                # if 's' in prop.data_flags:
-                #     continue
+                # NOTE: Now that 's' properties are sorted last, we can safely
+                # include them without breaking best() etc.
 
-                if not any(flag in prop.data_flags for flag in '012'):
+                # If this property is not charge-specific, yield it.
+                elif not any(flag in prop.data_flags for flag in '012'):
                     yield prop
-                    continue
 
-                # Yield all masses etc if this is a generic charge state
-                if self.charge is None:
+                # If this particle isn't a specific charge state, yield
+                # everything.
+                elif self.charge is None:
                     yield prop
-                    continue
 
-                if ((self.charge == 0 and '0' in prop.data_flags)
-                    or (abs(self.charge) == 1 and '1' in prop.data_flags)
-                    or (abs(self.charge) == 2 and '2' in prop.data_flags)):
-
+                # Finally check whether the charges match
+                elif str(int(abs(self.charge))) in prop.data_flags:
                     yield prop
 
 
