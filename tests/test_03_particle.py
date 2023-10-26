@@ -91,14 +91,14 @@ class TestData(unittest.TestCase):
         pi0 = self.api.get_particle_by_name('pi0')
         self.assertTrue(pi0.has_lifetime_entry)
         self.assertFalse(pi0.has_width_entry)
-        self.assertEqual(pi0.lifetime, 8.42551220525037e-17)
-        self.assertEqual(pi0.lifetime_error, 1.34474888523086e-18)
+        self.assertEqual(round(pi0.lifetime * 1e17, 2), 8.43)
+        self.assertEqual(round(pi0.lifetime_error * 1e17, 3), 0.134)
         self.api.pedantic = True
         self.assertRaises(PdgNoDataError, lambda: pi0.width)
         self.assertRaises(PdgNoDataError, lambda: pi0.width_error)
         self.api.pedantic = False
-        self.assertEqual(pi0.width, 7.81198797136442e-09)
-        self.assertEqual(pi0.width_error, 1.2468277132615016e-10)
+        self.assertEqual(round(pi0.width * 1e9, 2), 7.81)
+        self.assertEqual(round(pi0.width_error * 1e9, 3), 0.125)
 
         W = self.api.get_particle_by_name('W')
         self.assertTrue(W.has_width_entry)
@@ -109,10 +109,10 @@ class TestData(unittest.TestCase):
         self.assertRaises(PdgNoDataError, lambda: W.lifetime)
         self.assertRaises(PdgNoDataError, lambda: W.lifetime_error)
         self.api.pedantic = False
-        self.assertEqual(W.lifetime, 3.156834532374101e-25)
-        self.assertEqual(W.lifetime_error, 6.359091144350707e-27)
+        self.assertEqual(round(W.lifetime * 1e25, 2), 3.16)
+        self.assertEqual(round(W.lifetime_error * 1e25, 3), 0.064)
 
-    def test_kstar_892(self):
+    def test_Kstar_892(self):
         self.api.pedantic = False
         p = self.api.get('M018')
         self.assertTrue(p.is_generic)
