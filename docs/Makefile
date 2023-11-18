@@ -29,3 +29,6 @@ sphinxvenv:
 	@virtualenv -p python3 sphinxvenv
 	@source sphinxvenv/bin/activate; pip install --upgrade pip
 	@source sphinxvenv/bin/activate; pip install -r sphinx-requirements.txt
+
+version:
+	@[ -d sphinxvenv ] && source sphinxvenv/bin/activate; python --version

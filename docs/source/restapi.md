@@ -100,6 +100,9 @@ Each JSON object describing a summary value may contain the following data
 | value_text       | String    | Plain-text representation of the value with errors or limit |
 | unit             | String    | Units                                                       |
 | scale_factor     | Number    | Error scale factor when applied to errors                   |
+| is_limit         | Boolean   | true if value is a limit, omitted otherwise                 |
+| is_upper_limit   | Boolean   | true if value is an upper limit, omitted otherwise          |
+| is_lower_limit   | Boolen    | true if value is a lower limit, omitted otherwse            |
 | confidence_level | Number    | Confidence level for limits or null                         |
 | type             | String    | Type of data ("OUR FIT" etc)                                |
 
