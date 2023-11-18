@@ -127,14 +127,19 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('M013.4/2022').best_summary().error, 0.0218379495175522 )
 
     def test_data_flags(self):
-        self.assertEqual(self.api.get('S003AMU').data_flags, 'A')
-        self.assertEqual(self.api.get('S004AMU').data_flags, 'A')
-        self.assertEqual(self.api.get('S016AMU').data_flags, 'A')
-        self.assertEqual(self.api.get('S017AMU').data_flags, 'A')
-        self.assertEqual(self.api.get('Q007TP').data_flags, 'D')
-        self.assertEqual(self.api.get('Q007TP2').data_flags, None)
-        self.assertEqual(self.api.get('Q007TP4').data_flags, None)
+        self.assertIn('A', self.api.get('S003AMU').data_flags)
+        self.assertIn('A', self.api.get('S004AMU').data_flags)
+        self.assertIn('A', self.api.get('S016AMU').data_flags)
+        self.assertIn('A', self.api.get('S017AMU').data_flags)
+        self.assertIn('D', self.api.get('Q007TP').data_flags)
+        self.assertEqual(self.api.get('Q007TP').data_flags, 'Ds')
+        self.assertEqual(self.api.get('Q007TP2').data_flags, 's')
+        self.assertEqual(self.api.get('Q007TP4').data_flags, '')
 
+    def test_old_bugs(self):
+        # Check fix for metadata bug in v0.0.5
+        self.assertIsNotNone(self.api.get('S086DRA').best_summary())
+        self.assertIsNotNone(self.api.get('S086DGS').best_summary())
 
 if __name__ == '__main__':
     unittest.main()
