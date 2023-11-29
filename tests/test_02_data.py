@@ -99,7 +99,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(best_value.error_positive, 5), 0.00034)
         self.assertEqual(round(best_value.error_negative, 5), 0.00034)
         self.assertEqual(round(best_value.scale_factor, 1), 1.5)
-        self.assertEqual(best_value.units, None)
+        self.assertEqual(best_value.units, '')
         self.assertEqual(best_value.display_value_text, '(98.823+-0.034)E-2')
         self.assertEqual(best_value.value_type_key, 'FC')
         # self.assertEqual(best_value.display_in_percent, True)   # FIXME
