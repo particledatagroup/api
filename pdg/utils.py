@@ -66,7 +66,7 @@ def best(properties, pedantic=False, quantity=None, is_generic=False):
     quantity is an optional string that in case of an exception will describe the property being sought.
     """
     for_what = ' for %s' % quantity if quantity else ''
-    props_without_alternates = [p for p in properties if p.data_flags is None or 'A' not in p.data_flags]
+    props_without_alternates = [p for p in properties if 'A' not in p.data_flags]
     if len(props_without_alternates) == 0:
         raise PdgNoDataError('No best property found%s' % for_what)
     elif len(props_without_alternates) == 1:
@@ -78,7 +78,7 @@ def best(properties, pedantic=False, quantity=None, is_generic=False):
                 err += '. This is a generic charge state; try selecting a specific charge (e.g. by setting the MC ID)'
             raise PdgAmbiguousValueError(err)
         else:
-            props_best = [p for p in props_without_alternates if p.data_flags is not None and 'D' in p.data_flags]
+            props_best = [p for p in props_without_alternates if 'D' in p.data_flags]
             if len(props_best) >= 1:
                 return props_best[0]
             else:
