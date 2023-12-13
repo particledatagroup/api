@@ -67,6 +67,10 @@ def best(properties, pedantic=False, quantity=None, is_generic=False):
     """
     for_what = ' for %s' % quantity if quantity else ''
     props_without_alternates = [p for p in properties if 'A' not in p.data_flags]
+    # in non-pedantic mode, filter out "special" values
+    if not pedantic:
+        props_without_alternates = [p for p in props_without_alternates
+                                    if 's' not in p.data_flags]
     if len(props_without_alternates) == 0:
         raise PdgNoDataError('No best property found%s' % for_what)
     elif len(props_without_alternates) == 1:
