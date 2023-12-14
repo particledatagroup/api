@@ -99,7 +99,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(best_value.error_positive, 5), 0.00034)
         self.assertEqual(round(best_value.error_negative, 5), 0.00034)
         self.assertEqual(round(best_value.scale_factor, 1), 1.5)
-        self.assertEqual(best_value.units, None)
+        self.assertEqual(best_value.units, '')
         self.assertEqual(best_value.display_value_text, '(98.823+-0.034)E-2')
         self.assertEqual(best_value.value_type_key, 'FC')
         # self.assertEqual(best_value.display_in_percent, True)   # FIXME
@@ -127,12 +127,11 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('M013.4/2022').best_summary().error, 0.0218379495175522 )
 
     def test_data_flags(self):
-        self.assertIn('A', self.api.get('S003AMU').data_flags)
-        self.assertIn('A', self.api.get('S004AMU').data_flags)
-        self.assertIn('A', self.api.get('S016AMU').data_flags)
-        self.assertIn('A', self.api.get('S017AMU').data_flags)
-        self.assertIn('D', self.api.get('Q007TP').data_flags)
-        self.assertEqual(self.api.get('Q007TP').data_flags, 'Ds')
+        self.assertEqual(self.api.get('S003AMU').data_flags, 'As')
+        self.assertEqual(self.api.get('S004AMU').data_flags, 'As')
+        self.assertEqual(self.api.get('S016AMU').data_flags, 'As')
+        self.assertEqual(self.api.get('S017AMU').data_flags, 'A0s')
+        self.assertEqual(self.api.get('Q007TP').data_flags, 'D')
         self.assertEqual(self.api.get('Q007TP2').data_flags, 's')
         self.assertEqual(self.api.get('Q007TP4').data_flags, '')
 

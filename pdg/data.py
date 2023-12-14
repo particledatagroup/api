@@ -451,3 +451,11 @@ class PdgProperty(PdgData):
 
 class PdgMass(PdgProperty):
     pass
+
+
+class PdgWidth(PdgProperty):
+    pass
+
+
+class PdgLifetime(PdgProperty):
+    pass
