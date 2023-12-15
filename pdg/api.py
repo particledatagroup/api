@@ -7,7 +7,7 @@ from sqlalchemy import func, select, bindparam, distinct, desc
 import pdg
 from pdg.errors import PdgInvalidPdgIdError, PdgNoDataError
 from pdg.utils import base_id
-from pdg.data import PdgProperty, PdgMass
+from pdg.data import PdgProperty, PdgMass, PdgWidth, PdgLifetime
 from pdg.decay import PdgBranchingFraction
 from pdg.particle import PdgParticle
 
@@ -27,7 +27,9 @@ DATA_TYPE_MAP = {
     'BFI2': PdgBranchingFraction,
     'BFI3': PdgBranchingFraction,
     'BFI4': PdgBranchingFraction,
-    'BFI5': PdgBranchingFraction
+    'BFI5': PdgBranchingFraction,
+    'G': PdgWidth,
+    'T': PdgLifetime,
 }
 
 

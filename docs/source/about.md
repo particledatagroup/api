@@ -1,6 +1,6 @@
 # About
 
-The PDG API was designed and implemented by J. Beringer (LBNL) and K. Lugovsky (LBNL).
+The PDG API was designed and implemented by J. Beringer (LBNL), M. Kramer (LBNL) and K. Lugovsky (LBNL).
 
 The data provided by the PDG API is licensed under a
 Creative Commons Attribution-NonCommercial 4.0 International
