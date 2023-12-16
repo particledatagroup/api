@@ -10,7 +10,7 @@ For general information about PDG and the Review of Particle Physics
 please visit https://pdg.lbl.gov.
 """
 __author__ = 'Particle Data Group'
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 
 import os
@@ -20,7 +20,7 @@ from pdg.errors import PdgApiError
 
 # Constants
 SQLITE_FILENAME = 'pdg.sqlite'      # Default SQLite database file used by this API
-MIN_SCHEMA_VERSION = 0.1            # Minimum schema version required by this version of the API
+MIN_SCHEMA_VERSION = 0.2            # Minimum schema version required by this version of the API
 
 
 def connect(database_url=None, pedantic=False):
