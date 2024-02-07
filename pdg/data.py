@@ -357,7 +357,7 @@ class PdgProperty(PdgData):
         """Return number of summary values in Summary Table for this quantity."""
         return len(self.summary_values(summary_table_only=True))
 
-    def best_summary(self, summary_table_only=False):
+    def best_summary(self, summary_table_only=False) -> PdgSummaryValue:
         """Return the PDG "best" summary value for this quantity.
 
         If there is either a single summary value in Particle Listings and Summary Tables, or there are multiple
