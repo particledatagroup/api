@@ -29,7 +29,7 @@ setup(
     license = 'Modified BSD',
     packages = find_packages(),
     package_data={"pdg": ["pdg.sqlite"]},
-    install_requires = ['SQLAlchemy>=1.4'],
+    install_requires = ['pytest', 'SQLAlchemy>=1.4'],
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Console',

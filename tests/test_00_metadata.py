@@ -3,68 +3,45 @@ Test cases for the info table and other metadata.
 """
 from __future__ import print_function
 
-import sys
 import os
-import unittest
 import time
-import sqlalchemy
 
 import pdg
 
 
-class TestMetaData(unittest.TestCase):
+def test_api_version():
+    assert pdg.__version__ == '0.0.7', 'version number mismatch'
 
-    api = None
+def test_has_producer(api):
+    assert api.info('producer') is not None, 'database does not have producer info'
 
-    @classmethod
-    def setUpClass(cls):
-        print()
-        header = 'Testing with Python %s, SQLAlchemy %s' % (sys.version, sqlalchemy.__version__)
-        print(header)
-        print('*'*len(header))
-        cls.api = pdg.connect()
-        if len(cls.api.editions) == 1:
-            print('WARNING: testing with single-edition database - not all tests can be run')
-        print()
-        print(cls.api)
+def test_has_status(api):
+    assert api.info('status') is not None, 'database does not have status info'
 
-    def test_api_version(self):
-        self.assertEqual(pdg.__version__, '0.0.7', 'version number mismatch')
+def test_has_schema_version(api):
+    assert api.info('schema_version') is not None, 'database does not have schema version info'
 
-    def test_has_producer(self):
-        self.assertIsNotNone(self.api.info('producer'), 'database does not have producer info')
+def test_has_created(api):
+    assert api.info('data_release') is not None, 'database does not have data_release data'
 
-    def test_has_status(self):
-        self.assertIsNotNone(self.api.info('status'), 'database does not have status info')
+def test_has_created_timestamp(api):
+    assert api.info('data_release_timestamp') is not None, 'database does not have data_release timestamp'
+    os.environ['TZ'] = 'America/Los_Angeles'
+    time.tzset()
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(float(api.info('data_release'))))
+    assert api.info('data_release_timestamp') == timestamp
 
-    def test_has_schema_version(self):
-        self.assertIsNotNone(self.api.info('schema_version'), 'database does not have schema version info')
+def test_has_edition(api):
+    assert api.info('edition') is not None, 'database does not have edition info'
 
-    def test_has_created(self):
-        self.assertIsNotNone(self.api.info('data_release'), 'database does not have data_release data')
+def test_has_citation(api):
+    assert api.info('citation') is not None, 'database does not have citation info'
 
-    def test_has_created_timestamp(self):
-        self.assertIsNotNone(self.api.info('data_release_timestamp'), 'database does not have data_release timestamp')
-        os.environ['TZ'] = 'America/Los_Angeles'
-        time.tzset()
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(float(self.api.info('data_release'))))
-        self.assertEqual(self.api.info('data_release_timestamp'), timestamp)
+def test_has_license(api):
+    assert api.info('license') is not None, 'database does not have license info'
 
-    def test_has_edition(self):
-        self.assertIsNotNone(self.api.info('edition'), 'database does not have edition info')
+def test_has_about(api):
+    assert api.info('about') is not None, 'database does not have about info'
 
-    def test_has_citation(self):
-        self.assertIsNotNone(self.api.info('citation'), 'database does not have citation info')
-
-    def test_has_license(self):
-        self.assertIsNotNone(self.api.info('license'), 'database does not have license info')
-
-    def test_has_about(self):
-        self.assertIsNotNone(self.api.info('about'), 'database does not have about info')
-
-    def test_schema_version(self):
-        self.assertTrue(float(self.api.info('schema_version')) >= pdg.MIN_SCHEMA_VERSION)
-
-
-if __name__ == '__main__':
-    unittest.main()
+def test_schema_version(api):
+    assert float(api.info('schema_version')) >= pdg.MIN_SCHEMA_VERSION
