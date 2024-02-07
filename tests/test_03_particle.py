@@ -46,18 +46,18 @@ def test_quantum_P(api):
     assert api.get_particle_by_mcid(3122).quantum_P == '+'
     assert api.get_particle_by_mcid(-3122).quantum_P == '-'
 
-def test_mass_2022(api):
-    if '2022' not in api.editions:
+def test_mass_2023(api):
+    if '2023' not in api.editions:
         return
-    masses = list(api.get('q007/2022').masses())
-    assert masses[0].pdgid == 'Q007TP/2022'
+    masses = list(api.get('q007/2023').masses())
+    assert masses[0].pdgid == 'Q007TP/2023'
     assert round(masses[0].best_summary().value,9) == 172.687433378
-    assert masses[1].pdgid == 'Q007TP2/2022'
+    assert masses[1].pdgid == 'Q007TP2/2023'
     assert round(masses[1].best_summary().value,9) == 162.500284698
-    assert masses[2].pdgid == 'Q007TP4/2022'
+    assert masses[2].pdgid == 'Q007TP4/2023'
     assert round(masses[2].best_summary().value,9) == 172.463424407
-    assert round(api.get('s008/2022').mass,9) == 0.139570391
-    assert round(api.get('s008/2022').mass_error,16) == 1.820071604e-07
+    assert round(api.get('s008/2023').mass,9) == 0.139570391
+    assert round(api.get('s008/2023').mass_error,16) == 1.820071604e-07
 
 def test_flags(api):
     assert api.get('S008').is_boson == False
