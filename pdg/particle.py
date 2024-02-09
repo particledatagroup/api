@@ -40,24 +40,20 @@ class PdgParticle(PdgData):
             query = query.where(pdgparticle_table.c.pdgid == bindparam('pdgid'))
             if self.set_mcid is not None:
                 query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
-            query = query.where(pdgparticle_table.c.entry_type == 'P')
-            query = query.where(or_(and_(pdgparticle_table.c.charge_type == 'S', pdgparticle_table.c.cc_type == bindparam('cc_type')),
-                                    and_(pdgparticle_table.c.charge_type == 'S', pdgparticle_table.c.cc_type == 'S'),
-                                    and_(pdgparticle_table.c.charge_type == 'E', pdgparticle_table.c.cc_type.is_(None))))
+            query = query.where(or_(pdgparticle_table.c.cc_type == bindparam('cc_type'),
+                                    pdgparticle_table.c.cc_type == 'S'))
             with self.api.engine.connect() as conn:
                 params = {'pdgid': self.baseid, 'cc_type': self.cc_type_flag, 'mcid': self.set_mcid}
                 matches = conn.execute(query, params).fetchall()
             if len(matches) == 1:
                 self.cache['pdgparticle'] = matches[0]._mapping
             else:
-                # Charge-specific state either not found or ambiguous - try looking for entry with CHARGE_TYPE='G'
+                # Charge-specific state either not found or ambiguous
                 query = select(pdgparticle_table)
                 query = query.where(pdgparticle_table.c.pdgid == bindparam('pdgid'))
                 if self.set_mcid is not None:
                     query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
-                query = query.where(pdgparticle_table.c.entry_type == 'P')
-                query = query.where(pdgparticle_table.c.charge_type == 'G')
-                query = query.where(pdgparticle_table.c.cc_type.is_(None))
+                query = query.where(pdgparticle_table.c.cc_type == 'S')
                 query = query.where(pdgparticle_table.c.name.notlike('%bar%'))   # Exclude generic "*bar" states
                 with self.api.engine.connect() as conn:
                     params = {'pdgid': self.baseid, 'mcid': self.set_mcid}
@@ -280,7 +276,7 @@ class PdgParticle(PdgData):
     @property
     def is_generic(self):
         """True if particle represents a generic charge state."""
-        return self._get_particle_data()['charge_type'] == 'G'
+        return self._get_particle_data()['cc_type'] == 'S'
 
     @property
     def mass(self):
