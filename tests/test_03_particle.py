@@ -6,7 +6,9 @@ from __future__ import print_function
 import unittest
 
 import pdg
+from pdg.decay import PdgBranchingFraction, PdgDecayProduct
 from pdg.errors import PdgAmbiguousValueError, PdgNoDataError
+from pdg.particle import PdgParticle
 
 
 class TestData(unittest.TestCase):
@@ -188,3 +190,29 @@ class TestData(unittest.TestCase):
         self.assertRaises(PdgAmbiguousValueError, lambda: p.mass)
         self.assertEqual(round(p.width, 4), 0.0473)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
+
+    def test_decay_W2PiGamma(self):
+        decay = self.api.get('S043.6')
+        self.assertIsInstance(decay, PdgBranchingFraction)
+        self.assertTrue(decay.is_limit)
+        self.assertEqual(decay.value, 7e-6)
+        ps = list(decay.products)
+        self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
+
+        self.assertEqual(ps[0].multiplier, 1)
+        self.assertIsNone(ps[0].subdecay)
+        self.assertEqual(ps[0].item.name, 'pi+')
+        self.assertEqual(ps[0].item.item_type, 'P')
+        self.assertTrue(ps[0].item.has_particle)
+        piplus = ps[0].item.particle
+        self.assertIsInstance(piplus, PdgParticle)
+        self.assertEqual(piplus.pdgid, 'S008/2023')
+
+        self.assertEqual(ps[1].multiplier, 1)
+        self.assertIsNone(ps[1].subdecay)
+        self.assertEqual(ps[1].item.name, 'gamma')
+        self.assertEqual(ps[1].item.item_type, 'G')
+        self.assertTrue(ps[1].item.has_particle)
+        gamma = ps[1].item.particle
+        self.assertIsInstance(gamma, PdgParticle)
+        self.assertEqual(gamma.pdgid, 'S000/2023')
