@@ -49,7 +49,12 @@ class PdgItem:
                     self.cache['pdgparticle'] = result._mapping
                     self.cache['has_particle'] = True
                 else:
-                    self.cache['has_particle'] = False
+                    targets = list(self._get_targets())
+                    if len(targets) == 1 and targets[0].has_particle:
+                        self.cache['pdgparticle'] = targets[0].cache['pdgparticle']
+                        self.cache['has_particle'] = True
+                    else:
+                        self.cache['has_particle'] = False
         return self.cache['has_particle']
 
     @property
