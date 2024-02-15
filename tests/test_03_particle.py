@@ -216,3 +216,30 @@ class TestData(unittest.TestCase):
         gamma = ps[1].item.particle
         self.assertIsInstance(gamma, PdgParticle)
         self.assertEqual(gamma.pdgid, 'S000/2023')
+
+    # This tests the use of PDGITEM_MAP to get from Z to Z0
+    def test_decay_H2ZGamma(self):
+        decay = self.api.get('S126.6')
+        self.assertIsInstance(decay, PdgBranchingFraction)
+        self.assertFalse(decay.is_limit)
+        self.assertEqual(decay.value, 0.0032)
+        ps = list(decay.products)
+        self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
+
+        self.assertEqual(ps[0].multiplier, 1)
+        self.assertIsNone(ps[0].subdecay)
+        self.assertEqual(ps[0].item.name, 'Z')
+        self.assertEqual(ps[0].item.item_type, 'G')
+        self.assertTrue(ps[0].item.has_particle)
+        Z = ps[0].item.particle
+        self.assertIsInstance(Z, PdgParticle)
+        self.assertEqual(Z.pdgid, 'S044/2023')
+
+        self.assertEqual(ps[1].multiplier, 1)
+        self.assertIsNone(ps[1].subdecay)
+        self.assertEqual(ps[1].item.name, 'gamma')
+        self.assertEqual(ps[1].item.item_type, 'G')
+        self.assertTrue(ps[1].item.has_particle)
+        gamma = ps[1].item.particle
+        self.assertIsInstance(gamma, PdgParticle)
+        self.assertEqual(gamma.pdgid, 'S000/2023')
