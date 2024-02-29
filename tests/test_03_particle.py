@@ -45,6 +45,22 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get_particle_by_mcid(-30323).name, 'K^*(1680)-')
         self.assertEqual(self.api.get_particle_by_mcid(-30323).mcid, -30323)
 
+    def test_equivalent_names(self):
+        g = self.api.get_particle_by_name('g')
+        g0 = self.api.get_particle_by_name('g0')
+        self.assertEqual(g.pdgid, g0.pdgid)
+
+    def test_generic_names(self):
+        self.assertRaises(PdgAmbiguousValueError,
+                          lambda: self.api.get_particle_by_name('e'))
+        ## FIXME: pi is a T instead of a G
+        # self.assertRaises(PdgAmbiguousValueError,
+        #                   lambda: self.api.get_particle_by_name('pi'))
+        mus = list(self.api.get_particles_by_name('mu'))
+        self.assertEqual(len(mus), 2)
+        self.assertEqual(mus[0].mcid, 13)
+        self.assertEqual(mus[1].mcid, -13)
+
     def test_quantum_P(self):
         self.assertEqual(self.api.get_particle_by_name('u').quantum_P, '+')
         self.assertEqual(self.api.get_particle_by_name('ubar').quantum_P, '-')
@@ -270,3 +286,9 @@ class TestData(unittest.TestCase):
         gamma = ps[1].item.particle
         self.assertIsInstance(gamma, PdgParticle)
         self.assertEqual(gamma.pdgid, 'S000/2023')
+
+
+def harness():
+    import pdg
+    from types import SimpleNamespace
+    self = SimpleNamespace(api=pdg.connect())

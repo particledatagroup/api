@@ -5,10 +5,10 @@ PDG API top-level class.
 import sqlalchemy
 from sqlalchemy import func, select, bindparam, distinct, desc
 import pdg
-from pdg.errors import PdgInvalidPdgIdError, PdgNoDataError
+from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.utils import base_id
 from pdg.data import PdgProperty, PdgMass, PdgWidth, PdgLifetime
-from pdg.decay import PdgBranchingFraction
+from pdg.decay import PdgBranchingFraction, PdgItem
 from pdg.particle import PdgParticle
 
 
@@ -135,6 +135,24 @@ class PdgApi:
                     cls = PdgProperty
                 yield cls(self, item.pdgid, edition)
 
+    def _get_particles_by_name(self, name, case_sensitive=True, edition=None, unique=True):
+        pdgitem_table = self.db.tables['pdgitem']
+        query = select(pdgitem_table.c.id)
+        if case_sensitive:
+            query = query.where(pdgitem_table.c.name == bindparam('name'))
+        else:
+            name = name.lower()
+            query = query.where(func.lower(pdgitem_table.c.name) == bindparam('name'))
+        with self.engine.connect() as conn:
+            matches = conn.execute(query, {'name': name}).fetchall()
+        if len(matches) == 0:
+            raise ValueError('No particle found with name %s' % name)
+        elif len(matches) == 1:
+            item = PdgItem(self, matches[0].id, edition=edition)
+            return item.particle if unique else item.particles
+        else:
+            raise PdgAmbiguousValueError('More than one PDGITEM named %s', name)
+
     def get_particle_by_name(self, name, case_sensitive=True, edition=None):
         """Get particle by its name.
 
@@ -143,21 +161,19 @@ class PdgApi:
 
         edition can be set to a specific edition, from which data should later be retrieved.
         """
-        pdgparticle_table = self.db.tables['pdgparticle']
-        query = select(pdgparticle_table.c.pdgid, pdgparticle_table.c.mcid)
-        if case_sensitive:
-            query = query.where(pdgparticle_table.c.name == bindparam('name'))
-        else:
-            name = name.lower()
-            query = query.where(func.lower(pdgparticle_table.c.name) == bindparam('name'))
-        with self.engine.connect() as conn:
-            matches = conn.execute(query, {'name': name}).fetchall()
-        if len(matches) == 0:
-            raise ValueError('No particle found with name %s' % name)
-        elif len(matches) == 1:
-            return PdgParticle(self, matches[0].pdgid, edition, set_mcid=matches[0].mcid)
-        else:
-            raise ValueError('%s matches %i particles with PDG Identifiers %s' % (name, len(matches), matches))
+        return self._get_particles_by_name(name, case_sensitive=case_sensitive,
+                                           edition=edition, unique=True)
+
+    def get_particles_by_name(self, name, case_sensitive=True, edition=None):
+        """Get all particles for a (possibly generic) name.
+
+        case_sensitive can be set False to indicate that the particle name should be
+        considered not case-sensitive.
+
+        edition can be set to a specific edition, from which data should later be retrieved.
+        """
+        return self._get_particles_by_name(name, case_sensitive=case_sensitive,
+                                           edition=edition, unique=False)
 
     def get_particle_by_mcid(self, mcid, edition=None):
         """Get particle by its MC ID.

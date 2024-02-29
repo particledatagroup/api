@@ -5,15 +5,16 @@ Classes supporting decays and branching fractions/ratios.
 from sqlalchemy import bindparam, select
 
 from pdg.data import PdgProperty
-from pdg.errors import PdgInvalidPdgIdError, PdgNoDataError
+from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.particle import PdgParticle
 
 
 class PdgItem:
-    def __init__(self, api, pdgitem_id):
+    def __init__(self, api, pdgitem_id, edition=None):
         self.api = api
         self.pdgitem_id = pdgitem_id
         self.cache = {}
+        self.edition = edition
 
     def __repr__(self):
         name = self._get_pdgitem()['name']
@@ -60,9 +61,11 @@ class PdgItem:
     @property
     def particle(self):
         if not self.has_particle:
-            raise PdgNoDataError('No direct PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
+            if self.has_particles:
+                raise PdgAmbiguousValueError('No unique PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
+            raise PdgNoDataError('No PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
         p = self.cache['pdgparticle']
-        return PdgParticle(self.api, p['pdgid'], set_mcid=p['mcid'])
+        return PdgParticle(self.api, p['pdgid'], edition=self.edition, set_mcid=p['mcid'])
 
     @property
     def particles(self):
@@ -72,6 +75,10 @@ class PdgItem:
             for target in self._get_targets():
                 for p in target.particles:
                     yield p
+
+    @property
+    def has_particles(self):
+        return len(list(self.particles)) > 0
 
     @property
     def name(self):
