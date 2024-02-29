@@ -217,6 +217,33 @@ class TestData(unittest.TestCase):
         self.assertIsInstance(gamma, PdgParticle)
         self.assertEqual(gamma.pdgid, 'S000/2023')
 
+    def test_decay_Z2JpsiX(self):
+        decay = self.api.get('S044.23')
+        self.assertIsInstance(decay, PdgBranchingFraction)
+        self.assertFalse(decay.is_limit)
+        self.assertEqual(decay.value, 0.00351170065655418)
+        ps = list(decay.products)
+        self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
+
+        # PROBLEM: Missing J/psi(1S) in PDGITEM_MAP
+
+        self.assertEqual(ps[0].multiplier, 1)
+        self.assertIsNone(ps[0].subdecay)
+        self.assertEqual(ps[0].item.name, 'J/psi(1S)')
+        # self.assertEqual(ps[0].item.item_type, 'P')
+        self.assertEqual(ps[0].item.item_type, 'T')
+        # self.assertTrue(ps[0].item.has_particle)
+        self.assertFalse(ps[0].item.has_particle)
+        # jpsi = ps[0].item.particle
+        # self.assertIsInstance(jpsi, PdgParticle)
+        # self.assertEqual(jpsi.pdgid, 'M070/2023')
+
+        self.assertEqual(ps[1].multiplier, 1)
+        self.assertIsNone(ps[1].subdecay)
+        self.assertEqual(ps[1].item.name, 'X')
+        self.assertEqual(ps[1].item.item_type, 'T')
+        self.assertFalse(ps[1].item.has_particle)
+
     # This tests the use of PDGITEM_MAP to get from Z to Z0
     def test_decay_H2ZGamma(self):
         decay = self.api.get('S126.6')
