@@ -76,33 +76,33 @@ class TestData(unittest.TestCase):
     def test_mass_2022(self):
         if '2022' not in self.api.editions:
             return
-        masses = list(self.api.get('q007/2022').masses())
+        masses = list(self.api.get('q007/2022')[0].masses())
         self.assertEqual(masses[0].pdgid, 'Q007TP/2022')
         self.assertEqual(round(masses[0].best_summary().value,9), 172.687433378)
         self.assertEqual(masses[1].pdgid, 'Q007TP2/2022')
         self.assertEqual(round(masses[1].best_summary().value,9), 162.500284698)
         self.assertEqual(masses[2].pdgid, 'Q007TP4/2022')
         self.assertEqual(round(masses[2].best_summary().value,9), 172.463424407)
-        self.assertEqual(round(self.api.get('s008/2022').mass,9), 0.139570391)
-        self.assertEqual(round(self.api.get('s008/2022').mass_error,16), 1.820071604e-07)
+        self.assertEqual(round(self.api.get('s008/2022')[0].mass,9), 0.139570391)
+        self.assertEqual(round(self.api.get('s008/2022')[0].mass_error,16), 1.820071604e-07)
 
     def test_flags(self):
-        self.assertEqual(self.api.get('S008').is_boson, False)
-        self.assertEqual(self.api.get('S008').is_quark, False)
-        self.assertEqual(self.api.get('S008').is_lepton, False)
-        self.assertEqual(self.api.get('S008').is_meson, True)
-        self.assertEqual(self.api.get('S008').is_baryon, False)
-        self.assertEqual(self.api.get('q007').is_quark, True)
-        self.assertEqual(self.api.get('s000').is_boson, True)
-        self.assertEqual(self.api.get('S003').is_lepton, True)
-        self.assertEqual(self.api.get('S041').is_meson, True)
-        self.assertEqual(self.api.get('S016').is_baryon, True)
+        self.assertEqual(self.api.get('S008')[0].is_boson, False)
+        self.assertEqual(self.api.get('S008')[0].is_quark, False)
+        self.assertEqual(self.api.get('S008')[0].is_lepton, False)
+        self.assertEqual(self.api.get('S008')[0].is_meson, True)
+        self.assertEqual(self.api.get('S008')[0].is_baryon, False)
+        self.assertEqual(self.api.get('q007')[0].is_quark, True)
+        self.assertEqual(self.api.get('s000')[0].is_boson, True)
+        self.assertEqual(self.api.get('S003')[0].is_lepton, True)
+        self.assertEqual(self.api.get('S041')[0].is_meson, True)
+        self.assertEqual(self.api.get('S016')[0].is_baryon, True)
 
     def test_properties(self):
-        self.assertEqual(len(list(self.api.get('S017').properties('M'))), 2)
+        self.assertEqual(len(list(self.api.get('S017')[0].properties('M'))), 2)
 
     def test_ambiguous_defaults(self):
-        self.assertEqual(round(self.api.get('Q007').mass, 1), 172.7)
+        self.assertEqual(round(self.api.get('Q007')[0].mass, 1), 172.7)
         self.assertEqual(self.api.get('S013D').best_summary().comment, 'Assuming CPT')
 
     def test_best_widths_and_lifetimes(self):

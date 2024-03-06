@@ -6,15 +6,15 @@ import sqlalchemy
 from sqlalchemy import func, select, bindparam, distinct, desc
 import pdg
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
-from pdg.utils import base_id
+from pdg.utils import parse_id
 from pdg.data import PdgProperty, PdgMass, PdgWidth, PdgLifetime
 from pdg.decay import PdgBranchingFraction, PdgItem
-from pdg.particle import PdgParticle
+from pdg.particle import PdgParticle, PdgParticleList
 
 
 # Map PDG data type codes to corresponding classes
 DATA_TYPE_MAP = {
-    'PART': PdgParticle,
+    'PART': PdgParticleList,
     'M':    PdgMass,
     'BFX':  PdgBranchingFraction,
     'BFX1': PdgBranchingFraction,
@@ -96,23 +96,27 @@ class PdgApi:
         The get method checks what data the PDG Identifier describes and returns an
         object of the most appropriate class derived from the PdgData base class.
         For example, for a PDG Identifier describing a particle, an object of class
-        PdgParticle is returned, while for a branching fraction a PdgBranchingFraction
+        PdgParticleList is returned, while for a branching fraction a PdgBranchingFraction
         object is returned.
 
         edition can be set to a specific edition, from which the data should later be retrieved.
         """
+        if edition is None:
+            baseid, edition = parse_id(pdgid)
+        else:
+            baseid = pdgid
         pdgid_table = self.db.tables['pdgid']
         try:
             query = select(pdgid_table.c.data_type).where(pdgid_table.c.pdgid == bindparam('pdgid'))
             with self.engine.connect() as conn:
-                data_type = conn.execute(query, {'pdgid': base_id(pdgid)}).fetchone()[0]
+                data_type = conn.execute(query, {'pdgid': baseid}).fetchone()[0]
         except Exception:
             raise PdgInvalidPdgIdError('PDG Identifier %s not found' % pdgid)
         try:
             cls = DATA_TYPE_MAP[data_type]
         except KeyError:
             cls = PdgProperty
-        return cls(self, pdgid, edition)
+        return cls(self, baseid, edition)
 
     def get_all(self, data_type_key=None, edition=None):
         """Return iterator over all PDG Identifiers / quantities. Returns PdgProperties or derived classes.
@@ -204,7 +208,7 @@ class PdgApi:
         query = query.order_by(pdgid_table.c.sort)
         with self.engine.connect() as conn:
             for item in conn.execute(query):
-                yield PdgParticle(self, item.pdgid, edition)
+                yield PdgParticleList(self, item.pdgid, edition)
 
     def doc_key_value(self, table_name, column_name, key):
         """Get documentation on the meaning of key values or flags used in the PDG API."""

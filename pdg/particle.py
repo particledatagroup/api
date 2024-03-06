@@ -2,7 +2,7 @@
 Definition of top-level particle container class.
 """
 
-from sqlalchemy import select, bindparam, distinct
+from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
 from pdg.utils import make_id, best
@@ -449,3 +449,17 @@ class PdgParticle(PdgData):
     @property
     def is_stable(self):
         return not (self.has_width_entry() or self.has_lifetime_entry())
+
+
+class PdgParticleList(PdgData, list):
+    def __init__(self, api, pdgid, edition=None):
+        """Constructor for a PdgParticleList given its PDG Identifier."""
+        super(PdgParticleList, self).__init__(api, pdgid, edition)
+
+        pdgparticle_table = self.api.db.tables['pdgparticle']
+        query = select(pdgparticle_table)
+        query = query.where(func.lower(pdgparticle_table.c.pdgid) == bindparam('pdgid'))
+        with self.api.engine.connect() as conn:
+            result = conn.execute(query, {'pdgid': pdgid.lower()}).fetchall()
+            for row in result:
+                self.append(PdgParticle(api, pdgid, edition=edition, set_mcid=row.mcid))
