@@ -85,9 +85,9 @@ class PdgItem:
     def name(self):
         return self._get_pdgitem()['name']
 
-    @property
-    def name_tex(self):
-        return self._get_pdgitem()['name_tex']
+    # @property
+    # def name_tex(self):
+    #     return self._get_pdgitem()['name_tex']
 
     @property
     def item_type(self):
