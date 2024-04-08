@@ -102,13 +102,11 @@ class PdgParticle(PdgData):
     in Particle Listings and Summary Tables, including branching fractions, masses, life-times, etc.
     """
 
-    def __init__(self, api, pdgid, edition=None, set_mcid=None):
+    def __init__(self, api, pdgid, edition=None, set_mcid=None, set_name=None):
         """Constructor for a PdgParticle given its PDG Identifier and possibly its MC ID."""
         super(PdgParticle, self).__init__(api, pdgid, edition)
         self.set_mcid = set_mcid
-        self.cc_type_flag = 'P'
-        if set_mcid is not None and set_mcid < 0:
-            self.cc_type_flag = 'A'
+        self.set_name = set_name
 
     def __str__(self):
         try:
@@ -124,10 +122,10 @@ class PdgParticle(PdgData):
             query = query.where(pdgparticle_table.c.pdgid == bindparam('pdgid'))
             if self.set_mcid is not None:
                 query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
-            query = query.where(or_(pdgparticle_table.c.cc_type == bindparam('cc_type'),
-                                    pdgparticle_table.c.cc_type == 'S'))
+            if self.set_name is not None:
+                query = query.where(pdgparticle_table.c.name == bindparam('name'))
             with self.api.engine.connect() as conn:
-                params = {'pdgid': self.baseid, 'cc_type': self.cc_type_flag, 'mcid': self.set_mcid}
+                params = {'pdgid': self.baseid, 'mcid': self.set_mcid, 'name': self.set_name}
                 matches = conn.execute(query, params).fetchall()
             if len(matches) == 1:
                 self.cache['pdgparticle'] = matches[0]._mapping
@@ -462,4 +460,5 @@ class PdgParticleList(PdgData, list):
         with self.api.engine.connect() as conn:
             result = conn.execute(query, {'pdgid': pdgid.lower()}).fetchall()
             for row in result:
-                self.append(PdgParticle(api, pdgid, edition=edition, set_mcid=row.mcid))
+                self.append(PdgParticle(api, pdgid, edition=edition, set_mcid=row.mcid,
+                                        set_name=row.name))

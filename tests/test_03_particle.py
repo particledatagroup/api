@@ -19,14 +19,15 @@ class TestData(unittest.TestCase):
     def setUp(self):
         self.api.pedantic = False
 
-    def notest_all_particle_data(self):
+    def test_all_particle_data(self):
         n_errors = 0
-        for p in self.api.get_particles():
-            try:
-                p._get_particle_data()
-            except Exception as e:
-                n_errors += 1
-                print(e)
+        for plist in self.api.get_particles():
+            for p in plist:
+                try:
+                    p._get_particle_data()
+                except Exception as e:
+                    n_errors += 1
+                    print(e)
         self.assertEqual(n_errors, 0)
 
     def test_name(self):
