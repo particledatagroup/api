@@ -254,7 +254,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(ps[1].multiplier, 1)
         self.assertIsNone(ps[1].subdecay)
         self.assertEqual(ps[1].item.name, 'X')
-        self.assertEqual(ps[1].item.item_type, 'T')
+        self.assertEqual(ps[1].item.item_type, 'I')
         self.assertFalse(ps[1].item.has_particle)
 
     # This tests the use of PDGITEM_MAP to get from Z to Z0
