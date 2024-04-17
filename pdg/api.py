@@ -140,6 +140,12 @@ class PdgApi:
                 yield cls(self, item.pdgid, edition)
 
     def _get_particles_by_name(self, name, case_sensitive=True, edition=None, unique=True):
+        """Helper function used by get_particle(s)_by_name. Returns a
+        PdgParticle (list thereof) if unique is True (False). Raises a
+        PdgAmbiguousValueError if more than one PdgItem exists with the given
+        name, or if unique=True and the PdgItem refers to more than one
+        particle.
+        """
         pdgitem_table = self.db.tables['pdgitem']
         query = select(pdgitem_table.c.id)
         if case_sensitive:

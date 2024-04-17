@@ -11,17 +11,27 @@ from pdg.units import HBAR_IN_GEV_S
 
 
 class PdgItem:
+    """A class to represent an "item" encountered in e.g. a description of a
+    decay's products. An item can correspond directly to one particle,
+    indirectly to one particle (as an alias), to a set of particles (as a
+    generic name), or to an arbitrary string. When possible, a PdgItem can be
+    queried (via the particle/particles properties) for the associated
+    particle(s).
+    """
     def __init__(self, api, pdgitem_id, edition=None):
+        """Constructor for a PdgItem. Intended for internal API use."""
         self.api = api
         self.pdgitem_id = pdgitem_id
         self.cache = {}
         self.edition = edition
 
     def __repr__(self):
+        """Return a human-readable representation of the PdgItem."""
         name = self._get_pdgitem()['name']
         return 'PdgItem("%s")' % name
 
     def _get_pdgitem(self):
+        """Load the PdgItem's data from the database."""
         if 'pdgitem' not in self.cache:
             pdgitem_table = self.api.db.tables['pdgitem']
             query = select(pdgitem_table).where(pdgitem_table.c.id == bindparam('pdgitem_id'))
@@ -33,6 +43,7 @@ class PdgItem:
         return self.cache['pdgitem']
 
     def _get_targets(self):
+        """Get all PdgItems that this one maps directly to. Does not recurse."""
         pdgitem_map_table = self.api.db.tables['pdgitem_map']
         query = select(pdgitem_map_table).where(pdgitem_map_table.c.pdgitem_id == bindparam('pdgitem_id'))
         with self.api.engine.connect() as conn:
@@ -42,6 +53,10 @@ class PdgItem:
 
     @property
     def has_particle(self):
+        """Whether the PdgItem is associated with exactly one particle. The
+        property has_particles indicates whether it is associated with one or
+        more.
+        """
         if 'has_particle' not in self.cache:
             pdgparticle_table = self.api.db.tables['pdgparticle']
             query = select(pdgparticle_table).where(pdgparticle_table.c.pdgitem_id == bindparam('pdgitem_id'))
@@ -61,6 +76,10 @@ class PdgItem:
 
     @property
     def particle(self):
+        """The particle associated with the PdgItem, if there is exactly one
+        such particle. Raises PdgAmbiguousValueError if there are more than one,
+        in which case the particles property can be used instead.
+        """
         if not self.has_particle:
             if self.has_particles:
                 raise PdgAmbiguousValueError('No unique PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
@@ -70,6 +89,7 @@ class PdgItem:
 
     @property
     def particles(self):
+        """The list of all particles associated with the PdgItem."""
         if self.has_particle:
             yield self.particle
         else:
@@ -79,18 +99,33 @@ class PdgItem:
 
     @property
     def has_particles(self):
+        """Whether the PdgItem is associated with at least one particle."""
         return len(list(self.particles)) > 0
 
     @property
     def name(self):
+        """The name of the PdgItem."""
         return self._get_pdgitem()['name']
 
     # @property
     # def name_tex(self):
+    #     """The TeX name of the PdgItem."""
     #     return self._get_pdgitem()['name_tex']
 
     @property
     def item_type(self):
+        """The type of the PdgItem. A single character with the following meanings:
+              'P': specific state (e.g. "pi+"),
+              'A': "also" alias,
+              'W': "was" alias,
+              'S': shortcut,
+              'B': both charges (e.g. "pi+-"),
+              'C': both charges, conjugate (e.g. "pi-+"),
+              'G': generic state (e.g. "pi"),
+              'L': general list (e.g. "leptons"),
+              'I': inclusive indicator (e.g. "X"),
+              'T': arbitrary text
+        """
         return self._get_pdgitem()['item_type']
 
 
@@ -438,18 +473,27 @@ class PdgParticle(PdgData):
 
     @property
     def has_width_entry(self):
+        """Whether the particle has at least one defined decay width."""
         return next(self.widths(), None) is not None
 
     @property
     def has_lifetime_entry(self):
+        """Whether the particle has at least one defined lifetime."""
         return next(self.lifetimes(), None) is not None
 
     @property
     def is_stable(self):
+        """Whether the particle is stable (i.e. does not have a defined lifetime
+        or decay width).
+        """
         return not (self.has_width_entry() or self.has_lifetime_entry())
 
 
 class PdgParticleList(PdgData, list):
+    """A PdgData subclass to represent a list of PdgParticles. A PdgParticleList
+    is returned when PdgApi.get is called with the PDGID of a (group of)
+    particles.
+    """
     def __init__(self, api, pdgid, edition=None):
         """Constructor for a PdgParticleList given its PDG Identifier."""
         super(PdgParticleList, self).__init__(api, pdgid, edition)

@@ -10,7 +10,12 @@ from pdg.particle import PdgItem, PdgParticle
 
 
 class PdgDecayProduct(object):
+    """Class for all information about one product of a decay, including its
+    PdgItem (which may resolve to one or more PdgParticles), its multiplier, and
+    its subdecay (if any).
+    """
     def __init__(self, item, multiplier, subdecay):
+        """Instantiate a PdgDecayProduct."""
         assert isinstance(item, PdgItem)
         assert isinstance(multiplier, int)
         assert subdecay is None or isinstance(subdecay, PdgBranchingFraction)
@@ -21,7 +26,11 @@ class PdgDecayProduct(object):
 
 
 class PdgBranchingFraction(PdgProperty):
+    """Class for all information about a decay, including its branching
+    fraction, decay products, and subdecays.
+    """
     def _get_decay(self):
+        """Load decay information from the database."""
         if 'pdgdecay' not in self.cache:
             pdgdecay_table = self.api.db.tables['pdgdecay']
             query = select(pdgdecay_table).where(pdgdecay_table.c.pdgid == bindparam('pdgid'))
@@ -35,6 +44,7 @@ class PdgBranchingFraction(PdgProperty):
 
     @property
     def products(self):
+        """A list of all PdgDecayProducts for the decay."""
         for row in self._get_decay():
             if not row['is_outgoing']:
                 continue
