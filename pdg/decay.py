@@ -43,7 +43,7 @@ class PdgBranchingFraction(PdgProperty):
         return self.cache['pdgdecay']
 
     @property
-    def products(self):
+    def decay_products(self):
         """A list of all PdgDecayProducts for the decay."""
         for row in self._get_decay():
             if not row['is_outgoing']:
