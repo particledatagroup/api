@@ -213,7 +213,7 @@ class TestData(unittest.TestCase):
         self.assertIsInstance(decay, PdgBranchingFraction)
         self.assertTrue(decay.is_limit)
         self.assertEqual(decay.value, 7e-6)
-        ps = list(decay.decay_products)
+        ps = decay.decay_products
         self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
 
         self.assertEqual(ps[0].multiplier, 1)
@@ -239,7 +239,7 @@ class TestData(unittest.TestCase):
         self.assertIsInstance(decay, PdgBranchingFraction)
         self.assertFalse(decay.is_limit)
         self.assertEqual(decay.value, 0.00351170065655418)
-        ps = list(decay.decay_products)
+        ps = decay.decay_products
         self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
 
         self.assertEqual(ps[0].multiplier, 1)
@@ -263,7 +263,7 @@ class TestData(unittest.TestCase):
         self.assertIsInstance(decay, PdgBranchingFraction)
         self.assertFalse(decay.is_limit)
         self.assertEqual(decay.value, 0.0032)
-        ps = list(decay.decay_products)
+        ps = decay.decay_products
         self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
 
         self.assertEqual(ps[0].multiplier, 1)

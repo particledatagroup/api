@@ -91,11 +91,13 @@ class PdgItem:
     def particles(self):
         """The list of all particles associated with the PdgItem."""
         if self.has_particle:
-            yield self.particle
+            return [self.particle]
         else:
+            result = []
             for target in self._get_targets():
                 for p in target.particles:
-                    yield p
+                    result.append(p)
+            return result
 
     @property
     def has_particles(self):

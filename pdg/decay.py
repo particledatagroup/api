@@ -45,15 +45,18 @@ class PdgBranchingFraction(PdgProperty):
     @property
     def decay_products(self):
         """A list of all PdgDecayProducts for the decay."""
+        products = []
         for row in self._get_decay():
             if not row['is_outgoing']:
                 continue
 
-            yield PdgDecayProduct(
+            product = PdgDecayProduct(
                 item=PdgItem(self.api, row['pdgitem_id']),
                 multiplier=row['multiplier'],
                 subdecay=(PdgBranchingFraction(self.api, row['subdecay'])
                           if row['subdecay_id'] else None))
+            products.append(product)
+        return products
 
     @property
     def mode_number(self):
