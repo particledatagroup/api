@@ -32,7 +32,7 @@ class TestData(unittest.TestCase):
 
     def test_name(self):
         self.assertEqual(self.api.get_particle_by_name('p').mcid, 2212)
-        self.assertEqual(self.api.get_particle_by_name('pbar-').mcid, -2212)
+        self.assertEqual(self.api.get_particle_by_name('pbar').mcid, -2212)
 
     def test_mcid(self):
         self.assertEqual(self.api.get_particle_by_mcid(5).name, 'b')
@@ -67,9 +67,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get_particle_by_name('t').quantum_P, '+')
         self.assertEqual(self.api.get_particle_by_name('tbar').quantum_P, '-')
         self.assertEqual(self.api.get_particle_by_name('p').quantum_P, '+')
-        self.assertEqual(self.api.get_particle_by_name('pbar-').quantum_P, '-')
+        self.assertEqual(self.api.get_particle_by_name('pbar').quantum_P, '-')
         self.assertEqual(self.api.get_particle_by_name('n').quantum_P, '+')
-        self.assertEqual(self.api.get_particle_by_name('nbar0').quantum_P, '-')
+        self.assertEqual(self.api.get_particle_by_name('nbar').quantum_P, '-')
         self.assertEqual(self.api.get_particle_by_mcid(3122).quantum_P, '+')
         self.assertEqual(self.api.get_particle_by_mcid(-3122).quantum_P, '-')
 
