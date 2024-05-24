@@ -55,7 +55,7 @@ def make_id(baseid, edition=None):
         return ('%s/%s' % (baseid, edition)).upper()
 
 
-def best(properties, pedantic=False, quantity=None, is_generic=False):
+def best(properties, pedantic=False, quantity=None):
     """Return the "best" property from an iterable of properties, or raise an exception.
 
     best does (pedantic=False) or does not (pedantic=True) make assumptions about what the best property might
@@ -76,10 +76,8 @@ def best(properties, pedantic=False, quantity=None, is_generic=False):
     elif len(props_without_alternates) == 1:
         return props_without_alternates[0]
     else:
-        if is_generic or pedantic:
+        if pedantic:
             err = 'Ambiguous best property%s' % for_what
-            if is_generic:
-                err += '. This is a generic charge state; try selecting a specific charge (e.g. by setting the MC ID)'
             raise PdgAmbiguousValueError(err)
         else:
             props_best = [p for p in props_without_alternates if 'D' in p.data_flags]

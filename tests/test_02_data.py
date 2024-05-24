@@ -6,9 +6,9 @@ from __future__ import print_function
 import unittest
 
 import pdg
-from pdg.errors import PdgInvalidPdgIdError
+from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError
 from pdg.data import PdgConvertedValue, PdgMass
-from pdg.particle import PdgParticle
+from pdg.particle import PdgParticle, PdgParticleList
 from pdg.decay import PdgBranchingFraction
 
 
@@ -33,7 +33,7 @@ class TestData(unittest.TestCase):
     def test_charged_pion_2022(self):
         if '2022' not in self.api.editions:
             return
-        pion = self.api.get('S008/2022')
+        pion = self.api.get('S008/2022')[0]
         self.assertIsInstance(pion, PdgParticle)
         self.assertEqual(pion.pdgid, 'S008/2022')
         self.assertEqual(pion.edition, '2022')
@@ -62,7 +62,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(m.description, 'pi+- MASS')
         self.assertEqual(m.n_summary_table_values(), 1)
         self.assertEqual(m.get_parent_pdgid(), 'S008/2022')
-        self.assertIsInstance(m.get_particle(), PdgParticle)
+        self.assertRaises(PdgAmbiguousValueError, lambda: m.get_particle())
+        self.assertIsInstance(m.get_particles(), PdgParticleList)
+        self.assertIsInstance(m.get_particles()[0], PdgParticle)
         # Enable following tests only after IN_SUMMARY_TABLE is properly set
         best_value = m.best_summary()
         self.assertEqual(best_value.in_summary_table, True)

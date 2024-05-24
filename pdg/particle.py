@@ -2,12 +2,133 @@
 Definition of top-level particle container class.
 """
 
-from sqlalchemy import select, bindparam, distinct
+from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
 from pdg.utils import make_id, best
 from pdg.data import PdgData
 from pdg.units import HBAR_IN_GEV_S
+
+
+class PdgItem:
+    """A class to represent an "item" encountered in e.g. a description of a
+    decay's products. An item can correspond directly to one particle,
+    indirectly to one particle (as an alias), to a set of particles (as a
+    generic name), or to an arbitrary string. When possible, a PdgItem can be
+    queried (via the particle/particles properties) for the associated
+    particle(s).
+    """
+    def __init__(self, api, pdgitem_id, edition=None):
+        """Constructor for a PdgItem. Intended for internal API use."""
+        self.api = api
+        self.pdgitem_id = pdgitem_id
+        self.cache = {}
+        self.edition = edition
+
+    def __repr__(self):
+        """Return a human-readable representation of the PdgItem."""
+        name = self._get_pdgitem()['name']
+        return 'PdgItem("%s")' % name
+
+    def _get_pdgitem(self):
+        """Load the PdgItem's data from the database."""
+        if 'pdgitem' not in self.cache:
+            pdgitem_table = self.api.db.tables['pdgitem']
+            query = select(pdgitem_table).where(pdgitem_table.c.id == bindparam('pdgitem_id'))
+            with self.api.engine.connect() as conn:
+                result = conn.execute(query, {'pdgitem_id': self.pdgitem_id}).fetchone()
+                if result is None:
+                    raise PdgNoDataError('No PDGITEM entry for %s' % self.pdgitem_id)
+                self.cache['pdgitem'] = result._mapping
+        return self.cache['pdgitem']
+
+    def _get_targets(self):
+        """Get all PdgItems that this one maps directly to. Does not recurse."""
+        pdgitem_map_table = self.api.db.tables['pdgitem_map']
+        query = select(pdgitem_map_table).where(pdgitem_map_table.c.pdgitem_id == bindparam('pdgitem_id'))
+        with self.api.engine.connect() as conn:
+            rows = conn.execute(query, {'pdgitem_id': self.pdgitem_id}).fetchall()
+            for row in rows:
+                yield PdgItem(self.api, row.target_id)
+
+    @property
+    def has_particle(self):
+        """Whether the PdgItem is associated with exactly one particle. The
+        property has_particles indicates whether it is associated with one or
+        more.
+        """
+        if 'has_particle' not in self.cache:
+            pdgparticle_table = self.api.db.tables['pdgparticle']
+            query = select(pdgparticle_table).where(pdgparticle_table.c.pdgitem_id == bindparam('pdgitem_id'))
+            with self.api.engine.connect() as conn:
+                result = conn.execute(query, {'pdgitem_id': self.pdgitem_id}).fetchone()
+                if result:
+                    self.cache['pdgparticle'] = result._mapping
+                    self.cache['has_particle'] = True
+                else:
+                    targets = list(self._get_targets())
+                    if len(targets) == 1 and targets[0].has_particle:
+                        self.cache['pdgparticle'] = targets[0].cache['pdgparticle']
+                        self.cache['has_particle'] = True
+                    else:
+                        self.cache['has_particle'] = False
+        return self.cache['has_particle']
+
+    @property
+    def particle(self):
+        """The particle associated with the PdgItem, if there is exactly one
+        such particle. Raises PdgAmbiguousValueError if there are more than one,
+        in which case the particles property can be used instead.
+        """
+        if not self.has_particle:
+            if self.has_particles:
+                raise PdgAmbiguousValueError('No unique PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
+            raise PdgNoDataError('No PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
+        p = self.cache['pdgparticle']
+        return PdgParticle(self.api, p['pdgid'], edition=self.edition, set_mcid=p['mcid'])
+
+    @property
+    def particles(self):
+        """The list of all particles associated with the PdgItem."""
+        if self.has_particle:
+            return [self.particle]
+        else:
+            result = []
+            for target in self._get_targets():
+                for p in target.particles:
+                    result.append(p)
+            return result
+
+    @property
+    def has_particles(self):
+        """Whether the PdgItem is associated with at least one particle."""
+        return len(list(self.particles)) > 0
+
+    @property
+    def name(self):
+        """The name of the PdgItem."""
+        return self._get_pdgitem()['name']
+
+    # @property
+    # def name_tex(self):
+    #     """The TeX name of the PdgItem."""
+    #     return self._get_pdgitem()['name_tex']
+
+    @property
+    def item_type(self):
+        """The type of the PdgItem. A single character with the following meanings:
+              'P': specific state (e.g. "pi+"),
+              'A': "also" alias,
+              'W': "was" alias,
+              'S': shortcut,
+              'B': both charges (e.g. "pi+-"),
+              'C': both charges, conjugate (e.g. "pi-+"),
+              'G': generic state (e.g. "pi"),
+              'L': general list (e.g. "leptons"),
+              'I': inclusive indicator (e.g. "X"),
+              'T': arbitrary text
+        """
+        return self._get_pdgitem()['item_type']
 
 
 class PdgParticle(PdgData):
@@ -18,13 +139,11 @@ class PdgParticle(PdgData):
     in Particle Listings and Summary Tables, including branching fractions, masses, life-times, etc.
     """
 
-    def __init__(self, api, pdgid, edition=None, set_mcid=None):
+    def __init__(self, api, pdgid, edition=None, set_mcid=None, set_name=None):
         """Constructor for a PdgParticle given its PDG Identifier and possibly its MC ID."""
         super(PdgParticle, self).__init__(api, pdgid, edition)
         self.set_mcid = set_mcid
-        self.cc_type_flag = 'P'
-        if set_mcid is not None and set_mcid < 0:
-            self.cc_type_flag = 'A'
+        self.set_name = set_name
 
     def __str__(self):
         try:
@@ -40,24 +159,20 @@ class PdgParticle(PdgData):
             query = query.where(pdgparticle_table.c.pdgid == bindparam('pdgid'))
             if self.set_mcid is not None:
                 query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
-            query = query.where(pdgparticle_table.c.entry_type == 'P')
-            query = query.where(or_(and_(pdgparticle_table.c.charge_type == 'S', pdgparticle_table.c.cc_type == bindparam('cc_type')),
-                                    and_(pdgparticle_table.c.charge_type == 'S', pdgparticle_table.c.cc_type == 'S'),
-                                    and_(pdgparticle_table.c.charge_type == 'E', pdgparticle_table.c.cc_type.is_(None))))
+            if self.set_name is not None:
+                query = query.where(pdgparticle_table.c.name == bindparam('name'))
             with self.api.engine.connect() as conn:
-                params = {'pdgid': self.baseid, 'cc_type': self.cc_type_flag, 'mcid': self.set_mcid}
+                params = {'pdgid': self.baseid, 'mcid': self.set_mcid, 'name': self.set_name}
                 matches = conn.execute(query, params).fetchall()
             if len(matches) == 1:
                 self.cache['pdgparticle'] = matches[0]._mapping
             else:
-                # Charge-specific state either not found or ambiguous - try looking for entry with CHARGE_TYPE='G'
+                # Charge-specific state either not found or ambiguous
                 query = select(pdgparticle_table)
                 query = query.where(pdgparticle_table.c.pdgid == bindparam('pdgid'))
                 if self.set_mcid is not None:
                     query = query.where(pdgparticle_table.c.mcid == bindparam('mcid'))
-                query = query.where(pdgparticle_table.c.entry_type == 'P')
-                query = query.where(pdgparticle_table.c.charge_type == 'G')
-                query = query.where(pdgparticle_table.c.cc_type.is_(None))
+                query = query.where(pdgparticle_table.c.cc_type == 'S')
                 query = query.where(pdgparticle_table.c.name.notlike('%bar%'))   # Exclude generic "*bar" states
                 with self.api.engine.connect() as conn:
                     params = {'pdgid': self.baseid, 'mcid': self.set_mcid}
@@ -278,30 +393,22 @@ class PdgParticle(PdgData):
         return 'B' in self.data_flags
 
     @property
-    def is_generic(self):
-        """True if particle represents a generic charge state."""
-        return self._get_particle_data()['charge_type'] == 'G'
-
-    @property
     def mass(self):
         """Mass of the particle in GeV."""
-        best_mass_property = best(self.masses(), self.api.pedantic, '%s mass (%s)' % (self.name, self.pdgid),
-                                  self.is_generic)
+        best_mass_property = best(self.masses(), self.api.pedantic, '%s mass (%s)' % (self.name, self.pdgid))
         return best_mass_property.best_summary().get_value('GeV')
 
     @property
     def mass_error(self):
         """Symmetric error on mass of particle in GeV, or None if mass error are asymmetric or mass is a limit."""
-        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description),
-                                  self.is_generic)
+        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
         return best_mass_property.best_summary().get_error('GeV')
 
     @property
     def width(self):
         """Width of the particle in GeV."""
         try:
-            best_width_property = best(self.widths(), self.api.pedantic, '%s width (%s)' % (self.name, self.pdgid),
-                                       self.is_generic)
+            best_width_property = best(self.widths(), self.api.pedantic, '%s width (%s)' % (self.name, self.pdgid))
             return best_width_property.best_summary().get_value('GeV')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -315,8 +422,7 @@ class PdgParticle(PdgData):
     def width_error(self):
         """Symmetric error on width of particle in GeV, or None if width error are asymmetric or width is a limit."""
         try:
-            best_width_property = best(self.widths(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description),
-                                       self.is_generic)
+            best_width_property = best(self.widths(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
             return best_width_property.best_summary().get_error('GeV')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -330,8 +436,7 @@ class PdgParticle(PdgData):
     def lifetime(self):
         """Lifetime of the particle in seconds."""
         try:
-            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s lifetime (%s)' % (self.name, self.pdgid),
-                                          self.is_generic)
+            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s lifetime (%s)' % (self.name, self.pdgid))
             return best_lifetime_property.best_summary().get_value('s')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -344,8 +449,7 @@ class PdgParticle(PdgData):
     def lifetime_error(self):
         """Symmetric error on lifetime of particle in seconds, or None if lifetime error are asymmetric or lifetime is a limit."""
         try:
-            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description),
-                                          self.is_generic)
+            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
             err = best_lifetime_property.best_summary().get_error('s')
             if err is None:
                 err = 0.
@@ -360,12 +464,36 @@ class PdgParticle(PdgData):
 
     @property
     def has_width_entry(self):
+        """Whether the particle has at least one defined decay width."""
         return next(self.widths(), None) is not None
 
     @property
     def has_lifetime_entry(self):
+        """Whether the particle has at least one defined lifetime."""
         return next(self.lifetimes(), None) is not None
 
     @property
     def is_stable(self):
+        """Whether the particle is stable (i.e. does not have a defined lifetime
+        or decay width).
+        """
         return not (self.has_width_entry() or self.has_lifetime_entry())
+
+
+class PdgParticleList(PdgData, list):
+    """A PdgData subclass to represent a list of PdgParticles. A PdgParticleList
+    is returned when PdgApi.get is called with the PDGID of a (group of)
+    particles.
+    """
+    def __init__(self, api, pdgid, edition=None):
+        """Constructor for a PdgParticleList given its PDG Identifier."""
+        super(PdgParticleList, self).__init__(api, pdgid, edition)
+
+        pdgparticle_table = self.api.db.tables['pdgparticle']
+        query = select(pdgparticle_table)
+        query = query.where(func.lower(pdgparticle_table.c.pdgid) == bindparam('pdgid'))
+        with self.api.engine.connect() as conn:
+            result = conn.execute(query, {'pdgid': pdgid.lower()}).fetchall()
+            for row in result:
+                self.append(PdgParticle(api, pdgid, edition=edition, set_mcid=row.mcid,
+                                        set_name=row.name))

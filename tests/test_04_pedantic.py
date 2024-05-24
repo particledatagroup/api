@@ -16,7 +16,7 @@ class TestData(unittest.TestCase):
         cls.api = pdg.connect(pedantic=True)
 
     def test_properties(self):
-        self.assertRaises(PdgAmbiguousValueError, getattr, self.api.get('Q007'), 'mass')
+        self.assertRaises(PdgAmbiguousValueError, getattr, self.api.get('Q007')[0], 'mass')
 
     def test_summary(self):
         self.assertRaises(PdgAmbiguousValueError, self.api.get('S013D').best_summary)

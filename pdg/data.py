@@ -303,12 +303,22 @@ class PdgData(object):
         else:
             return self._get_pdgid()['parent_pdgid']
 
-    def get_particle(self):
-        """Return PdgParticle for this property's particle."""
+    def get_particles(self):
+        """Return PdgParticleList for this property's particle."""
         p = self
         while p.baseid != p.get_parent_pdgid(False) and p.get_parent_pdgid(False):
             p = self.api.get(p.get_parent_pdgid())
         return p
+
+    def get_particle(self):
+        """Returns PdgParticle for this property's particle. Raises
+        PdgAmbiguousValueError when there are multiple matches."""
+        ps = self.get_particles()
+        assert len(ps) > 0
+        if len(ps) > 1:
+            err = "More than one PdgParticle found. Consider using get_particles() instead."
+            raise PdgAmbiguousValueError(err)
+        return ps[0]
 
     @property
     def edition(self):
