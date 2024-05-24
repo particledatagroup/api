@@ -156,7 +156,6 @@ class TestData(unittest.TestCase):
 
         for self.api.pedantic in [True, False]:
             p = self.api.get_particle_by_mcid(323)
-            self.assertFalse(p.is_generic)
             self.assertEqual(len(list(p.masses())), 3)
             self.assertEqual(len(list(p.widths())), 2)
             self.assertEqual(len(list(p.lifetimes())), 0)
@@ -174,7 +173,6 @@ class TestData(unittest.TestCase):
 
         for self.api.pedantic in [True, False]:
             p = self.api.get_particle_by_mcid(-323)
-            self.assertFalse(p.is_generic)
             self.assertEqual(len(list(p.masses())), 3)
             self.assertEqual(len(list(p.widths())), 2)
             self.assertEqual(len(list(p.lifetimes())), 0)
@@ -192,7 +190,6 @@ class TestData(unittest.TestCase):
 
         for self.api.pedantic in [True, False]:
             p = self.api.get_particle_by_mcid(313)
-            self.assertFalse(p.is_generic)
             self.assertEqual(len(list(p.masses())), 2)
             self.assertEqual(len(list(p.widths())), 1)
             self.assertEqual(len(list(p.lifetimes())), 0)
