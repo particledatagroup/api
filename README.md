@@ -26,7 +26,7 @@ To provide feedback or report bugs, please contact api@pdg.lbl.gov.
 
 ## Release history (latest release first)
 
-### Version 0.0.7 (May 24, 2024)
+### Version 0.0.7 (May 28, 2024)
 
 - Revised database schema (version 0.2) with new `pdgitem`, `pdgitem_map` and `pdgdecay`
 - Support for decays
@@ -41,5 +41,4 @@ To provide feedback or report bugs, please contact api@pdg.lbl.gov.
 ### Version 0.0.5 (May 31, 2023)
 
 - First public beta version
-- Data from 2023 partial update of _Review of Particle Physics_
-
+- Data from 2023 update of _Review of Particle Physics_
