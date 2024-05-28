@@ -2,7 +2,7 @@
 
 The PDG API was designed and implemented by J. Beringer (LBNL), M. Kramer (LBNL) and K. Lugovsky (LBNL).
 
-The data provided by the PDG API is licensed under a
+The data provided by the beta version of the PDG API for the 2023 _Review of Particle Physics_ is licensed under a
 Creative Commons Attribution-NonCommercial 4.0 International
 ([CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)) license.
 
