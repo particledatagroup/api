@@ -22,9 +22,9 @@ class TestData(unittest.TestCase):
         self.assertRaises(PdgInvalidPdgIdError, self.api.get, 'nonexistent')
 
     def test_edition(self):
+        self.assertEqual(self.api.get('s008').edition, self.api.default_edition)
         if '2018' not in self.api.editions:
             return
-        self.assertEqual(self.api.get('s008').edition, self.api.default_edition)
         self.assertEqual(self.api.get('s008/2018').pdgid, 'S008/2018')
         self.assertEqual(self.api.get('s008/2018').baseid, 'S008')
         self.assertEqual(self.api.get('s008/2018').get_parent_pdgid(), None)
