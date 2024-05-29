@@ -45,7 +45,7 @@ setup(
     project_urls={
         'Documentation': 'https://pdgapi.lbl.gov/doc/',
         'GitHub': 'https://github.com/particledatagroup/api',
-        'Changelog': 'https://github.com/particledatagroup/api/blob/main/README.md'
+        'Changelog': 'https://github.com/particledatagroup/api/blob/main/CHANGELOG.md'
     },
     cmdclass={
         'register': register,
