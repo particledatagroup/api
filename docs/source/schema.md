@@ -29,8 +29,26 @@ The database file contains the following database tables:
   and others querying the data, the PDG Identifiers (`pdgid.pdgid`) are duplicated in other data tables.
   Nevertheless, such tables should only be joined with table `pdgid` using the primary key `pdgid.id` of the `pdgid` table.
 * `pdgdata` contains the data provided in the Summary Tables of the *Review of Particle Physics*.
-* `pdgparticle` contains the mapping between PDG Identifiers and particle names and their Monte Carlo
-  particle numbers, as well as e.g. quantum numbers.
+* `pdgparticle` contains the mapping between PDG Identifiers and particle names, their Monte Carlo
+  particle numbers, and additional information such as quantum numbers. `pdgparticle` contains a separate
+  entry for each possible charge of a particle. The particle names in `pdgparticle` are the standard names
+  in ASCII format following the PDG naming conventions. 
+* `pdgitem` is a reference table that defines the unique names of all particles, aliases, shortcuts,
+  sets of names, as well as any other strings used by the PDG API.
+  The type of each entry is given by `pdgitem.item_type`.
+  The possible types are documented in table `pdgdoc` (see below).
+* `pdgitem_map` provides a generic one-to-many mapping mechanism. It is used to define e.g. particle
+  aliases, previously used particle names, as well as the mappings between generic particle
+  names such as _B_ (which do not specify a specific charge) and the actual particles this may designate
+  (in this example, _B+_, _B0_, _Bbar0_, and _B-_).
+* `pdgdecay` provides for each decay (specified by it's PDG Identifier) the incoming and outgoing particles. The `multiplier` entry is
+  used to indicate if a particle or decay product appears multiple times. `subdecay_id` specifies that
+  the given decay product needs to decay in a specific way. Concatenating the entries in `pdgdecay` for
+  a given decay in the order given by `sort` results in the decay string as provided by the description
+  of the corresponding PDG Identifier.
+  Note that each decay product is a `pdgitem` that may or may not be mapped to one or several
+  particles using `pdgitem_map`. However, not all decay products are mapped to individual particles.
+  For example _anything_ or _X_ are used in inclusive decays to specify further decay products.
 * `pdginfo` provides metadata about the contents of the database file, such as the edition of the
   _Review of Particle Physics_ from which the data was extracted, version and citation information.
 * `pdgdoc` serves as a documentation table for the different codes and flags used in other tables.
@@ -39,14 +57,12 @@ The figure below summarizes the database schema and the columns of each table.
 Arrows represent foreign key relations. Bold column names indicate constraints.
 Further details about the database file as well as examples of how to use it will be provided in the future.
 
-Please note: Users of the current beta version should expect the schema to evolve, possibly in ways that are
-not fully compatible with the present version.
-
-![Schema of the SQLite database file](schema.png "Schema of the SQLite database file")
+![Schema of the SQLite database file](schema-v0.2.png "Schema of the SQLite database file")
 
 
 ## License
 
-The data provided in the PDG database file is subject to the license used by the corresponding edition
-of the _Review of Particle Physics_. Starting with the 2022 edition, and until further notice, PDG uses the
+The data obtained from the PDG REST API is subject to the license used by the corresponding edition
+of the _Review of Particle Physics_. The 2022 and 2023 editions are published under a 
 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) license.
+

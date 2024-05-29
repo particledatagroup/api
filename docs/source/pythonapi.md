@@ -170,5 +170,5 @@ is given below, based on the inline code documentation.
 ## License
 
 The data obtained from the PDG REST API is subject to the license used by the corresponding edition
-of the _Review of Particle Physics_. Starting with the 2022 edition, and until further notice, PDG uses the
+of the _Review of Particle Physics_. The 2022 and 2023 editions are published under a 
 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) license.
