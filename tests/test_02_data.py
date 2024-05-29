@@ -142,5 +142,10 @@ class TestData(unittest.TestCase):
         self.assertIsNotNone(self.api.get('S086DRA').best_summary())
         self.assertIsNotNone(self.api.get('S086DGS').best_summary())
 
+    def test_HFLAV_comment(self):
+        if int(self.api.default_edition) >= 2024:
+            self.assertEqual(self.api.get('S042T').comment,
+                             '(Produced by HFLAV)')
+
 if __name__ == '__main__':
     unittest.main()
