@@ -220,7 +220,7 @@ class TestData(unittest.TestCase):
         self.assertTrue(ps[0].item.has_particle)
         piplus = ps[0].item.particle
         self.assertIsInstance(piplus, PdgParticle)
-        self.assertEqual(piplus.pdgid, 'S008/2024')
+        self.assertEqual(piplus.pdgid, 'S008/%s' % self.api.default_edition)
 
         self.assertEqual(ps[1].multiplier, 1)
         self.assertIsNone(ps[1].subdecay)
@@ -229,7 +229,7 @@ class TestData(unittest.TestCase):
         self.assertTrue(ps[1].item.has_particle)
         gamma = ps[1].item.particle
         self.assertIsInstance(gamma, PdgParticle)
-        self.assertEqual(gamma.pdgid, 'S000/2024')
+        self.assertEqual(gamma.pdgid, 'S000/%s' % self.api.default_edition)
 
     def test_decay_Z2JpsiX(self):
         decay = self.api.get('S044.23')
@@ -246,7 +246,7 @@ class TestData(unittest.TestCase):
         self.assertTrue(ps[0].item.has_particle)
         jpsi = ps[0].item.particle
         self.assertIsInstance(jpsi, PdgParticle)
-        self.assertEqual(jpsi.pdgid, 'M070/2024')
+        self.assertEqual(jpsi.pdgid, 'M070/%s' % self.api.default_edition)
 
         self.assertEqual(ps[1].multiplier, 1)
         self.assertIsNone(ps[1].subdecay)
@@ -270,7 +270,7 @@ class TestData(unittest.TestCase):
         self.assertTrue(ps[0].item.has_particle)
         Z = ps[0].item.particle
         self.assertIsInstance(Z, PdgParticle)
-        self.assertEqual(Z.pdgid, 'S044/2024')
+        self.assertEqual(Z.pdgid, 'S044/%s' % self.api.default_edition)
 
         self.assertEqual(ps[1].multiplier, 1)
         self.assertIsNone(ps[1].subdecay)
@@ -279,4 +279,4 @@ class TestData(unittest.TestCase):
         self.assertTrue(ps[1].item.has_particle)
         gamma = ps[1].item.particle
         self.assertIsInstance(gamma, PdgParticle)
-        self.assertEqual(gamma.pdgid, 'S000/2024')
+        self.assertEqual(gamma.pdgid, 'S000/%s' % self.api.default_edition)
