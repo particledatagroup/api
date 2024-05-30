@@ -102,7 +102,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(len(list(self.api.get('S017')[0].properties('M'))), 2)
 
     def test_ambiguous_defaults(self):
-        self.assertEqual(round(self.api.get('Q007')[0].mass, 1), 172.4)
+        self.assertEqual(round(self.api.get('Q007')[0].mass, 1), 172.6)
         self.assertEqual(self.api.get('S013D').best_summary().comment, 'Assuming CPT')
 
     def test_best_widths_and_lifetimes(self):

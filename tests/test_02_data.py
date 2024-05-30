@@ -133,9 +133,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('S004AMU').data_flags, 'As')
         self.assertEqual(self.api.get('S016AMU').data_flags, 'As')
         self.assertEqual(self.api.get('S017AMU').data_flags, 'A0s')
-        self.assertEqual(self.api.get('Q007TP').data_flags, 's')
+        self.assertEqual(self.api.get('Q007TP').data_flags, 'D')
         self.assertEqual(self.api.get('Q007TP2').data_flags, 's')
-        self.assertEqual(self.api.get('Q007TP4').data_flags, 'D')
+        self.assertEqual(self.api.get('Q007TP4').data_flags, 's')
 
     def test_old_bugs(self):
         # Check fix for metadata bug in v0.0.5
