@@ -1,7 +1,7 @@
 # REST API
 
 The PDG REST API supports the downloading of PDG data in [JSON format](https://www.json.org/).
-pdgLive uses this API to implement the `JSON (beta)` buttons. The REST API may also be used by user programs for
+pdgLive uses this API to implement the `JSON` buttons. The REST API may also be used by user programs for
 incidental downloading of PDG data.
 
 ## Terms of use
@@ -133,5 +133,6 @@ The following status codes may be generated:
 ## License
 
 The data downloaded via the PDG REST API is subject to the license used by the corresponding edition
-of the _Review of Particle Physics_. Starting with the 2022 edition, and until further notice, PDG uses the
-[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) license.
+of the _Review of Particle Physics_.
+Starting with the 2024 edition, the _Review of Particle Physics_ is published under a
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.

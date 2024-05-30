@@ -17,7 +17,7 @@ The documentation in this chapter tries to provide the minimum information neces
 file. Users who wish to do so are encouraged to consult the
 [source code of the Python API](https://github.com/particledatagroup/api) 
 as a "reference implementation" to see how PDG data can be extracted.
-Please note that PDG can provide at best extremely limited support for using the database file.
+Please note that PDG can provide at best limited support for using the database file.
 
 ## Database schema
 
@@ -63,6 +63,6 @@ Further details about the database file as well as examples of how to use it wil
 ## License
 
 The data obtained from the PDG REST API is subject to the license used by the corresponding edition
-of the _Review of Particle Physics_. The 2022 and 2023 editions are published under a 
-[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) license.
-
+of the _Review of Particle Physics_. 
+Starting with the 2024 edition, the _Review of Particle Physics_ is published under a
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.

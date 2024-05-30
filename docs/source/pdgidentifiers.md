@@ -25,6 +25,8 @@ PDG Identifiers referencing a specific edition of the *Review of Particle Physic
 In most cases, users should not need to know or enter specific PDG Identifiers. However, if one wishes to refer
 to a specific PDG data item, it is best to look up and use the corresponding PDG Identifier.
 The easiest way to find a desired PDG Identifier is to look up the corresponding quantity
-in [pdgLive](https://pdglive.lbl.gov) and find the `JSON (beta)` button. The URL that the button points to,
+in [pdgLive](https://pdglive.lbl.gov) and find the `JSON` button. Next to the JSON button, the PDG Identifier will be displayed in the form
+"`PDGID: ...`".
+(The URL that the `JSON` button points to,
 as well as the JSON file that will be retrieved upon clicking it,
-will identify the corresponding PDG Identifier.
+also identify the corresponding PDG Identifier.)

@@ -1,5 +1,11 @@
 # Release history (latest release first)
 
+## Version 0.1.0 (May 31, 2024)
+
+- Data from 2024 _Review of Particle Physics_
+- First production version
+- Minor bug fixes and documentation updates
+
 ## Version 0.0.7 (May 28, 2024)
 
 - Revised database schema (version 0.2) with new `pdgitem`, `pdgitem_map` and `pdgdecay`
