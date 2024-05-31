@@ -127,7 +127,7 @@ After retrieving the desired particle, one can then either directly get the desi
 or quantum numbers, or obtain an iterator over the desired information such as all exclusive branching fractions
 for which PDG has data. A few examples with complete code snippets are given below.
 
-#### Particle Monte Carlo number, mass and quantum numbers
+### Particle Monte Carlo number, mass and quantum numbers
 
 _Note: The Monte Carlo particle numbering scheme was substantially updated
 and extended in 2012. The Python API follows the particle numbering used in the current version of the
@@ -147,7 +147,7 @@ print('spin J = ', pi_minus.quantum_J)
 ```
 
 
-#### Branching fractions
+### Branching fractions
 
 The following code snippet prints all exclusive branching fractions of the charged B meson with their description,
 'True' if the value denotes a limit, and the raw value (as an unrounded floating point number or None).
@@ -158,7 +158,7 @@ for bf in api.get_particle_by_name('B+').exclusive_branching_fractions():
     print('%-60s    %4s    %s' % (bf.description, bf.is_limit, bf.value))
 ```
 
-#### Decays
+### Decays
 
 For branching fractions one can access the particles in the corresponding decay as a list of decay products (`PdgDecayProduct`).
 Each `PdgDecayProduct` specifies the item (`PdgItem`) that appears, a multiplier, and whether the item needs to decay
@@ -188,7 +188,7 @@ for decay in api.get_particle_by_name('B0').exclusive_branching_fractions():
         print(format(decay.description,'40s'), decay.display_value_text)
 ```
 
-#### Particle properties (except branching fractions)
+### Particle properties (except branching fractions)
 
 The following code snippet prints all properties other than branching fractions of the charged pion (retrieved this
 time via Monte Carlo number rather than name). For each property, the PDG Identifier, the description, and the
