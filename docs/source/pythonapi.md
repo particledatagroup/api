@@ -7,7 +7,7 @@ their properties and the corresponding information included in the *Review of Pa
 After the initial installation, the Python API does not require an Internet connection.
 
 The Python API is implemented in Python package [pdg](https://pypi.org/project/pdg/) and uses
-a [PDG database file](schema.md) as it's default data repository.
+a [PDG database file](schema.md) as its default data repository.
 The database file corresponding to the current edition of the *Review of Particle Physics*
 at the time of releasing a given version of the package is installed together with the package.
 When the *Review of Particle Physics* is updated, a new version of the `pdg`
@@ -68,16 +68,16 @@ pedantic mode to the database:
 ```python
 api = pdg.connect(pedantic=True)
 ```
-Then, rather than making assumptions in cases where the answer is ambiguous, a `PdgAmbiguousException` will be raised.
+Then, rather than making assumptions in cases where the answer is ambiguous, a `PdgAmbiguousValueError` will be raised.
 Thus, taking the example above of the top quark mass,
 ```python
 pdg.connect().get_particle_by_name('t').mass
 ```
-will return a value of about 173 GeV (2022 edition), while
+will return a value of about 173 GeV (2024 edition), while
 ```python
 pdg.connect(pedantic=True).get_particle_by_name('t').mass
 ```
-will raise `pdg.errors.PdgAmbiguousValueError: Ambiguous best property for t mass (Q007/2023)`.
+will raise `pdg.errors.PdgAmbiguousValueError: Ambiguous best property for t mass (Q007/2024)`.
 
 
 ### Getting information about the database being used
