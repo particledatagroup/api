@@ -22,9 +22,9 @@ class TestData(unittest.TestCase):
         self.assertRaises(PdgInvalidPdgIdError, self.api.get, 'nonexistent')
 
     def test_edition(self):
+        self.assertEqual(self.api.get('s008').edition, self.api.default_edition)
         if '2018' not in self.api.editions:
             return
-        self.assertEqual(self.api.get('s008').edition, self.api.default_edition)
         self.assertEqual(self.api.get('s008/2018').pdgid, 'S008/2018')
         self.assertEqual(self.api.get('s008/2018').baseid, 'S008')
         self.assertEqual(self.api.get('s008/2018').get_parent_pdgid(), None)
@@ -135,12 +135,17 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('S017AMU').data_flags, 'A0s')
         self.assertEqual(self.api.get('Q007TP').data_flags, 'D')
         self.assertEqual(self.api.get('Q007TP2').data_flags, 's')
-        self.assertEqual(self.api.get('Q007TP4').data_flags, '')
+        self.assertEqual(self.api.get('Q007TP4').data_flags, 's')
 
     def test_old_bugs(self):
         # Check fix for metadata bug in v0.0.5
         self.assertIsNotNone(self.api.get('S086DRA').best_summary())
         self.assertIsNotNone(self.api.get('S086DGS').best_summary())
+
+    def test_HFLAV_comment(self):
+        if int(self.api.default_edition) >= 2024:
+            self.assertEqual(self.api.get('S042T').comment,
+                             '(Produced by HFLAV)')
 
 if __name__ == '__main__':
     unittest.main()

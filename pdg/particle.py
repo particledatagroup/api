@@ -472,13 +472,6 @@ class PdgParticle(PdgData):
         """Whether the particle has at least one defined lifetime."""
         return next(self.lifetimes(), None) is not None
 
-    @property
-    def is_stable(self):
-        """Whether the particle is stable (i.e. does not have a defined lifetime
-        or decay width).
-        """
-        return not (self.has_width_entry() or self.has_lifetime_entry())
-
 
 class PdgParticleList(PdgData, list):
     """A PdgData subclass to represent a list of PdgParticles. A PdgParticleList

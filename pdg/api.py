@@ -48,13 +48,12 @@ class PdgApi:
         self.engine = sqlalchemy.create_engine(self.database_url)
         self.db = sqlalchemy.MetaData()
         self.db.reflect(self.engine)
-        self.edition = self.info('edition')
+        for k in self.info_keys():
+            setattr(self, k, self.info(k))
         self.pedantic = pedantic
 
     def __str__(self):
-        s = ['WARNING: THIS VERSION OF THE PDG PACKAGE IS UNDER DEVELOPMENT - DO NOT USE FOR PUBLICATIONS',
-             '',
-             '%s Review of Particle Physics, data release %s, API version %s' % (self.info('edition'),
+        s = ['%s Review of Particle Physics, data release %s, API version %s' % (self.info('edition'),
                                                                                  self.info('data_release_timestamp'),
                                                                                  pdg.__version__),
              '%s' % self.info('citation'),
