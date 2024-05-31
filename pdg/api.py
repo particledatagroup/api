@@ -48,7 +48,8 @@ class PdgApi:
         self.engine = sqlalchemy.create_engine(self.database_url)
         self.db = sqlalchemy.MetaData()
         self.db.reflect(self.engine)
-        self.edition = self.info('edition')
+        for k in self.info_keys():
+            setattr(self, k, self.info(k))
         self.pedantic = pedantic
 
     def __str__(self):
