@@ -11,7 +11,7 @@ import os
 sys.path.insert(0, os.path.abspath("../.."))
 
 project = 'PDG API'
-copyright = '2023, Particle Data Group'
+copyright = '2024, Particle Data Group'
 author = 'Particle Data Group'
 
 # -- General configuration ---------------------------------------------------

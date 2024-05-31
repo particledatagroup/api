@@ -6,8 +6,12 @@ and what features are still under development and will become available in the f
 Release notes for different versions of the Python API can be found in the
 [CHANGELOG file](https://github.com/particledatagroup/api/blob/main/CHANGELOG.md). 
 
-To provide feedback on the PDG API or to report any bugs, please contact [api@pdg.lbl.gov](mailto:api@pdg.lbl.gov).
-For the Python API, you may also submit an [Issue on github](https://github.com/particledatagroup/api/issues).
+## Bug reports and feedback
+To provide feedback on the PDG API or to report any bugs:
+- For general comments as well as feedback or bugs specific to REST API or database files, please
+  contact [api@pdg.lbl.gov](mailto:api@pdg.lbl.gov).
+- For anything related to the Python API, either submit an [Issue on github](https://github.com/particledatagroup/api/issues)
+  or contact [api@pdg.lbl.gov](mailto:api@pdg.lbl.gov).
 
 ## Features supported by the current version
 * [REST API](restapi.md) with pdgLive JSON download links 

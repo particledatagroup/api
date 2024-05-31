@@ -121,13 +121,19 @@ for item in api.get_all():
 ```
 
 
-### Examples
+## Examples
 
 After retrieving the desired particle, one can then either directly get the desired quantity such as particle mass
 or quantum numbers, or obtain an iterator over the desired information such as all exclusive branching fractions
 for which PDG has data. A few examples with complete code snippets are given below.
 
 #### Particle Monte Carlo number, mass and quantum numbers
+
+_Note: The Monte Carlo particle numbering scheme was substantially updated
+and extended in 2012. The Python API follows the particle numbering used in the current version of the
+[PDG table of particle information](https://pdg.lbl.gov/2024/mcdata/mass_width_2024.txt) where certain excited
+baryons follow the pre-2012 scheme. A further revision and/or extension of the numbering scheme is anticipated 
+in the near future._
 
 The following code snippet could be used to print the Monte Carlo particle number, mass (without rounding or errors),
 and spin of the negative pion:

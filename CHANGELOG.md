@@ -8,7 +8,7 @@
 
 ## Version 0.0.7 (May 28, 2024)
 
-- Revised database schema (version 0.2) with new `pdgitem`, `pdgitem_map` and `pdgdecay`
+- Revised database schema (version 0.2) with new `pdgitem`, `pdgitem_map` and `pdgdecay` tables
 - Support for decays
 - Bug fixes (especially also in metadata)
 - Final beta version for 2023 _Review of Particle Physics_
