@@ -31,7 +31,7 @@ setup(
     package_data={"pdg": ["pdg.sqlite"]},
     install_requires=['SQLAlchemy>=1.4'],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
@@ -45,7 +45,7 @@ setup(
     project_urls={
         'Documentation': 'https://pdgapi.lbl.gov/doc/',
         'GitHub': 'https://github.com/particledatagroup/api',
-        'Changelog': 'https://github.com/particledatagroup/api/blob/main/README.md'
+        'Changelog': 'https://github.com/particledatagroup/api/blob/main/CHANGELOG.md'
     },
     cmdclass={
         'register': register,

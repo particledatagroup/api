@@ -1,32 +1,31 @@
 # Development status
 
-The PDG API tools supporting programmatic access to PDG data are still **under development** and are currently only
-available for testing as a **beta software release with limited functionality**.
+Development of the PDG API is continuing in order to add additional features. See below for what is currently available
+and what features are still under development and will become available in the future.
 
-You are invited to try out these new tools, but please be aware that this is software under development and that
-there will be bugs. At this stage there is no guarantee that the data returned by any of the API tools is correct,
-so please do not use data provided by the present version for any scientific work or publication without carefully
-checking each data item you retrieve.
+Release notes for different versions of the Python API can be found in the
+[CHANGELOG file](https://github.com/particledatagroup/api/blob/main/CHANGELOG.md). 
 
-While we will try to minimize changes in the JSON file structure, schema changes of the SQLite database file,
-and interface changes in the Python API package, such changes may still happen if deemed necessary to support
-future development. As a result, **future releases may or may not be compatible with the present beta versions**.
+## Bug reports and feedback
+To provide feedback on the PDG API or to report any bugs:
+- For general comments as well as feedback or bugs specific to REST API or database files, please
+  contact [api@pdg.lbl.gov](mailto:api@pdg.lbl.gov).
+- For anything related to the Python API, either submit an [Issue on github](https://github.com/particledatagroup/api/issues)
+  or contact [api@pdg.lbl.gov](mailto:api@pdg.lbl.gov).
 
 ## Features supported by the current version
-* Beta versions of
-  * REST API with pdgLive JSON download links
-  * Python API package
-  * SQLite files
-* Access to the data published in the Summary Tables (excluding footnotes), with access both via individual PDG
-  Identifiers and navigation via particles to particle properties, **branching fractions**, and the corresponding
-  Summary Table values
+* [REST API](restapi.md) with pdgLive JSON download links 
+* [Python API](pythonapi.md) API package [pdg](https://pypi.org/project/pdg/)
+* [PDG database files](schema.md) - see [API page on the PDG website](https://pdg.lbl.gov/api) for available files
+* All of the above tools support access to the data published in the Summary Tables (excluding footnotes),
+  with access both via individual PDG Identifiers and navigation via particles to particle properties,
+  **branching fractions**, and the corresponding Summary Table values.
 
-## Features under development (not yet available in this beta version)
-* Improvement to contents of underlying data tables, especially in the area of modelling decay products.
-* Processing of aliases such as \ell in branching fractions
+## Features under development
+* Processing of aliases such as \ell and generic decay products in branching fractions
+* Improved handling of "indented" decay modes
 * Access to data published in the Particle Listings
 * Searching of PDG Identifiers and associated data (other than by low-level SQL querying of the data in the SQLite file)
-* Improved documentation, especially on using the SQLite database file
-* General improvements of and extensions to existing features.
+* General improvements of and extensions to existing features
 * ...
 
