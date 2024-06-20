@@ -151,6 +151,9 @@ class PdgParticle(PdgData):
         except PdgAmbiguousValueError:
             return 'Data for PDG Particle %s: multiple particle matches' % self.pdgid
 
+    def _repr_extra(self):
+        return "name='%s'" % self.name
+
     def _get_particle_data(self):
         """Get particle data."""
         if 'pdgparticle' not in self.cache:

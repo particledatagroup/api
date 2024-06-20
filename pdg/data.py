@@ -258,7 +258,17 @@ class PdgData(object):
         return 'Data for PDG Identifier %s: %s' % (self.pdgid, self.description)
 
     def __repr__(self):
-        return "%s('%s')" % (self.__class__.__name__, make_id(self.baseid, self.edition))
+        extra = self._repr_extra()
+        if extra:
+            extra = ', ' + extra
+        return "%s('%s'%s)" % (self.__class__.__name__, make_id(self.baseid, self.edition),
+                               extra)
+
+    def _repr_extra(self):
+        """A method that subclasses can override in order to add info to the
+        result of __repr__.
+        """
+        return ''
 
     def _get_pdgid(self):
         """Get PDG Identifier information."""
