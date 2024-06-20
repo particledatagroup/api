@@ -330,6 +330,24 @@ class PdgData(object):
             raise PdgAmbiguousValueError(err)
         return ps[0]
 
+    def get_children(self, recurse=False):
+        pdgid_table = self.api.db.tables['pdgid']
+        ## NOTE: Querying on IDs doesn't work because the `parent_id` seems off
+        # query = select(pdgid_table.c.pdgid) \
+        #     .where(pdgid_table.c.parent_id == bindparam('parent_id'))
+        # params = {'parent_id': self._get_pdgid()['id']}
+        query = select(pdgid_table.c.pdgid) \
+            .where(pdgid_table.c.parent_pdgid == bindparam('parent_pdgid'))
+        params = {'parent_pdgid': self.baseid}
+        with self.api.engine.connect() as conn:
+            child_pdgids = [row.pdgid for row
+                            in conn.execute(query, params)]
+        for child_pdgid in child_pdgids:
+            child = self.api.get(child_pdgid)
+            yield child
+            if recurse:
+                yield from child.get_children(recurse=True)
+
     @property
     def edition(self):
         """Year of edition for which data is requested."""
