@@ -215,6 +215,9 @@ class PdgApi:
             for item in conn.execute(query):
                 yield PdgParticleList(self, item.pdgid, edition)
 
+    def get_canonical_name(self, name):
+        return self.get_particle_by_name(name).name
+
     def doc_key_value(self, table_name, column_name, key):
         """Get documentation on the meaning of key values or flags used in the PDG API."""
         pdgdoc_table = self.db.tables['pdgdoc']
