@@ -85,7 +85,8 @@ class PdgItem:
                 raise PdgAmbiguousValueError('No unique PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
             raise PdgNoDataError('No PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
         p = self.cache['pdgparticle']
-        return PdgParticle(self.api, p['pdgid'], edition=self.edition, set_mcid=p['mcid'])
+        return PdgParticle(self.api, p['pdgid'], edition=self.edition, set_mcid=p['mcid'],
+                           set_name=p['name'])
 
     @property
     def particles(self):
@@ -464,6 +465,10 @@ class PdgParticle(PdgData):
                 return 0.
             return self.width_error * HBAR_IN_GEV_S / self.width**2
 
+    @property
+    def has_mass_entry(self):
+        """Whether the particle has at least one defined decay mass."""
+        return next(self.masses(), None) is not None
 
     @property
     def has_width_entry(self):
