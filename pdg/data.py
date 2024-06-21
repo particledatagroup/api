@@ -14,7 +14,7 @@ import pprint
 from sqlalchemy import select, bindparam, func
 from pdg.utils import parse_id, make_id
 from pdg.units import UNIT_CONVERSION_FACTORS, convert
-from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError
+from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
 
 
 class PdgSummaryValue(dict):
@@ -318,6 +318,9 @@ class PdgData(object):
         p = self
         while p.baseid != p.get_parent_pdgid(False) and p.get_parent_pdgid(False):
             p = self.api.get(p.get_parent_pdgid())
+        if p.data_type != 'PART':
+            err = 'Identifier %s does not have a parent particle'
+            raise PdgNoDataError(err)
         return p
 
     def get_particle(self):
