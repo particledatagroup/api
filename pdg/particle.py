@@ -396,24 +396,37 @@ class PdgParticle(PdgData):
         """True if particle is a baryon."""
         return 'B' in self.data_flags
 
+    @staticmethod
+    def _if_not_limit(prop, units, error=False):
+        """If a PdgProperty's best summary value is NOT a limit, return it in
+        the specified units. Otherwise return None. If error is True, return the
+        error instead of the value.
+        """
+        summary = prop.best_summary()
+        if summary.is_limit:
+            return None
+        if error:
+            return summary.get_error(units)
+        return summary.get_value(units)
+
     @property
     def mass(self):
         """Mass of the particle in GeV."""
         best_mass_property = best(self.masses(), self.api.pedantic, '%s mass (%s)' % (self.name, self.pdgid))
-        return best_mass_property.best_summary().get_value('GeV')
+        return self._if_not_limit(best_mass_property, 'GeV')
 
     @property
     def mass_error(self):
         """Symmetric error on mass of particle in GeV, or None if mass error are asymmetric or mass is a limit."""
         best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
-        return best_mass_property.best_summary().get_error('GeV')
+        return self._if_not_limit(best_mass_property, 'GeV', error=True)
 
     @property
     def width(self):
         """Width of the particle in GeV."""
         try:
             best_width_property = best(self.widths(), self.api.pedantic, '%s width (%s)' % (self.name, self.pdgid))
-            return best_width_property.best_summary().get_value('GeV')
+            return self._if_not_limit(best_width_property, 'GeV')
         except PdgNoDataError:
             if self.api.pedantic:
                 raise
@@ -427,7 +440,7 @@ class PdgParticle(PdgData):
         """Symmetric error on width of particle in GeV, or None if width error are asymmetric or width is a limit."""
         try:
             best_width_property = best(self.widths(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
-            return best_width_property.best_summary().get_error('GeV')
+            return self._if_not_limit(best_width_property, 'GeV', error=True)
         except PdgNoDataError:
             if self.api.pedantic:
                 raise
@@ -441,7 +454,7 @@ class PdgParticle(PdgData):
         """Lifetime of the particle in seconds."""
         try:
             best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s lifetime (%s)' % (self.name, self.pdgid))
-            return best_lifetime_property.best_summary().get_value('s')
+            return self._if_not_limit(best_lifetime_property, 's')
         except PdgNoDataError:
             if self.api.pedantic:
                 raise
@@ -454,7 +467,7 @@ class PdgParticle(PdgData):
         """Symmetric error on lifetime of particle in seconds, or None if lifetime error are asymmetric or lifetime is a limit."""
         try:
             best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
-            err = best_lifetime_property.best_summary().get_error('s')
+            err = self._if_not_limit(best_lifetime_property, 's', error=True)
             if err is None:
                 err = 0.
             return err
@@ -467,7 +480,7 @@ class PdgParticle(PdgData):
 
     @property
     def has_mass_entry(self):
-        """Whether the particle has at least one defined decay mass."""
+        """Whether the particle has at least one defined mass."""
         return next(self.masses(), None) is not None
 
     @property
