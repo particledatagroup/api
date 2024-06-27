@@ -24,6 +24,10 @@ class PdgDecayProduct(object):
         self.multiplier = multiplier
         self.subdecay = subdecay
 
+    def __repr__(self):
+        fmt = "PdgDecayProduct(item='%s', multiplier=%d, subdecay=%r)"
+        return fmt % (self.item.name, self.multiplier, self.subdecay)
+
 
 class PdgBranchingFraction(PdgProperty):
     """Class for all information about a decay, including its branching
@@ -41,6 +45,9 @@ class PdgBranchingFraction(PdgProperty):
                 except AttributeError:
                     raise PdgInvalidPdgIdError('No PDGDECAY entry for ' % self.pdgid)
         return self.cache['pdgdecay']
+
+    def _repr_extra(self):
+        return '"%s"' % self.description
 
     @property
     def decay_products(self):
