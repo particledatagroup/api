@@ -1,5 +1,8 @@
 # Release history (latest release first)
 
+## Version 0.1.1 (June 28, 2024)
+- Bug fixes and minor improvements to code (no updates to SQLite file)
+
 ## Version 0.1.0 (May 31, 2024)
 
 - Data from 2024 _Review of Particle Physics_

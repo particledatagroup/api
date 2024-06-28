@@ -29,7 +29,7 @@ class TestMetaData(unittest.TestCase):
         print(cls.api)
 
     def test_api_version(self):
-        self.assertEqual(pdg.__version__, '0.1.0', 'version number mismatch')
+        self.assertEqual(pdg.__version__, '0.1.1', 'version number mismatch')
 
     def test_has_producer(self):
         self.assertIsNotNone(self.api.info('producer'), 'database does not have producer info')
