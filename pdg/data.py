@@ -349,7 +349,8 @@ class PdgData(object):
             child = self.api.get(child_pdgid)
             yield child
             if recurse:
-                yield from child.get_children(recurse=True)
+                for c in child.get_children(recurse=True):
+                    yield c
 
     @property
     def edition(self):
