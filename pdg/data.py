@@ -14,7 +14,7 @@ import pprint
 from sqlalchemy import select, bindparam, func
 from pdg.utils import parse_id, make_id
 from pdg.units import UNIT_CONVERSION_FACTORS, convert
-from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError
+from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
 
 
 class PdgSummaryValue(dict):
@@ -258,7 +258,17 @@ class PdgData(object):
         return 'Data for PDG Identifier %s: %s' % (self.pdgid, self.description)
 
     def __repr__(self):
-        return "%s('%s')" % (self.__class__.__name__, make_id(self.baseid, self.edition))
+        extra = self._repr_extra()
+        if extra:
+            extra = ', ' + extra
+        return "%s('%s'%s)" % (self.__class__.__name__, make_id(self.baseid, self.edition),
+                               extra)
+
+    def _repr_extra(self):
+        """A method that subclasses can override in order to add info to the
+        result of __repr__.
+        """
+        return ''
 
     def _get_pdgid(self):
         """Get PDG Identifier information."""
@@ -308,6 +318,9 @@ class PdgData(object):
         p = self
         while p.baseid != p.get_parent_pdgid(False) and p.get_parent_pdgid(False):
             p = self.api.get(p.get_parent_pdgid())
+        if p.data_type != 'PART':
+            err = 'Identifier %s does not have a parent particle'
+            raise PdgNoDataError(err)
         return p
 
     def get_particle(self):
@@ -319,6 +332,24 @@ class PdgData(object):
             err = "More than one PdgParticle found. Consider using get_particles() instead."
             raise PdgAmbiguousValueError(err)
         return ps[0]
+
+    def get_children(self, recurse=False):
+        pdgid_table = self.api.db.tables['pdgid']
+        ## NOTE: Querying on IDs doesn't work because the `parent_id` seems off
+        # query = select(pdgid_table.c.pdgid) \
+        #     .where(pdgid_table.c.parent_id == bindparam('parent_id'))
+        # params = {'parent_id': self._get_pdgid()['id']}
+        query = select(pdgid_table.c.pdgid) \
+            .where(pdgid_table.c.parent_pdgid == bindparam('parent_pdgid'))
+        params = {'parent_pdgid': self.baseid}
+        with self.api.engine.connect() as conn:
+            child_pdgids = [row.pdgid for row
+                            in conn.execute(query, params)]
+        for child_pdgid in child_pdgids:
+            child = self.api.get(child_pdgid)
+            yield child
+            if recurse:
+                yield from child.get_children(recurse=True)
 
     @property
     def edition(self):
