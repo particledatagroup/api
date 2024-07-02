@@ -31,10 +31,27 @@ For the time being, Python 2.7 is still supported.
 
 ## Installation
 
-The PDG Python API can be installed like any other Python package.
-For example, the following command will download and install package `pdg` and its dependencies:
+The PDG Python API can be installed like any other Python package available from PyPI.
+
+For example, the following commands will first create and activate a Python 3 virtual environment using `venv`
+and then download and install package `pdg` and its dependencies:
+```
+python3 -m venv pdg.venv
+source pdg.venv/bin/activate
+python -m pip install pdg 
+```
+(Use `virtualenv` instead of `venv` for Python versions below 3.3.)
+
+If a Python virtual environment was already activated, only the following command is needed: 
 ```
 python -m pip install pdg
+```
+
+Finally, to add the `pdg` package to one's system Python installation, provided
+that installation is not marked as being externally managed (if it is, there will be an error message
+`error: externally-managed-environment`), one can use
+```
+python -m pip install --user pdg
 ```
 
 
