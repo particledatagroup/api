@@ -47,8 +47,8 @@ If a Python virtual environment was already activated, only the following comman
 python -m pip install pdg
 ```
 
-Finally, to add the `pdg` package to one's system Python installation, provided
-that installation is not marked as being externally managed (if it is, there will be an error message
+Alternatively, to add the `pdg` package to one's system Python installation if the system Python
+installation is not marked as being externally managed (if it is, there will be an error message
 `error: externally-managed-environment`), one can use
 ```
 python -m pip install --user pdg

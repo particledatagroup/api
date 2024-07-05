@@ -1,5 +1,9 @@
 # Release history (latest release first)
 
+## Version 0.1.2 (July 5, 2024)
+- Extend installation instructions
+- Updated SQLite file with fix for is_limit bug and extended pdgdoc entry for PDGDATA.LIMIT_TYPE
+
 ## Version 0.1.1 (June 28, 2024)
 - Bug fixes and minor improvements to code (no updates to SQLite file)
 
