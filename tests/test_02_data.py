@@ -141,6 +141,8 @@ class TestData(unittest.TestCase):
         # Check fix for metadata bug in v0.0.5
         self.assertIsNotNone(self.api.get('S086DRA').best_summary())
         self.assertIsNotNone(self.api.get('S086DGS').best_summary())
+        # Check that LIMIT_TYPE is NULL instead of the empty string
+        self.assertFalse(self.api.get('S041.3').is_limit)
 
     def test_HFLAV_comment(self):
         if int(self.api.default_edition) >= 2024:
