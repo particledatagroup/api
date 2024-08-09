@@ -144,6 +144,24 @@ class TestData(unittest.TestCase):
         # Check that LIMIT_TYPE is NULL instead of the empty string
         self.assertFalse(self.api.get('S041.3').is_limit)
 
+    def test_value_parsing(self):
+        # Check that DISPLAY_VALUE_TEXT is being parsed properly
+        # Symmetric errors:
+        self.assertEqual(round(self.api.get('S086T').value*1e12, 2), 1.52)
+        self.assertEqual(round(self.api.get('S086T').error_positive*1e15, 1), 5)
+        self.assertEqual(round(self.api.get('S086T').error_negative*1e15, 1), 5)
+        self.assertEqual(round(self.api.get('S086T').error*1e15, 1), 5)
+        # Slightly asymmetric errors:
+        self.assertEqual(round(self.api.get('S063T').value*1e12, 2), 1.64)
+        self.assertEqual(round(self.api.get('S063T').error_positive*1e13, 1), 1.8)
+        self.assertEqual(round(self.api.get('S063T').error_negative*1e13, 1), 1.7)
+        self.assertEqual(round(self.api.get('S063T').error*1e13, 2), 1.75)
+        # Very asymmetric errors:
+        self.assertEqual(round(self.api.get('S041P63').value*1e3, 1), 10.2)
+        self.assertEqual(round(self.api.get('S041P63').error_positive*1e3, 1), 3.2)
+        self.assertEqual(round(self.api.get('S041P63').error_negative*1e3, 1), 6.9)
+        self.assertIsNone(self.api.get('S041P63').error)
+
     def test_HFLAV_comment(self):
         if int(self.api.default_edition) >= 2024:
             self.assertEqual(self.api.get('S042T').comment,
