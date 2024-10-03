@@ -86,6 +86,14 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(self.api.get('s008/2022')[0].mass,9), 0.139570391)
         self.assertEqual(round(self.api.get('s008/2022')[0].mass_error,16), 1.820071604e-07)
 
+    def test_best_masses(self):
+        self.assertEqual(round(self.api.get_particle_by_name('p').mass, 3), 0.938)
+        self.assertEqual(round(self.api.get_particle_by_name('pi+').mass, 3), 0.140)
+        self.assertEqual(round(self.api.get_particle_by_name('e-').mass, 6), 0.000511)
+        self.assertEqual(round(self.api.get_particle_by_name('tbar').mass, 1), 172.6)
+        self.assertEqual(round(self.api.get_particle_by_name('B+').mass, 2), 5.28)
+        self.assertEqual(round(self.api.get_particle_by_name('Z').mass, 1), 91.2)
+
     def test_flags(self):
         self.assertEqual(self.api.get('S008')[0].is_boson, False)
         self.assertEqual(self.api.get('S008')[0].is_quark, False)
