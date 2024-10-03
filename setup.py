@@ -1,16 +1,3 @@
-# Customize location of .pypirc file
-# Credit: https://stackoverflow.com/questions/37845125/custom-location-for-pypirc-file
-import os
-from distutils.command.register import register as register_orig
-from distutils.command.upload import upload as upload_orig
-class register(register_orig):
-    def _get_rc_file(self):
-        return os.path.join('.', '.pypirc')
-class upload(upload_orig):
-    def _get_rc_file(self):
-        return os.path.join('.', '.pypirc')
-
-
 # Standard package setup
 from setuptools import setup, find_packages
 
@@ -47,8 +34,4 @@ setup(
         'GitHub': 'https://github.com/particledatagroup/api',
         'Changelog': 'https://github.com/particledatagroup/api/blob/main/CHANGELOG.md'
     },
-    cmdclass={
-        'register': register,
-        'upload': upload
-        }
 )
