@@ -1,5 +1,12 @@
 # Release history (latest release first)
 
+## Version 0.1.3 (October 4, 2024)
+- SQLite bug fix: incorrect is_limit for some decays
+- SQLite bug fix: incorrect unit for some lifetimes
+- SQLite bug fix: remove superfluous arrows from PDGID descriptions
+- Add additional unit tests
+- Remove leftover inclusion of distutils
+
 ## Version 0.1.2 (July 5, 2024)
 - Extend installation instructions
 - Updated SQLite file with fix for is_limit bug and extended pdgdoc entry for PDGDATA.LIMIT_TYPE
