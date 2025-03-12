@@ -62,9 +62,53 @@ class TestMeasurements(unittest.TestCase):
         self.assertIsNone(value.syst_error_positive)
         self.assertIsNone(value.syst_error_negative)
 
+        lifetime = next(t for t in t_msmts if t.id == 43631)
+        self.assertEqual(lifetime.pdgid, 'S004T')
+        self.assertIsNone(lifetime.event_count)
+        self.assertIsNone(lifetime.confidence_level)
+        self.assertEqual(lifetime.technique, 'CNTR')
+        self.assertEqual(lifetime.charge, '+')
+        self.assertFalse(lifetime.changebar)
+        # FIXME: Should we parse the macros and provide ascii + tex comments?
+        self.assertEqual(lifetime.inline_comment, 'Surface #p{mu+} at PSI')
+        self.assertEqual(lifetime.when_added, 'FIXME')
+
+        ref = lifetime.reference
+        self.assertEqual(ref.id, 55129)
+        self.assertEqual(ref.publication_name, 'PR D87 052003')
+        self.assertEqual(ref.publication_year, 2013)
+        self.assertEqual(
+            ref.title,
+            'Detailed Report of the MuLan Measurement of the Positi ve Muon Lifetime and Determination of the Fermi Constant')
+        self.assertEqual(ref.doi, '10.1103/PhysRevD.87.052003')
+        self.assertEqual(ref.inspire_id, '1198154')
+
+        values = list(lifetime.values())
+        self.assertEqual(len(values), 1)
+        value = values[0]
+        self.assertEqual(value.measurement.id, lifetime.id)
+        self.assertEqual(value.value_name, 'lifetime') # ???
+        self.assertEqual(value.unit_text, '1E-6 s')    # ???
+        self.assertEqual(value.unit_tex, '10^{-6} s')
+        self.assertEqual(value.display_power_text, 'FIXME')
+        self.assertEqual(value.display_power_of_ten, 'FIXME')
+        self.assertFalse(value.display_in_percent)
+        self.assertIsNone(value.limit_type)
+        self.assertTrue(value.used_in_average)
+        self.assertTrue(value.used_in_fit)
+        # FIXME: Units? (Apply 1E6?)
+        self.assertEqual(round(value.value, 7), 2.1969803)
+        self.assertEqual(round(value.error_positive*1e6, 5), 2.21359)
+        self.assertEqual(value.error_negative, value.error_positive)
+        self.assertEqual(round(value.stat_error_positive*1e6), 21)
+        self.assertEqual(value.stat_error_negative, value.stat_error_positive)
+        self.assertEqual(round(value.syst_error_positive*1e6), 7)
+        self.assertEqual(value.syst_error_negative, value.syst_error_positive)
 
     # TODO:
     # - particle that has a width instead of a lifetime
     # - stat/syst errors
     # - footnote
     # - measurements below the line
+    # - multi-column measurements
+    # - limits
