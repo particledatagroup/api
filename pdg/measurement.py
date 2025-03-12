@@ -36,27 +36,27 @@ class PdgMeasurement(object):
 
     @property
     def confidence_level(self):
-        pass
+        return self._get_measurement_data()['confidence_level']
 
     @property
     def technique(self):
-        pass
+        return self._get_measurement_data()['technique']
 
     @property
     def charge(self):
-        pass
+        return self._get_measurement_data()['charge']
 
     @property
     def changebar(self):
-        pass
+        return self._get_measurement_data()['changebar']
 
     @property
     def inline_comment(self):
-        pass
+        return self._get_measurement_data()['inline_comment']
 
     @property
     def when_added(self):
-        pass
+        return self._get_measurement_data()['when_added']
 
 
 class PdgValue(object):
@@ -81,63 +81,63 @@ class PdgValue(object):
 
     @property
     def unit_text(self):
-        pass
+        return self._get_value_data()['unit_text']
 
     @property
     def unit_tex(self):
-        pass
+        return self._get_value_data()['unit_tex']
 
     @property
     def display_power_text(self):
-        pass
+        return self._get_value_data()['display_power_text']
 
     @property
     def display_power_of_ten(self):
-        pass
+        return self._get_value_data()['display_power_of_ten']
 
     @property
     def display_in_percent(self):
-        pass
+        return self._get_value_data()['display_in_percent']
 
     @property
     def limit_type(self):
-        pass
+        return self._get_value_data()['limit_type']
 
     @property
     def used_in_average(self):
-        pass
+        return self._get_value_data()['used_in_average']
 
     @property
     def used_in_fit(self):
-        pass
+        return self._get_value_data()['used_in_fit']
 
     @property
     def value(self):
-        pass
+        return self._get_value_data()['value']
 
     @property
     def error_positive(self):
-        pass
+        return self._get_value_data()['error_positive']
 
     @property
     def error_negative(self):
-        pass
+        return self._get_value_data()['error_negative']
 
     @property
     def stat_error_negative(self):
-        pass
+        return self._get_value_data()['stat_error_negative']
 
     @property
     def stat_error_positive(self):
-        pass
+        return self._get_value_data()['stat_error_positive']
 
     @property
     def syst_error_positive(self):
-        pass
+        return self._get_value_data()['syst_error_positive']
 
     @property
     def syst_error_negative(self):
-        pass
+        return self._get_value_data()['syst_error_negative']
 
 
 class PdgReference(object):
@@ -162,23 +162,23 @@ class PdgReference(object):
 
     @property
     def publication_name(self):
-        pass
+        return self._get_reference_data()['publication_name']
 
     @property
     def publication_year(self):
-        pass
+        return self._get_reference_data()['publication_year']
 
     @property
     def title(self):
-        pass
+        return self._get_reference_data()['title']
 
     @property
     def doi(self):
-        pass
+        return self._get_reference_data()['doi']
 
     @property
     def inspire_id(self):
-        pass
+        return self._get_reference_data()['inspire_id']
 
 
 class PdgFootnote(object):
@@ -186,6 +186,11 @@ class PdgFootnote(object):
         self.api = api
         self.id = foot_id
         self.cache = {}
+
+    def _get_footnote_data(self):
+        return self.cache.get(
+            'pdgfootnote',
+            get_row_data(self.api, 'pdgfootnote', self.id))
 
     def references(self):
         for ref_id in get_linked_ids(
@@ -198,8 +203,8 @@ class PdgFootnote(object):
 
     @property
     def text(self):
-        pass
+        return self._get_footnote_data()['text']
 
     @property
     def text_tex(self):
-        pass
+        return self._get_footnote_data()['text_tex']
