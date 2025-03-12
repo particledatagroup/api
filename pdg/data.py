@@ -440,6 +440,15 @@ class PdgProperty(PdgData):
         except PdgAmbiguousValueError:
             return False
 
+    def get_measurements(self):
+        """Return all of the measurements associated with this property."""
+        pdgmsmt_table = self.api.db.tables['pdgmeasurement']
+        query = select(pdgmsmt_table.c.id)
+        query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
+        with self.api.engine.connect() as conn:
+            for entry in conn.execute(query, {'pdgid': self.baseid}):
+                yield PdgMeasurement(entry.id)
+
     @property
     def confidence_level(self):
         """Shortcut for best_summary().confidence_level."""
