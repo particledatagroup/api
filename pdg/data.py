@@ -15,6 +15,7 @@ from sqlalchemy import select, bindparam, func
 from pdg.utils import parse_id, make_id
 from pdg.units import UNIT_CONVERSION_FACTORS, convert
 from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
+from pdg.measurement import PdgMeasurement
 
 
 class PdgSummaryValue(dict):
@@ -447,7 +448,7 @@ class PdgProperty(PdgData):
         query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
         with self.api.engine.connect() as conn:
             for entry in conn.execute(query, {'pdgid': self.baseid}):
-                yield PdgMeasurement(entry.id)
+                yield PdgMeasurement(self.api, entry.id)
 
     @property
     def confidence_level(self):
