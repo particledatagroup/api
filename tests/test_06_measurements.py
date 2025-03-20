@@ -18,21 +18,22 @@ class TestMeasurements(unittest.TestCase):
     def test_muon(self):
         muon = self.api.get_particle_by_name('mu-')
 
-        m_msmts = list(muon.mass_measurements())
-        t_msmts = list(muon.lifetime_measurements())
+        m_msmts = list(muon.mass_measurements(require_summary_data=False))
+        t_msmts = list(muon.lifetime_measurements(require_summary_data=False))
 
-        mass = next(m for m in m_msmts if m.id == 58595)
+        mass = next(m for m in m_msmts
+                    if m.inline_comment == '2018 CODATA value'
+                    and m.pdgid == 'S004M')
         self.assertEqual(mass.pdgid, 'S004M')
-        self.assertIsNone(mass.event_count)
+        self.assertEqual(mass.event_count, '')
         self.assertIsNone(mass.confidence_level)
         self.assertEqual(mass.technique, 'RVUE')
-        self.assertIsNone(mass.charge)
+        self.assertEqual(mass.charge, '')
         self.assertFalse(mass.changebar)
         self.assertEqual(mass.inline_comment, '2018 CODATA value')
-        self.assertEqual(mass.when_added, 'FIXME')
+        self.assertEqual(mass.added_to_rpp, '2021-10')
 
         ref = mass.reference
-        self.assertEqual(ref.id, 61422)
         self.assertEqual(ref.publication_name, 'RMP 93 025010')
         self.assertEqual(ref.publication_year, 2021)
         self.assertEqual(
@@ -45,11 +46,11 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(len(values), 1)
         value = values[0]
         self.assertEqual(value.measurement.id, mass.id)
-        self.assertEqual(value.value_name, 'mass') # ???
+        self.assertEqual(value.value_name, 'Value')
         self.assertEqual(value.unit_text, 'MeV')
         self.assertEqual(value.unit_tex, 'MeV')
-        self.assertIsNone(value.display_power_text)
-        self.assertIsNone(value.display_power_of_ten)
+        self.assertEqual(value.display_value_text, '105.6583755 +-0.0000023')
+        self.assertEqual(value.display_power_of_ten, 0)
         self.assertFalse(value.display_in_percent)
         self.assertIsNone(value.limit_type)
         self.assertTrue(value.used_in_average)
@@ -57,29 +58,27 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(round(value.value, 7), 105.6583755)
         self.assertEqual(round(value.error_positive, 7), 0.0000023)
         self.assertEqual(value.error_negative, value.error_positive)
-        self.assertIsNone(value.stat_error_positive)
-        self.assertIsNone(value.stat_error_negative)
+        self.assertEqual(value.stat_error_positive, value.error_positive)
+        self.assertEqual(value.stat_error_negative, value.error_negative)
         self.assertIsNone(value.syst_error_positive)
         self.assertIsNone(value.syst_error_negative)
 
-        lifetime = next(t for t in t_msmts if t.id == 43631)
+        lifetime = next(t for t in t_msmts if t.added_to_rpp == '2013-11')
         self.assertEqual(lifetime.pdgid, 'S004T')
-        self.assertIsNone(lifetime.event_count)
+        self.assertEqual(lifetime.event_count, '')
         self.assertIsNone(lifetime.confidence_level)
         self.assertEqual(lifetime.technique, 'CNTR')
         self.assertEqual(lifetime.charge, '+')
         self.assertFalse(lifetime.changebar)
-        # FIXME: Should we parse the macros and provide ascii + tex comments?
-        self.assertEqual(lifetime.inline_comment, 'Surface #p{mu+} at PSI')
-        self.assertEqual(lifetime.when_added, 'FIXME')
+        self.assertEqual(lifetime.inline_comment, 'Surface mu+ at PSI')
+        self.assertEqual(lifetime.added_to_rpp, '2013-11')
 
         ref = lifetime.reference
-        self.assertEqual(ref.id, 55129)
         self.assertEqual(ref.publication_name, 'PR D87 052003')
         self.assertEqual(ref.publication_year, 2013)
         self.assertEqual(
             ref.title,
-            'Detailed Report of the MuLan Measurement of the Positi ve Muon Lifetime and Determination of the Fermi Constant')
+            'Detailed Report of the MuLan Measurement of the Positive Muon Lifetime and Determination of the Fermi Constant')
         self.assertEqual(ref.doi, '10.1103/PhysRevD.87.052003')
         self.assertEqual(ref.inspire_id, '1198154')
 
@@ -87,27 +86,25 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(len(values), 1)
         value = values[0]
         self.assertEqual(value.measurement.id, lifetime.id)
-        self.assertEqual(value.value_name, 'lifetime') # ???
-        self.assertEqual(value.unit_text, '1E-6 s')    # ???
-        self.assertEqual(value.unit_tex, '10^{-6} s')
-        self.assertEqual(value.display_power_text, 'FIXME')
-        self.assertEqual(value.display_power_of_ten, 'FIXME')
+        self.assertEqual(value.value_name, 'Value')
+        self.assertEqual(value.unit_text, 's')
+        self.assertEqual(value.unit_tex, 's')
+        self.assertEqual(value.display_value_text, '2.1969803 +-0.0000021 +-0.0000007')
+        self.assertEqual(value.display_power_of_ten, -6)
         self.assertFalse(value.display_in_percent)
         self.assertIsNone(value.limit_type)
         self.assertTrue(value.used_in_average)
         self.assertTrue(value.used_in_fit)
-        # FIXME: Units? (Apply 1E6?)
         self.assertEqual(round(value.value, 7), 2.1969803)
-        self.assertEqual(round(value.error_positive*1e6, 5), 2.21359)
+        self.assertEqual(round(value.error_positive*1e6, 5), 1.56525)
         self.assertEqual(value.error_negative, value.error_positive)
-        self.assertEqual(round(value.stat_error_positive*1e6), 21)
+        self.assertEqual(round(value.stat_error_positive*1e7), 21)
         self.assertEqual(value.stat_error_negative, value.stat_error_positive)
-        self.assertEqual(round(value.syst_error_positive*1e6), 7)
+        self.assertEqual(round(value.syst_error_positive*1e7), 7)
         self.assertEqual(value.syst_error_negative, value.syst_error_positive)
 
     # TODO:
     # - particle that has a width instead of a lifetime
-    # - stat/syst errors
     # - footnote
     # - measurements below the line
     # - multi-column measurements
