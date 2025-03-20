@@ -55,8 +55,8 @@ class PdgMeasurement(object):
         return self._get_measurement_data()['inline_comment']
 
     @property
-    def when_added(self):
-        return self._get_measurement_data()['when_added']
+    def added_to_rpp(self):
+        return self._get_measurement_data()['added_to_rpp']
 
 
 class PdgValue(object):
@@ -88,8 +88,8 @@ class PdgValue(object):
         return self._get_value_data()['unit_tex']
 
     @property
-    def display_power_text(self):
-        return self._get_value_data()['display_power_text']
+    def display_value_text(self):
+        return self._get_value_data()['display_value_text']
 
     @property
     def display_power_of_ten(self):
