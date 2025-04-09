@@ -9,7 +9,9 @@ jobs:
   api-tests:
     runs-on: ubuntu-latest
     steps:
-      - run: ls -l /usr/bin/git-lfs
+      - name: check for lfs
+        run: |
+	  ls -l /usr/bin/git-lfs
 
       - name: Checkout code
         uses: actions/checkout@v4
