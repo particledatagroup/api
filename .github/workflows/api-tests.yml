@@ -9,10 +9,6 @@ jobs:
   api-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: check for lfs
-        run: |
-          ls -l /usr/bin/git-lfs
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -30,4 +26,4 @@ jobs:
 
       - name: Run tox tests
         run: |
-          tox -e py310-SA20
+          tox -q -e py310-SA20
