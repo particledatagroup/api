@@ -1,0 +1,22 @@
+name: API Unit Tests
+
+on:
+  push:
+    branches:
+      - juerg-dev
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Show Python version
+        run: python -c "import sys; print(sys.version)"
+
