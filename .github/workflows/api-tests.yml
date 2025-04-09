@@ -11,12 +11,12 @@ jobs:
     steps:
       - name: check for lfs
         run: |
-	  ls -l /usr/bin/git-lfs
+          ls -l /usr/bin/git-lfs
 
       - name: Checkout code
         uses: actions/checkout@v4
-	with:
-	  lfs: true
+        with:
+          lfs: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
