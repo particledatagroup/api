@@ -3,7 +3,8 @@ name: API Unit Tests
 on:
   push:
     branches:
-      - juerg-dev
+      - dev
+      - main
 
 jobs:
   api-tests:
