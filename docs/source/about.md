@@ -14,7 +14,7 @@ For details see the
 [README.md](https://github.com/particledatagroup/api/blob/main/README.md)
 files distributed with the `pdg` Python package.
 
-# Conference presentations
+## Conference presentations
 
 The PDG API was presented at several conferences (most recent presentations are listed first):
 

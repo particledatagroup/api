@@ -64,7 +64,7 @@ Further details about the database file as well as examples of how to use it wil
 To give a concrete example of how the PDG SQLite database files could be used, the SQL snippet below produces a table of
 branching fractions for the charged pion.
 
-```sqlite
+```sql
 SELECT pdgid.pdgid,
        description,
        value AS branching_fraction,
@@ -94,7 +94,7 @@ In this example:
 
 Specific values of flags and other codes such as the ones found in `data_type`, `limit_type` or `value_type`are documented in table `pdgdoc`.
 For example, to see what values `limit_type` can have, one can use:
-```sqlite
+```sql
 SELECT value,
        description
 FROM   pdgdoc

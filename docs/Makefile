@@ -26,7 +26,7 @@ apidoc:
 
 sphinxvenv:
 	@echo 'Creating Sphinx Python virtual environment that will be used for building docs in the future'
-	@virtualenv -p python3 sphinxvenv
+	@virtualenv -p python3.10 sphinxvenv
 	@source sphinxvenv/bin/activate; pip install --upgrade pip
 	@source sphinxvenv/bin/activate; pip install -r sphinx-requirements.txt
 
