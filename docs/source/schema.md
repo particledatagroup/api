@@ -59,6 +59,58 @@ Further details about the database file as well as examples of how to use it wil
 
 ![Schema of the SQLite database file](schema-v0.2.png "Schema of the SQLite database file")
 
+## Usage example
+
+To give a concrete example of how the PDG SQLite database files could be used, the SQL snippet below produces a table of
+branching fractions for the charged pion.
+
+```sqlite
+SELECT pdgid.pdgid,
+       description,
+       value AS branching_fraction,
+       limit_type,
+       value_type
+FROM   pdgid
+       JOIN pdgdata
+         ON pdgdata.pdgid_id = pdgid.id
+WHERE  pdgid.parent_pdgid = 'S008'
+       AND data_type = 'BFX'
+       AND edition = '2024'
+ORDER  BY pdgid.sort;
+```
+In this example:
+- Tables `pdgid` and `pdgdata` are joined. The former is used to select and show the specific decay and the latter to get data values.
+- `pdgid.parent_pdgid='S008'` selects charged pions using their PDG Identifier.
+- `data_type='BFX'` selects exclusive non-indented branching fractions.
+- `edition='2024'` selects data from the 2024 edition (assuming this data is available in the SQLite file being used).
+- `limit_type` will either be NULL (in case a value is not a limit), or a code to denote the type of limit the corresponding value represents.
+- `value_type` is a code indicating whether this is an average, fit value, best limit etc.
+- Indented branching fractions are not included for two reasons: first, the `parent_pdgid` of an indented decay is the PDG
+  Identifier of the higher-level decay (such as e.g. S008.1), and second its `data_type` will indicate the indentation (e.g. `BFX1` instead of `BFX`).
+- `value` is the raw, numerical value without any rounding applied. To get the
+  value rounded and formatted as shown in the PDG Summary Tables use `display_value_text` instead of `value`
+  (which will also show the error and indicate limits). The `pdgdata` table of course also provides numerical values
+  for errors, units, and more.
+
+Specific values of flags and other codes such as the ones found in `data_type`, `limit_type` or `value_type`are documented in table `pdgdoc`.
+For example, to see what values `limit_type` can have, one can use:
+```sqlite
+SELECT value,
+       description
+FROM   pdgdoc
+WHERE  table_name = 'PDGDATA'
+       AND column_name = 'LIMIT_TYPE';  
+```
+which might produce
+```
+| value |                 description                 |
+|-------|---------------------------------------------|
+|       | NULL means not a limit (i.e. a measurement) |
+| L     | lower Limit                                 |
+| R     | range                                       |
+| U     | upper Limit                                 |
+| X     | range exclusion                             |
+```
 
 ## License
 
