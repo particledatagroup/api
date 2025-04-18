@@ -4,7 +4,7 @@ The PDG Python API provides a high-level tool for programmatically accessing PDG
 For most users, this is the recommended way to access PDG data in machine-readable format.
 The Python API provides straightforward navigation from particles to
 their properties and the corresponding information included in the *Review of Particle Physics*.
-After the initial installation, the Python API does not require an Internet connection.
+After installation the Python API does not require an Internet connection.
 
 The Python API is implemented in Python package [pdg](https://pypi.org/project/pdg/) and uses
 a [PDG database file](schema.md) as its default data repository.
@@ -28,6 +28,9 @@ The `pdg` package is released as open source software and can be found at
 The PDG Python API supports Python 3 and requires SQLAlchemy version 1.4 or greater.
 For the time being, Python 2.7 is still supported.
 
+## Tutorial
+
+A Jupyter notebook with a comprehensive tutorial on how to use the PDG Python API is [available on github](https://github.com/particledatagroup/api/blob/main/examples/tutorial.ipynb). 
 
 ## Installation
 
