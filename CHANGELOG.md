@@ -1,6 +1,6 @@
 # Release history (latest release first)
 
-## Version 0.1.4 (April ??, 2025)
+## Version 0.1.4 (April 18, 2025)
 - Add tutorial for Python API
 - Add usage example for SQLite files
 - List conference presentations in About
