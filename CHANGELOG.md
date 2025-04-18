@@ -1,5 +1,12 @@
 # Release history (latest release first)
 
+## Version 0.1.4 (April 18, 2025)
+- Add tutorial for Python API
+- Add usage example for SQLite files
+- List conference presentations in About
+- Update publication to PyPI using github actions
+- Updated SQLite file with many small bug fixes
+
 ## Version 0.1.3 (October 4, 2024)
 - SQLite bug fix: incorrect is_limit for some decays
 - SQLite bug fix: incorrect unit for some lifetimes

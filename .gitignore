@@ -129,3 +129,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# PDG specific
+/.idea
+examples/*.sqlite
