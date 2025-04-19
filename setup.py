@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='pdg',
-    version='0.1.4',
+    version='0.2.0',
     author='Particle Data Group',
     author_email='jberinger@lbl.gov',
     description='Python API for accessing PDG data',
