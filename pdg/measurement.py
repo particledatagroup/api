@@ -204,6 +204,9 @@ class PdgReference(object):
     def inspire_id(self):
         return self._get_reference_data()['inspire_id']
 
+    @property
+    def document_id(self):
+        return self._get_reference_data()['document_id']
 
 class PdgFootnote(object):
     def __init__(self, api, foot_id):
