@@ -511,3 +511,7 @@ class PdgWidth(PdgProperty):
 
 class PdgLifetime(PdgProperty):
     pass
+
+
+class PdgText(PdgData):
+    pass
