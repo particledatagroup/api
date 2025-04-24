@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from pdg.errors import PdgAmbiguousValueError
 from pdg.utils import get_linked_ids, get_row_data
 
 class PdgMeasurement(object):
@@ -139,6 +140,29 @@ class PdgValue(object):
     def syst_error_negative(self):
         return self._get_value_data()['syst_error_negative']
 
+    @property
+    def error(self):
+        is_asymm = self.error_positive != self.error_negative
+        if self.api.pedantic and is_asymm:
+            msg = 'Asymmetric error in pedantic mode (FIXME: better msg)'
+            raise PdgAmbiguousValueError(msg)
+        return 0.5*(self.error_positive + self.error_negative)
+
+    @property
+    def stat_error(self):
+        is_asymm = self.stat_error_positive != self.stat_error_negative
+        if self.api.pedantic and is_asymm:
+            msg = 'Asymmetric stat_error in pedantic mode (FIXME: better msg)'
+            raise PdgAmbiguousValueError(msg)
+        return 0.5*(self.stat_error_positive + self.stat_error_negative)
+
+    @property
+    def syst_error(self):
+        is_asymm = self.syst_error_positive != self.syst_error_negative
+        if self.api.pedantic and is_asymm:
+            msg = 'Asymmetric syst_error in pedantic mode (FIXME: better msg)'
+            raise PdgAmbiguousValueError(msg)
+        return 0.5*(self.syst_error_positive + self.syst_error_negative)
 
 class PdgReference(object):
     def __init__(self, api, ref_id):
