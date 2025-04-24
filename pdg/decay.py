@@ -89,3 +89,7 @@ class PdgBranchingFraction(PdgProperty):
             return int(self.data_type[3])
         else:
             return 0
+
+
+class PdgBranchingRatio(PdgProperty):
+    pass
