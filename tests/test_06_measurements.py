@@ -31,7 +31,6 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(mass.charge, '')
         self.assertFalse(mass.changebar)
         self.assertEqual(mass.inline_comment, '2018 CODATA value')
-        self.assertEqual(mass.added_to_rpp, '2021-10')
 
         ref = mass.reference
         self.assertEqual(ref.publication_name, 'RMP 93 025010')
@@ -58,12 +57,12 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(round(value.value, 7), 105.6583755)
         self.assertEqual(round(value.error_positive, 7), 0.0000023)
         self.assertEqual(value.error_negative, value.error_positive)
-        self.assertEqual(value.stat_error_positive, value.error_positive)
-        self.assertEqual(value.stat_error_negative, value.error_negative)
+        self.assertIsNone(value.stat_error_positive)
+        self.assertIsNone(value.stat_error_negative)
         self.assertIsNone(value.syst_error_positive)
         self.assertIsNone(value.syst_error_negative)
 
-        lifetime = next(t for t in t_msmts if t.added_to_rpp == '2013-11')
+        lifetime = next(t for t in t_msmts if t.inline_comment == 'Surface mu+ at PSI')
         self.assertEqual(lifetime.pdgid, 'S004T')
         self.assertEqual(lifetime.event_count, '')
         self.assertIsNone(lifetime.confidence_level)
@@ -71,7 +70,6 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(lifetime.charge, '+')
         self.assertFalse(lifetime.changebar)
         self.assertEqual(lifetime.inline_comment, 'Surface mu+ at PSI')
-        self.assertEqual(lifetime.added_to_rpp, '2013-11')
 
         ref = lifetime.reference
         self.assertEqual(ref.publication_name, 'PR D87 052003')
@@ -95,12 +93,12 @@ class TestMeasurements(unittest.TestCase):
         self.assertIsNone(value.limit_type)
         self.assertTrue(value.used_in_average)
         self.assertTrue(value.used_in_fit)
-        self.assertEqual(round(value.value, 7), 2.1969803)
-        self.assertEqual(round(value.error_positive*1e6, 5), 1.56525)
+        self.assertEqual(round(value.value*1e6, 7), 2.1969803)
+        self.assertEqual(round(value.error_positive*1e12, 5), 2.21359)
         self.assertEqual(value.error_negative, value.error_positive)
-        self.assertEqual(round(value.stat_error_positive*1e7), 21)
+        self.assertEqual(round(value.stat_error_positive*1e13), 21)
         self.assertEqual(value.stat_error_negative, value.stat_error_positive)
-        self.assertEqual(round(value.syst_error_positive*1e7), 7)
+        self.assertEqual(round(value.syst_error_positive*1e13), 7)
         self.assertEqual(value.syst_error_negative, value.syst_error_positive)
 
     # TODO:
