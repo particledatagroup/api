@@ -129,14 +129,14 @@ class TestData(unittest.TestCase):
         W = self.api.get_particle_by_name('W+')
         self.assertTrue(W.has_width_entry)
         self.assertFalse(W.has_lifetime_entry)
-        self.assertEqual(W.width, 2.085)
-        self.assertEqual(W.width_error, 0.042)
+        self.assertEqual(round(W.width, 3), 2.137)
+        self.assertEqual(round(W.width_error, 4), 0.0537)
         self.api.pedantic = True
         self.assertRaises(PdgNoDataError, lambda: W.lifetime)
         self.assertRaises(PdgNoDataError, lambda: W.lifetime_error)
         self.api.pedantic = False
-        self.assertEqual(round(W.lifetime * 1e25, 2), 3.16)
-        self.assertEqual(round(W.lifetime_error * 1e25, 3), 0.064)
+        self.assertEqual(round(W.lifetime * 1e25, 2), 3.08)
+        self.assertEqual(round(W.lifetime_error * 1e25, 3), 0.077)
 
     def test_Kstar_892(self):
         ps = self.api.get('M018')
@@ -217,7 +217,7 @@ class TestData(unittest.TestCase):
         decay = self.api.get('S043.6')
         self.assertIsInstance(decay, PdgBranchingFraction)
         self.assertTrue(decay.is_limit)
-        self.assertEqual(decay.value, 7e-6)
+        self.assertEqual(decay.value, 1.9e-6)
         ps = decay.decay_products
         self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
 
