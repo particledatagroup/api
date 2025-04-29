@@ -10,6 +10,7 @@ from pdg.measurement import PdgReference, PdgValue
 
 def print_value(v: PdgValue):
     print(f'VALUE (10^{v.display_power_of_ten}): {v.value} ± {v.error}')
+    print(f'VALUE_TEXT: {v.display_value_text}')
     print(f'EVTS: {v.measurement.event_count}')
     print(f'DOCUMENT ID: {v.measurement.reference.document_id}')
     print(f'TECN: {v.measurement.technique}')
@@ -32,6 +33,8 @@ def print_datablock(api: PdgApi, pdgid: str):
 
     for sv in node.summary_values():
         print(f'{sv.value_type}: {sv.value} ± {sv.error}')
+        print(f'{sv.display_value_text}')
+        print()
     print()
 
     values = chain.from_iterable(m.values() for m in node.get_measurements())
