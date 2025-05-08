@@ -25,7 +25,7 @@ class PdgSummaryValue(dict):
         indicator = self.value_type
         if not indicator:
             indicator = '[key = %s]' % self.value_type_key
-        return '%-20s %-20s  %s' % (self.display_value_text, indicator, self.comment if self.comment else '')
+        return '%-20s %-20s  %s' % (self.value_text, indicator, self.comment if self.comment else '')
 
     def pprint(self):
         """Print all data in this PdgSummaryValue object in a nice format (for debugging)."""
@@ -184,18 +184,29 @@ class PdgSummaryValue(dict):
         return self['unit_text']
 
     @property
+    def value_text(self):
+        """Value and uncertainty in plain text format in units given by
+           property units, including the power of ten, if applicable
+           (see display_power_of_ten)"""
+        return self['value_text']
+
+    @property
     def display_value_text(self):
-        """Value and uncertainty in plain text format in units given by property units."""
+        """Value and uncertainty in plain text format as displayed in
+           Listings tables. Does not include any power of ten or percent sign.
+           Must be combined with the display_power_of_ten property in order
+           to obtain the numerical value in units given by the property units."""
         return self['display_value_text']
 
     @property
     def display_power_of_ten(self):
-        """Unit multiplier (as power of ten) as used for display in Summary Tables."""
+        """Unit multiplier (as power of ten) as used for display in Listings."""
         return self['display_power_of_ten']
 
     @property
     def display_in_percent(self):
-        """True if value is rendered in percent for display in Summary Tables."""
+        """True if value is rendered in percent for display in Listings.
+           Implies that display_power_of_ten is -2."""
         return self['display_in_percent']
 
 
