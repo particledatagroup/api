@@ -55,9 +55,6 @@ class PdgMeasurement(object):
     def inline_comment(self):
         return self._get_measurement_data()['inline_comment']
 
-    @property
-    def added_to_rpp(self):
-        return self._get_measurement_data()['added_to_rpp']
 
 
 class PdgValue(object):
