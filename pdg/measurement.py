@@ -77,8 +77,8 @@ class PdgValue(object):
         return PdgMeasurement(self.api, msmt_id)
 
     @property
-    def value_name(self):
-        return self._get_value_data()['value_name']
+    def column_name(self):
+        return self._get_value_data()['column_name']
 
     @property
     def unit_text(self):
@@ -87,6 +87,10 @@ class PdgValue(object):
     @property
     def unit_tex(self):
         return self._get_value_data()['unit_tex']
+
+    @property
+    def value_text(self):
+        return self._get_value_data()['value_text']
 
     @property
     def display_value_text(self):
