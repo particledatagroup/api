@@ -45,13 +45,16 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(len(values), 1)
         value = values[0]
         self.assertEqual(value.measurement.id, mass.id)
-        self.assertEqual(value.value_name, 'Value')
+        self.assertEqual(value.column_name, 'Value')
         self.assertEqual(value.unit_text, 'MeV')
         self.assertEqual(value.unit_tex, 'MeV')
+        self.assertEqual(value.value_text, '105.6583755 +-0.0000023')
         self.assertEqual(value.display_value_text, '105.6583755 +-0.0000023')
         self.assertEqual(value.display_power_of_ten, 0)
         self.assertFalse(value.display_in_percent)
-        self.assertIsNone(value.limit_type)
+        self.assertIsFalse(value.is_limit)
+        self.assertIsFalse(value.is_upper_limit)
+        self.assertIsFalse(value.is_lower_limit)
         self.assertTrue(value.used_in_average)
         self.assertTrue(value.used_in_fit)
         self.assertEqual(round(value.value, 7), 105.6583755)
@@ -84,13 +87,16 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(len(values), 1)
         value = values[0]
         self.assertEqual(value.measurement.id, lifetime.id)
-        self.assertEqual(value.value_name, 'Value')
+        self.assertEqual(value.column_name, 'Value')
         self.assertEqual(value.unit_text, 's')
         self.assertEqual(value.unit_tex, 's')
+        self.assertEqual(value.value_text, '(2.1969803 +-0.0000021 +-0.0000007)E-6')
         self.assertEqual(value.display_value_text, '2.1969803 +-0.0000021 +-0.0000007')
         self.assertEqual(value.display_power_of_ten, -6)
         self.assertFalse(value.display_in_percent)
-        self.assertIsNone(value.limit_type)
+        self.assertIsFalse(value.is_limit)
+        self.assertIsFalse(value.is_upper_limit)
+        self.assertIsFalse(value.is_lower_limit)
         self.assertTrue(value.used_in_average)
         self.assertTrue(value.used_in_fit)
         self.assertEqual(round(value.value*1e6, 7), 2.1969803)
@@ -100,10 +106,3 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(value.stat_error_negative, value.stat_error_positive)
         self.assertEqual(round(value.syst_error_positive*1e13), 7)
         self.assertEqual(value.syst_error_negative, value.syst_error_positive)
-
-    # TODO:
-    # - particle that has a width instead of a lifetime
-    # - footnote
-    # - measurements below the line
-    # - multi-column measurements
-    # - limits
