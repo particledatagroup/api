@@ -138,7 +138,7 @@ class PdgSummaryValue(dict):
 
     @property
     def is_lower_limit(self):
-        """True if value is an upper limit."""
+        """True if value is an lower limit."""
         return self['limit_type'] == 'L'
 
     @property
