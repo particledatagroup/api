@@ -46,9 +46,11 @@ class TestMeasurements(unittest.TestCase):
         value = values[0]
         self.assertEqual(value.measurement.id, mass.id)
         self.assertEqual(value.column_name, 'VALUE')
+        self.assertEqual(value.column_name_tex, 'VALUE')
         self.assertEqual(value.unit_text, 'MeV')
         self.assertEqual(value.unit_tex, 'MeV')
         self.assertEqual(value.value_text, '105.6583755 +- 0.0000023')
+        self.assertEqual(value.value_tex, '$105.6583755$ $\\pm0.0000023$')
         self.assertEqual(value.display_value_text, '105.6583755 +-0.0000023')
         self.assertEqual(value.display_power_of_ten, 0)
         self.assertFalse(value.display_in_percent)
@@ -88,9 +90,11 @@ class TestMeasurements(unittest.TestCase):
         value = values[0]
         self.assertEqual(value.measurement.id, lifetime.id)
         self.assertEqual(value.column_name, 'VALUE')
+        self.assertEqual(value.column_name_tex, 'VALUE')
         self.assertEqual(value.unit_text, 's')
         self.assertEqual(value.unit_tex, 's')
         self.assertEqual(value.value_text, '2.1969803+-0.0000021+-0.0000007 E-6')
+        self.assertEqual(value.value_tex, '($2.1969803$ $\\pm0.0000021$ $\\pm0.0000007$) $ \\times 10^{-6}$')
         self.assertEqual(value.display_value_text, '2.1969803 +-0.0000021 +-0.0000007')
         self.assertEqual(value.display_power_of_ten, -6)
         self.assertFalse(value.display_in_percent)
