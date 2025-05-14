@@ -180,31 +180,29 @@ class PdgSummaryValue(dict):
 
     @property
     def units(self):
-        """(Deprecated) Alias for the unit property."""
-        return self.unit
-
-    @property
-    def units_tex(self):
-        """(Deprecated) Alias for the unit_tex property."""
-        return self.units_tex
-
-    @property
-    def unit(self):
         """Units (in plain text format) used by value, error_positive,
         error_negative, and display_value_text."""
         return self['unit_text']
 
     @property
-    def unit_tex(self):
-        """Units (in TeX format) used by value, error_positive, error_negative, and display_value_text."""
+    def units_tex(self):
+        """Units (in TeX format) used by value, error_positive, error_negative,
+        and display_value_text."""
         return self['unit_tex']
 
     @property
     def value_text(self):
-        """Value and uncertainty in plain text format in units given by
+        """Value and uncertainty (in plain text format) in units given by
            property units, including the power of ten, if applicable
            (see display_power_of_ten)"""
         return self['value_text']
+
+    @property
+    def value_tex(self):
+        """Value and uncertainty (in TeX format) in units given by property
+           units, including the power of ten, if applicable (see
+           display_power_of_ten)"""
+        return self['value_tex']
 
     @property
     def display_value_text(self):
