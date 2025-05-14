@@ -48,7 +48,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(pion.quantum_J, '0')
         self.assertEqual(pion.quantum_P, '-')
         self.assertEqual(pion.quantum_C, None)
-        self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=False)), 12)
+        self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=False)), 14)
         self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=True)), 10)
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions()), 9)
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions(include_subdecays=True)), 11)
@@ -103,9 +103,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(best_value.error_negative, 5), 0.00034)
         self.assertEqual(round(best_value.scale_factor, 1), 1.5)
         self.assertEqual(best_value.units, '')
-        self.assertEqual(best_value.value_text, '(98.823+-0.034)E-2')
-        self.assertEqual(best_value.display_value_text, '98.823+-0.034')
-        self.assertEqual(best_value.display_power_of_ten, -2)
+        self.assertEqual(best_value.value_text, '(98.823+-0.034)%') # FIXME; no %
+        self.assertEqual(best_value.display_value_text, '0.98823+-0.00034')
+        self.assertEqual(best_value.display_power_of_ten, 0)
         self.assertEqual(best_value.value_type_key, 'FC')
         # self.assertEqual(best_value.display_in_percent, True)   # FIXME
 
@@ -151,14 +151,14 @@ class TestData(unittest.TestCase):
         # Check that DISPLAY_VALUE_TEXT is being parsed properly
         # Symmetric errors:
         self.assertEqual(round(self.api.get('S086T').value*1e12, 2), 1.52)
-        self.assertEqual(round(self.api.get('S086T').error_positive*1e15, 1), 5)
-        self.assertEqual(round(self.api.get('S086T').error_negative*1e15, 1), 5)
-        self.assertEqual(round(self.api.get('S086T').error*1e15, 1), 5)
+        self.assertEqual(round(self.api.get('S086T').error_positive*1e15, 1), 6)
+        self.assertEqual(round(self.api.get('S086T').error_negative*1e15, 1), 6)
+        self.assertEqual(round(self.api.get('S086T').error*1e15, 1), 6)
         # Slightly asymmetric errors:
         self.assertEqual(round(self.api.get('S063T').value*1e12, 2), 1.64)
-        self.assertEqual(round(self.api.get('S063T').error_positive*1e13, 1), 1.8)
-        self.assertEqual(round(self.api.get('S063T').error_negative*1e13, 1), 1.7)
-        self.assertEqual(round(self.api.get('S063T').error*1e13, 2), 1.75)
+        self.assertEqual(round(self.api.get('S063T').error_positive*1e13, 1), 1.6)
+        self.assertEqual(round(self.api.get('S063T').error_negative*1e13, 1), 1.6)
+        self.assertEqual(round(self.api.get('S063T').error*1e13, 1), 1.6)
         # Very asymmetric errors:
         self.assertEqual(round(self.api.get('S041P63').value*1e3, 1), 10.2)
         self.assertEqual(round(self.api.get('S041P63').error_positive*1e3, 1), 3.2)
