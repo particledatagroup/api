@@ -111,7 +111,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(best_value.display_value_text, '0.98823+-0.00034')
         self.assertEqual(best_value.display_power_of_ten, 0)
         self.assertEqual(best_value.value_type_key, 'FC')
-        # self.assertEqual(best_value.display_in_percent, True)   # FIXME
+        self.assertEqual(best_value.display_in_percent, True)
 
     def test_subdecay_modes(self):
         self.assertEqual(self.api.get('S008.1').is_subdecay, False)
