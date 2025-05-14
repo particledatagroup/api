@@ -91,6 +91,18 @@ class PdgValue(object):
 
     @property
     def column_name(self):
+        """The name of the column (in plain text format) in which this value is
+           displayed in the PDG Listings."""
+        return self._get_value_data()['column_name']
+
+    @property
+    def column_name(self):
+        """The name of the column (in TeX format) in which this value is
+        displayed in the PDG Listings."""
+        return self._get_value_data()['column_name_tex']
+
+    @property
+    def column_name_tex(self):
         """The name of the column in which this value is displayed in the
            PDG Listings."""
         return self._get_value_data()['column_name']
@@ -107,10 +119,17 @@ class PdgValue(object):
 
     @property
     def value_text(self):
-        """Value and uncertainty in plain text format in units given by
+        """Value and uncertainty (in plain text format) in units given by
            property units, including the power of ten, if applicable
            (see display_power_of_ten)"""
         return self._get_value_data()['value_text']
+
+    @property
+    def value_tex(self):
+        """Value and uncertainty (in TeX format) in units given by property
+           units, including the power of ten, if applicable (see
+           display_power_of_ten)"""
+        return self._get_value_data()['value_tex']
 
     @property
     def display_value_text(self):
