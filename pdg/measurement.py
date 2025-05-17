@@ -96,16 +96,10 @@ class PdgValue(object):
         return self._get_value_data()['column_name']
 
     @property
-    def column_name(self):
+    def column_name_tex(self):
         """The name of the column (in TeX format) in which this value is
         displayed in the PDG Listings."""
         return self._get_value_data()['column_name_tex']
-
-    @property
-    def column_name_tex(self):
-        """The name of the column in which this value is displayed in the
-           PDG Listings."""
-        return self._get_value_data()['column_name']
 
     @property
     def unit_text(self):
