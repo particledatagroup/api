@@ -184,11 +184,11 @@ class PdgSummaryValue(dict):
         error_negative, and display_value_text."""
         return self['unit_text']
 
-    @property
-    def units_tex(self):
-        """Units (in TeX format) used by value, error_positive, error_negative,
-        and display_value_text."""
-        return self['unit_tex']
+    # @property
+    # def units_tex(self):
+    #     """Units (in TeX format) used by value, error_positive, error_negative,
+    #     and display_value_text."""
+    #     return self['unit_tex']
 
     @property
     def value_text(self):
@@ -197,12 +197,12 @@ class PdgSummaryValue(dict):
            (see display_power_of_ten)"""
         return self['value_text']
 
-    @property
-    def value_tex(self):
-        """Value and uncertainty (in TeX format) in units given by property
-           units, including the power of ten, if applicable (see
-           display_power_of_ten)"""
-        return self['value_tex']
+    # @property
+    # def value_tex(self):
+    #     """Value and uncertainty (in TeX format) in units given by property
+    #        units, including the power of ten, if applicable (see
+    #        display_power_of_ten)"""
+    #     return self['value_tex']
 
     @property
     def display_value_text(self):

@@ -74,9 +74,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(best_value.error,5), 0.00018)
         self.assertEqual(round(best_value.scale_factor, 1), 1.8)
         self.assertEqual(best_value.units, 'MeV')
-        self.assertEqual(best_value.units_tex, 'MeV')
+        # self.assertEqual(best_value.units_tex, 'MeV')
         self.assertEqual(best_value.value_text, '139.57039+-0.00018')
-        self.assertEqual(best_value.value_tex, None) # FIXME
+        # self.assertEqual(best_value.value_tex, None) # FIXME
         self.assertEqual(best_value.display_value_text, '139.57039+-0.00018')
         self.assertEqual(best_value.value_type_key, 'FC')
         self.assertEqual(str(best_value).strip(), '139.57039+-0.00018   OUR FIT')

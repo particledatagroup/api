@@ -106,10 +106,10 @@ class PdgValue(object):
         """The units (in plain text format) in which this value is specified."""
         return self._get_value_data()['unit_text']
 
-    @property
-    def unit_tex(self):
-        """The units (in TeX format) in which this value is specified."""
-        return self._get_value_data()['unit_tex']
+    # @property
+    # def unit_tex(self):
+    #     """The units (in TeX format) in which this value is specified."""
+    #     return self._get_value_data()['unit_tex']
 
     @property
     def value_text(self):
@@ -118,12 +118,12 @@ class PdgValue(object):
            (see display_power_of_ten)"""
         return self._get_value_data()['value_text']
 
-    @property
-    def value_tex(self):
-        """Value and uncertainty (in TeX format) in units given by property
-           units, including the power of ten, if applicable (see
-           display_power_of_ten)"""
-        return self._get_value_data()['value_tex']
+    # @property
+    # def value_tex(self):
+    #     """Value and uncertainty (in TeX format) in units given by property
+    #        units, including the power of ten, if applicable (see
+    #        display_power_of_ten)"""
+    #     return self._get_value_data()['value_tex']
 
     @property
     def display_value_text(self):
@@ -329,7 +329,7 @@ class PdgFootnote(object):
         """The footnote text, in plain text format."""
         return self._get_footnote_data()['text']
 
-    @property
-    def text_tex(self):
-        """The footnote text, in plain text format."""
-        return self._get_footnote_data()['text_tex']
+    # @property
+    # def text_tex(self):
+    #     """The footnote text, in plain text format."""
+    #     return self._get_footnote_data()['text_tex']
