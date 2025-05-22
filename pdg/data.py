@@ -333,17 +333,23 @@ class PdgData(object):
             return conn.execute(query, {'pdgid': pdgid.upper(), 'edition': edition}).scalar()
 
     def get_parent_pdgid(self, include_edition=True):
-        """Return PDG Identifiers of parent quantity."""
-        if include_edition:
-            return make_id(self._get_pdgid()['parent_pdgid'], self.edition)
-        else:
-            return self._get_pdgid()['parent_pdgid']
+        """Return PDG Identifier of this property's parent. In most cases, this
+        will be the PDG ID of the particle itself. For those properties, such as
+        neutrino mixing angles, that don't have a specific parent particle, the
+        parent will be a top-level section (S067 in this case). If this
+        property's direct parent is a subsection header, it will be skipped, and
+        the PDGID of the top-level section or particle will be returned
+        instead."""
+        if self._get_pdgid()['parent_pdgid'] is None:
+            return None
+        p = self
+        while p._get_pdgid()['parent_pdgid'] is not None:
+            p = self.api.get(p._get_pdgid()['parent_pdgid'], self.edition)
+        return p.pdgid if include_edition else p.baseid
 
     def get_particles(self):
         """Return PdgParticleList for this property's particle."""
-        p = self
-        while p.baseid != p.get_parent_pdgid(False) and p.get_parent_pdgid(False):
-            p = self.api.get(p.get_parent_pdgid())
+        p = self.api.get(self.get_parent_pdgid())
         if p.data_type != 'PART':
             err = 'Identifier %s does not have a parent particle'
             raise PdgNoDataError(err)

@@ -174,5 +174,15 @@ class TestData(unittest.TestCase):
             self.assertEqual(self.api.get('S042T').comment,
                              '(Produced by HFLAV)')
 
+    def test_parent_pdgid(self):
+        mass = self.api.get('Q007TP4')
+        # We want to verify that the intermediate section gets skipped, so
+        # first, we check that the direct parent is in fact such a section
+        direct_parent = self.api.get(mass._get_pdgid()['parent_pdgid'])
+        self.assertEqual(direct_parent.data_type, 'SEC')
+        # Now we can check that the section gets skipped
+        self.assertEqual(mass.get_parent_pdgid(include_edition=False), 'Q007')
+
+
 if __name__ == '__main__':
     unittest.main()
