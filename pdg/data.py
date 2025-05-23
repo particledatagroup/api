@@ -527,6 +527,11 @@ class PdgProperty(PdgData):
         return self.best_summary().comment
 
     @property
+    def value_text(self):
+        """Shortcut for best_summary().value_text."""
+        return self.best_summary().value_text
+
+    @property
     def display_value_text(self):
         """Shortcut for best_summary().display_value_text."""
         return self.best_summary().display_value_text
