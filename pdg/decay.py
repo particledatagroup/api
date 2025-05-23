@@ -92,4 +92,5 @@ class PdgBranchingFraction(PdgProperty):
 
 
 class PdgBranchingRatio(PdgProperty):
-    pass
+    def _repr_extra(self):
+        return '"%s"' % self.description
