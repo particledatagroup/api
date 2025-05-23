@@ -26,6 +26,17 @@ class PdgMeasurement(object):
                 self.id):
             yield PdgValue(self.api, value_id)
 
+    def get_value(self):
+        """Returns the PdgValue associated with this measurement. Raises
+        PdgAmbiguousValueError if there are multiple values (i.e. this is a
+        multi-column measurement)."""
+        vs = list(self.values())
+        if len(vs) != 1:
+            err = 'Multiple values associated with this measurement. ' \
+                + 'Use the values() method instead.'
+            raise PdgAmbiguousValueError(err)
+        return vs[0]
+
     @property
     def reference(self):
         """The PdgReference associated with this measurement."""
