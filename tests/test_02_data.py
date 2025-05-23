@@ -183,6 +183,14 @@ class TestData(unittest.TestCase):
         # Now we can check that the section gets skipped
         self.assertEqual(mass.get_parent_pdgid(include_edition=False), 'Q007')
 
+    def test_decay_pdgid_map(self):
+        bf = self.api.get('B000.2')
+        br_pdgids = sorted([br.baseid for br in bf.branching_ratios()])
+        self.assertEqual(br_pdgids, ['B000R01', 'B000R2'])
+        br = self.api.get('B000R2')
+        bf_pdgids = sorted([bf.baseid for bf in br.branching_fractions()])
+        self.assertEqual(bf_pdgids, ['B000.1', 'B000.2'])
+
 
 if __name__ == '__main__':
     unittest.main()

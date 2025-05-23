@@ -90,7 +90,30 @@ class PdgBranchingFraction(PdgProperty):
         else:
             return 0
 
+    def branching_ratios(self):
+        """Return iterator over all branching ratios associated with this
+        branching fraction."""
+        pdgid_map = self.api.db.tables['pdgid_map']
+        query = select(pdgid_map.c.target) \
+            .where(pdgid_map.c.source == bindparam('source'))
+        with self.api.engine.connect() as conn:
+            matches = conn.execute(query, {'source': self.baseid}).fetchall()
+        for row in matches:
+            yield PdgBranchingRatio(self.api, row.target, self.edition)
+
 
 class PdgBranchingRatio(PdgProperty):
+    """Class for all information about a branching ratio."""
+    def branching_fractions(self):
+        """Return iterator over all branching fractions associated with this
+        branching ratio."""
+        pdgid_map = self.api.db.tables['pdgid_map']
+        query = select(pdgid_map.c.source) \
+            .where(pdgid_map.c.target == bindparam('target'))
+        with self.api.engine.connect() as conn:
+            matches = conn.execute(query, {'target': self.baseid}).fetchall()
+        for row in matches:
+            yield PdgBranchingFraction(self.api, row.source, self.edition)
+
     def _repr_extra(self):
         return '"%s"' % self.description
