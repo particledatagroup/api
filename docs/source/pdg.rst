@@ -16,6 +16,7 @@ Submodules
    pdg.data
    pdg.decay
    pdg.errors
+   pdg.measurement
    pdg.particle
    pdg.units
    pdg.utils
