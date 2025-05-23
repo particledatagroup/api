@@ -22,7 +22,7 @@ class TestMeasurements(unittest.TestCase):
         t_msmts = list(muon.lifetime_measurements(require_summary_data=False))
 
         mass = next(m for m in m_msmts
-                    if m.inline_comment == '2018 CODATA value'
+                    if m.comment == '2018 CODATA value'
                     and m.pdgid == 'S004M')
         self.assertEqual(mass.pdgid, 'S004M')
         self.assertEqual(mass.event_count, '')
@@ -30,7 +30,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(mass.technique, 'RVUE')
         self.assertEqual(mass.charge, '')
         self.assertFalse(mass.changebar)
-        self.assertEqual(mass.inline_comment, '2018 CODATA value')
+        self.assertEqual(mass.comment, '2018 CODATA value')
 
         ref = mass.reference
         self.assertEqual(ref.publication_name, 'RMP 93 025010')
@@ -67,14 +67,14 @@ class TestMeasurements(unittest.TestCase):
         self.assertIsNone(value.syst_error_positive)
         self.assertIsNone(value.syst_error_negative)
 
-        lifetime = next(t for t in t_msmts if t.inline_comment == 'Surface mu+ at PSI')
+        lifetime = next(t for t in t_msmts if t.comment == 'Surface mu+ at PSI')
         self.assertEqual(lifetime.pdgid, 'S004T')
         self.assertEqual(lifetime.event_count, '')
         self.assertIsNone(lifetime.confidence_level)
         self.assertEqual(lifetime.technique, 'CNTR')
         self.assertEqual(lifetime.charge, '+')
         self.assertFalse(lifetime.changebar)
-        self.assertEqual(lifetime.inline_comment, 'Surface mu+ at PSI')
+        self.assertEqual(lifetime.comment, 'Surface mu+ at PSI')
 
         ref = lifetime.reference
         self.assertEqual(ref.publication_name, 'PR D87 052003')

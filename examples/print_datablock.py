@@ -21,7 +21,7 @@ def dictify_value(v: PdgValue):
         'EVTS': v.measurement.event_count,
         'DOCUMENT ID': v.measurement.reference.document_id,
         'TECN': v.measurement.technique,
-        'COMMENT': v.measurement.inline_comment,
+        'COMMENT': v.measurement.comment,
     }
 
 

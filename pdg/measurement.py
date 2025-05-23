@@ -76,9 +76,9 @@ class PdgMeasurement(object):
         return self._get_measurement_data()['changebar']
 
     @property
-    def inline_comment(self):
+    def comment(self):
         """Inline comment displayed with this measurement in the PDG Listings."""
-        return self._get_measurement_data()['inline_comment']
+        return self._get_measurement_data()['comment']
 
 
 class PdgValue(object):
