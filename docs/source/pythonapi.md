@@ -166,6 +166,29 @@ print('mass   = ', pi_minus.mass, 'GeV')
 print('spin J = ', pi_minus.quantum_J)
 ```
 
+### Properties and measurements
+
+The following code snippet iterates over the mass properties of the top quark.
+For each property, the best summary value is printed, followed by all individual
+measurements included in PDG fits or averages:
+
+```python
+import pdg
+api = pdg.connect()
+for mass in api.get_particle_by_name('t').masses():
+    print('Best summary value for %s (%s): %s = %s'
+          % (mass.pdgid, mass.description, mass.best_summary().value_type,
+             mass.best_summary().value_text))
+    for msmt in mass.get_measurements():
+        if msmt.get_value().used_in_average or msmt.get_value().used_in_fit:
+            print('%s (%s): %s'
+                  % (msmt.reference.doi, msmt.reference.title,
+                     msmt.get_value().value_text))
+    print()
+```
+
+For a more extensive example, see `examples/print_datablock.py` in the API
+repository.
 
 ### Branching fractions
 
