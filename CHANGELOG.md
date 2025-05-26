@@ -1,5 +1,16 @@
 # Release history (latest release first)
 
+## Version 0.2.0 (May 30, 2025)
+- Data from 2025 update of Summary Tables and Particle Listings
+- Add experimental support for data from Particle Listings
+- SQLite file schema update to version 0.3 with additional tables to support data from Particle Listings, 
+  a new column PDGDATA.VALUE_TEXT, and redefinition of PDGDATA.DISPLAY_VALUE_TEXT. The text representation
+  of Summary Table values with error(s) and including powers of ten previously provided in PDGDATA.DISPLAY_VALUE_TEXT
+  is now PDGDATA.VALUE_TEXT for consistency with the JSON API and new Listings tables. PDGDATA.DISPLAY_VALUE_TEXT
+  is redefined to no longer include the powers of ten indicated by PDGDATA.DISPLAY_POWERS_OF_TEN nor any percent signs.
+- Support navigation between branching fractions and contributing branching fraction ratios
+- Miscellaneous bug fixes
+
 ## Version 0.1.4 (April 18, 2025)
 - Add tutorial for Python API
 - Add usage example for SQLite files
