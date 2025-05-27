@@ -75,7 +75,7 @@ The figure below summarizes the database schema and the columns of each table.
 Arrows represent foreign key relations. Bold column names indicate constraints.
 Further details about the database file as well as examples of how to use it will be provided in the future.
 
-![Schema of the SQLite database file](schema-v0.2.png "Schema of the SQLite database file")
+![Schema of the SQLite database file](schema-v0.3.png "Schema of the SQLite database file")
 
 ## Usage example
 
