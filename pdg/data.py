@@ -15,6 +15,7 @@ from sqlalchemy import select, bindparam, func
 from pdg.utils import parse_id, make_id
 from pdg.units import UNIT_CONVERSION_FACTORS, convert
 from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
+from pdg.measurement import PdgMeasurement
 
 
 class PdgSummaryValue(dict):
@@ -24,7 +25,7 @@ class PdgSummaryValue(dict):
         indicator = self.value_type
         if not indicator:
             indicator = '[key = %s]' % self.value_type_key
-        return '%-20s %-20s  %s' % (self.display_value_text, indicator, self.comment if self.comment else '')
+        return '%-20s %-20s  %s' % (self.value_text, indicator, self.comment if self.comment else '')
 
     def pprint(self):
         """Print all data in this PdgSummaryValue object in a nice format (for debugging)."""
@@ -137,7 +138,7 @@ class PdgSummaryValue(dict):
 
     @property
     def is_lower_limit(self):
-        """True if value is an upper limit."""
+        """True if value is an lower limit."""
         return self['limit_type'] == 'L'
 
     @property
@@ -179,22 +180,47 @@ class PdgSummaryValue(dict):
 
     @property
     def units(self):
-        """Units (as a string) used by value, error_positive, error_negative, and display_value_text."""
+        """Units (in plain text format) used by value, error_positive,
+        error_negative, and display_value_text."""
         return self['unit_text']
+
+    # @property
+    # def units_tex(self):
+    #     """Units (in TeX format) used by value, error_positive, error_negative,
+    #     and display_value_text."""
+    #     return self['unit_tex']
+
+    @property
+    def value_text(self):
+        """Value and uncertainty (in plain text format) in units given by
+           property units, including the power of ten, if applicable
+           (see display_power_of_ten)"""
+        return self['value_text']
+
+    # @property
+    # def value_tex(self):
+    #     """Value and uncertainty (in TeX format) in units given by property
+    #        units, including the power of ten, if applicable (see
+    #        display_power_of_ten)"""
+    #     return self['value_tex']
 
     @property
     def display_value_text(self):
-        """Value and uncertainty in plain text format in units given by property units."""
+        """Value and uncertainty in plain text format as displayed in
+           Listings tables. Does not include any power of ten or percent sign.
+           Must be combined with the display_power_of_ten property in order
+           to obtain the numerical value in units given by the property units."""
         return self['display_value_text']
 
     @property
     def display_power_of_ten(self):
-        """Unit multiplier (as power of ten) as used for display in Summary Tables."""
+        """Unit multiplier (as power of ten) as used for display in Listings."""
         return self['display_power_of_ten']
 
     @property
     def display_in_percent(self):
-        """True if value is rendered in percent for display in Summary Tables."""
+        """True if value is rendered in percent for display in Listings.
+           Implies that display_power_of_ten is -2."""
         return self['display_in_percent']
 
 
@@ -307,17 +333,23 @@ class PdgData(object):
             return conn.execute(query, {'pdgid': pdgid.upper(), 'edition': edition}).scalar()
 
     def get_parent_pdgid(self, include_edition=True):
-        """Return PDG Identifiers of parent quantity."""
-        if include_edition:
-            return make_id(self._get_pdgid()['parent_pdgid'], self.edition)
-        else:
-            return self._get_pdgid()['parent_pdgid']
+        """Return PDG Identifier of this property's parent. In most cases, this
+        will be the PDG ID of the particle itself. For those properties, such as
+        neutrino mixing angles, that don't have a specific parent particle, the
+        parent will be a top-level section (S067 in this case). If this
+        property's direct parent is a subsection header, it will be skipped, and
+        the PDGID of the top-level section or particle will be returned
+        instead."""
+        if self._get_pdgid()['parent_pdgid'] is None:
+            return None
+        p = self
+        while p._get_pdgid()['parent_pdgid'] is not None:
+            p = self.api.get(p._get_pdgid()['parent_pdgid'], self.edition)
+        return p.pdgid if include_edition else p.baseid
 
     def get_particles(self):
         """Return PdgParticleList for this property's particle."""
-        p = self
-        while p.baseid != p.get_parent_pdgid(False) and p.get_parent_pdgid(False):
-            p = self.api.get(p.get_parent_pdgid())
+        p = self.api.get(self.get_parent_pdgid())
         if p.data_type != 'PART':
             err = 'Identifier %s does not have a parent particle'
             raise PdgNoDataError(err)
@@ -440,6 +472,15 @@ class PdgProperty(PdgData):
         except PdgAmbiguousValueError:
             return False
 
+    def get_measurements(self):
+        """Return all of the measurements associated with this property."""
+        pdgmsmt_table = self.api.db.tables['pdgmeasurement']
+        query = select(pdgmsmt_table.c.id)
+        query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
+        with self.api.engine.connect() as conn:
+            for entry in conn.execute(query, {'pdgid': self.baseid}):
+                yield PdgMeasurement(self.api, entry.id)
+
     @property
     def confidence_level(self):
         """Shortcut for best_summary().confidence_level."""
@@ -486,6 +527,11 @@ class PdgProperty(PdgData):
         return self.best_summary().comment
 
     @property
+    def value_text(self):
+        """Shortcut for best_summary().value_text."""
+        return self.best_summary().value_text
+
+    @property
     def display_value_text(self):
         """Shortcut for best_summary().display_value_text."""
         return self.best_summary().display_value_text
@@ -500,4 +546,8 @@ class PdgWidth(PdgProperty):
 
 
 class PdgLifetime(PdgProperty):
+    pass
+
+
+class PdgText(PdgData):
     pass

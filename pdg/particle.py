@@ -6,7 +6,7 @@ from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
 from pdg.utils import make_id, best
-from pdg.data import PdgData
+from pdg.data import PdgData, PdgProperty, PdgText
 from pdg.units import HBAR_IN_GEV_S
 
 
@@ -246,6 +246,12 @@ class PdgParticle(PdgData):
                                               'data_type_key': data_type_key,
                                               'in_summary_table': in_summary_table}):
                 prop = self.api.get(make_id(entry.pdgid, self.edition))
+
+                # Skip this property if it's a PdgText (i.e. subsection) or if
+                # it's a PdgProperty we don't know how to interpret (i.e. its
+                # data_type is missing from pdg.api.DATA_TYPE_MAP)
+                if type(prop) in [PdgText, PdgProperty]:
+                    continue
 
                 # For masses, widths, and lifetimes, we must take care to choose
                 # the appropriate entry according to the particle's charge.
@@ -492,6 +498,21 @@ class PdgParticle(PdgData):
     def has_lifetime_entry(self):
         """Whether the particle has at least one defined lifetime."""
         return next(self.lifetimes(), None) is not None
+
+    def mass_measurements(self, require_summary_data=True):
+        for m in self.masses(require_summary_data=require_summary_data):
+            for msmt in m.get_measurements():
+                yield msmt
+
+    def lifetime_measurements(self, require_summary_data=True):
+        for t in self.lifetimes(require_summary_data=require_summary_data):
+            for msmt in t.get_measurements():
+                yield msmt
+
+    def width_measurements(self, require_summary_data=True):
+        for g in self.widths(require_summary_data=require_summary_data):
+            for msmt in g.get_measurements():
+                yield msmt
 
 
 class PdgParticleList(PdgData, list):

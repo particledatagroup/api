@@ -7,8 +7,8 @@ from sqlalchemy import func, select, bindparam, distinct, desc
 import pdg
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.utils import parse_id
-from pdg.data import PdgProperty, PdgMass, PdgWidth, PdgLifetime
-from pdg.decay import PdgBranchingFraction, PdgItem
+from pdg.data import PdgProperty, PdgMass, PdgWidth, PdgLifetime, PdgText
+from pdg.decay import PdgBranchingFraction, PdgBranchingRatio, PdgItem
 from pdg.particle import PdgParticle, PdgParticleList
 
 
@@ -28,8 +28,10 @@ DATA_TYPE_MAP = {
     'BFI3': PdgBranchingFraction,
     'BFI4': PdgBranchingFraction,
     'BFI5': PdgBranchingFraction,
+    'BR': PdgBranchingRatio,
     'G': PdgWidth,
     'T': PdgLifetime,
+    'SEC': PdgText,
 }
 
 

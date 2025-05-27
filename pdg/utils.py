@@ -1,9 +1,11 @@
 """
 Utilities for PDG API.
 """
+import math
+
+from sqlalchemy import select, bindparam
 
 from pdg.errors import PdgNoDataError, PdgAmbiguousValueError, PdgRoundingError
-import math
 
 
 def pdg_round(value, error):
@@ -85,3 +87,27 @@ def best(properties, pedantic=False, quantity=None):
                 return props_best[0]
             else:
                 return props_without_alternates[0]
+
+
+def get_row_data(api, table_name, row_id):
+    """Return dict built from the row of the specified table that has an id of
+    row_id.
+    """
+    table = api.db.tables[table_name]
+    query = select(table).where(table.c.id == bindparam('id'))
+    with api.engine.connect() as conn:
+        matches = conn.execute(query, {'id': row_id}).fetchall()
+    assert len(matches) == 1
+    return matches[0]._mapping
+
+
+def get_linked_ids(api, table_name, src_col, src_id, dest_col='id'):
+    """Return iterator over all values of dest_col in the specified table for which
+    src_col = src_id.
+    """
+    table = api.db.tables[table_name]
+    query = select(table.c[dest_col]) \
+        .where(table.c[src_col] == bindparam('src_id'))
+    with api.engine.connect() as conn:
+        for entry in conn.execute(query, {'src_id': src_id}):
+            yield entry._mapping[dest_col]
