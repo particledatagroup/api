@@ -20,8 +20,8 @@ To provide feedback on the PDG API or to report any bugs:
 * All the above tools support access to the data published in the Summary Tables (excluding footnotes),
   with access both via individual PDG Identifiers and navigation via particles to particle properties,
   **branching fractions**, and the corresponding Summary Table values.
-* Starting with the 2025 update of the _Review of Particle Physics_, experimental access to
-  the data from the Particle Listings is available.
+* Starting with the 2025 update of the _Review of Particle Physics_, **experimental access to
+  the data from the Particle Listings** is available.
 
 ## Features under development
 * Full access to data published in the Particle Listings
