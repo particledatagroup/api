@@ -126,13 +126,17 @@ must be separately obtained via '/summaries' if desired.
 
 The following information is returned by '/listings'. As for '/summaries', properties without value are not included.
 
-| Key                | Data type | Description                                                                                                                       |
-|--------------------|-----------|-----------------------------------------------------------------------------------------------------------------------------------|
-| pdgid              | String    | PDG Identifier/particle property for which data is returned                                                                       |
-| description        | String    | Plain-ASCII description of the quantity the PDG Identifier refers to                                                              |
-| parent_pdgid       | String    | Parent PDG Identifier/particle of the returned data                                                                               |
-| parent_description | String    | Plain-ASCII description of parent PDG Identifier/particle                                                                         |
-| measurements       | Array     | An array of JSON objects, each describing a measurement of the corresponding quantities (see below) |
+| Key                | Data type | Description                                                                                                                                                                          |
+|--------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| pdgid              | String    | PDG Identifier/particle property for which data is returned                                                                                                                          |
+| description        | String    | Plain-ASCII description of the quantity the PDG Identifier refers to                                                                                                                 |
+| note               | String    | Explanatory note in ASCII format, typically shown in the header of the data table                                                                                                    |
+| parent_pdgid       | String    | Parent PDG Identifier/particle of the returned data                                                                                                                                  |
+| parent_description | String    | Plain-ASCII description of parent PDG Identifier/particle                                                                                                                            |
+| measurements       | Array     | An array of JSON objects, each describing a measurement of the corresponding quantities (see below)                                                                                  |
+| related_data       | Array     | An array of JSON objects for PDG Identifiers whose data contributes to the corresponding quantity. Each entry contains the JSON that /listings would return for that PDG Identifier. |
+
+The key related_data is present for branching fractions (example: S035.1) and provides the information for all measured quantities (typically ratios of branching fractions) used to determine the corresponding branching fraction. 
 
 Each JSON object describing a measurement may contain the following data
 (keys whose value is not meaningful or known for the present quantity are omitted):
