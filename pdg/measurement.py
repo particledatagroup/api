@@ -228,6 +228,8 @@ class PdgValue(object):
             msg = 'In pedantic mode, PdgValue.error is ill-defined when the ' \
                 + 'postive and negative errors are unequal.'
             raise PdgAmbiguousValueError(msg)
+        if self.error_positive is None or self.error_negative is None:
+            return None
         return 0.5*(self.error_positive + self.error_negative)
 
     @property
@@ -241,6 +243,8 @@ class PdgValue(object):
             msg = 'In pedantic mode, PdgValue.stat_error is ill-defined when the ' \
                 + 'postive and negative statistical errors are unequal.'
             raise PdgAmbiguousValueError(msg)
+        if self.stat_error_positive is None or self.stat_error_negative is None:
+            return None
         return 0.5*(self.stat_error_positive + self.stat_error_negative)
 
     @property
@@ -254,6 +258,8 @@ class PdgValue(object):
             msg = 'In pedantic mode, PdgValue.stat_error is ill-defined when the ' \
                 + 'postive and negative systematic errors are unequal.'
             raise PdgAmbiguousValueError(msg)
+        if self.syst_error_positive is None or self.syst_error_negative is None:
+            return None
         return 0.5*(self.syst_error_positive + self.syst_error_negative)
 
 
