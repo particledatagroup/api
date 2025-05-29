@@ -6,7 +6,7 @@ from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
 from pdg.utils import make_id, best
-from pdg.data import PdgData, PdgProperty, PdgText
+from pdg.data import PdgData
 from pdg.units import HBAR_IN_GEV_S
 
 
@@ -246,12 +246,6 @@ class PdgParticle(PdgData):
                                               'data_type_key': data_type_key,
                                               'in_summary_table': in_summary_table}):
                 prop = self.api.get(make_id(entry.pdgid, self.edition))
-
-                # Skip this property if it's a PdgText (i.e. subsection) or if
-                # it's a PdgProperty we don't know how to interpret (i.e. its
-                # data_type is missing from pdg.api.DATA_TYPE_MAP)
-                if type(prop) in [PdgText, PdgProperty]:
-                    continue
 
                 # For masses, widths, and lifetimes, we must take care to choose
                 # the appropriate entry according to the particle's charge.

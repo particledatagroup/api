@@ -75,6 +75,8 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(lifetime.charge, '+')
         self.assertFalse(lifetime.changebar)
         self.assertEqual(lifetime.comment, 'Surface mu+ at PSI')
+        self.assertEqual(next(lifetime.footnotes()).text,
+                         'TISHCHENKO 2013 uses 1.6E12 mu+ events and supersedes WEBBER 2011.')
 
         ref = lifetime.reference
         self.assertEqual(ref.publication_name, 'PR D87 052003')

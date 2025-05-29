@@ -37,6 +37,16 @@ class PdgMeasurement(object):
             raise PdgAmbiguousValueError(err)
         return vs[0]
 
+    def footnotes(self):
+        """Returns an iterator of PdgFootnotes for this measurements."""
+        for foot_id in get_linked_ids(
+                self.api,
+                'pdgmeasurement_footnote',
+                'pdgmeasurement_id',
+                self.id,
+                'pdgfootnote_id'):
+            yield PdgFootnote(self.api, foot_id)
+
     @property
     def reference(self):
         """The PdgReference associated with this measurement."""
@@ -228,6 +238,8 @@ class PdgValue(object):
             msg = 'In pedantic mode, PdgValue.error is ill-defined when the ' \
                 + 'postive and negative errors are unequal.'
             raise PdgAmbiguousValueError(msg)
+        if self.error_positive is None or self.error_negative is None:
+            return None
         return 0.5*(self.error_positive + self.error_negative)
 
     @property
@@ -241,6 +253,8 @@ class PdgValue(object):
             msg = 'In pedantic mode, PdgValue.stat_error is ill-defined when the ' \
                 + 'postive and negative statistical errors are unequal.'
             raise PdgAmbiguousValueError(msg)
+        if self.stat_error_positive is None or self.stat_error_negative is None:
+            return None
         return 0.5*(self.stat_error_positive + self.stat_error_negative)
 
     @property
@@ -254,6 +268,8 @@ class PdgValue(object):
             msg = 'In pedantic mode, PdgValue.stat_error is ill-defined when the ' \
                 + 'postive and negative systematic errors are unequal.'
             raise PdgAmbiguousValueError(msg)
+        if self.syst_error_positive is None or self.syst_error_negative is None:
+            return None
         return 0.5*(self.syst_error_positive + self.syst_error_negative)
 
 
@@ -269,16 +285,6 @@ class PdgReference(object):
         return self.cache.get(
             'pdgreference',
             get_row_data(self.api, 'pdgreference', self.id))
-
-    def footnotes(self):
-        """Returns an iterator of PdgFootnotes for this reference."""
-        for foot_id in get_linked_ids(
-                self.api,
-                'pdgmeasurement_footnote',
-                'pdgmeasurement_id',
-                self.id,
-                'pdgfootnote_id'):
-            yield PdgFootnote(self.api, foot_id)
 
     @property
     def publication_name(self):

@@ -108,8 +108,8 @@ class TestData(unittest.TestCase):
         # self.assertEqual(best_value.units_tex, '')
         self.assertEqual(best_value.value_text, '(98.823+-0.034)E-2')
         # self.assertEqual(best_value.value_tex, None)                # FIXME
-        self.assertEqual(best_value.display_value_text, '0.98823+-0.00034')
-        self.assertEqual(best_value.display_power_of_ten, 0)
+        self.assertEqual(best_value.display_value_text, '98.823+-0.034')
+        self.assertEqual(best_value.display_power_of_ten, -2)
         self.assertEqual(best_value.value_type_key, 'FC')
         self.assertEqual(best_value.display_in_percent, True)
 
