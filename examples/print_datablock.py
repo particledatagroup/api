@@ -14,10 +14,13 @@ from pdg.measurement import PdgReference, PdgValue
 def dictify_value(v: PdgValue):
     return {
         'COLUMN_NAME': v.column_name,
-        'PWR_OF_TEN': f'10^{v.display_power_of_ten}',
+        'UNIT': v.unit_text,
+        'PWR_TEN': f'10^{v.display_power_of_ten}',
         'DPY_VALUE_TEXT': v.display_value_text,
+        'PCT?': 'Y' if v.display_in_percent else 'N',
         'VALUE_TEXT': v.value_text,
         'VALUE_NUM': f'{v.value} ± {v.error}',
+        'CL': v.measurement.confidence_level,
         'EVTS': v.measurement.event_count,
         'DOCUMENT ID': v.measurement.reference.document_id,
         'TECN': v.measurement.technique,
@@ -36,6 +39,7 @@ def dictify_summval(sv: PdgSummaryValue):
     return {
         'VALUE_TYPE': sv.value_type,
         'DPY_VALUE_TEXT': sv.display_value_text,
+        'PRW_TEN': sv.display_power_of_ten,
         'VALUE_TEXT': sv.value_text,
         'VALUE_NUM': f'{sv.value} ± {sv.error}'
     }
@@ -91,6 +95,17 @@ def print_datablock(api: PdgApi, pdgid: str):
     refs = [m.reference for m in node.get_measurements()]
     refs = [dictify_reference(r) for r in refs]
     print(tabulate(refs, headers='keys'))
+
+    footnotes = []
+    for msmt in node.get_measurements():
+        for foot in msmt.footnotes():
+            footnotes.append(f'{msmt.reference.document_id}: {foot.text}')
+    if footnotes:
+        print()
+        print('FOOTNOTES')
+        print('=========')
+        for fn in footnotes:
+            print(fn)
 
 
 if __name__ == '__main__':
