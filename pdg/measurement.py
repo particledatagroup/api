@@ -37,6 +37,16 @@ class PdgMeasurement(object):
             raise PdgAmbiguousValueError(err)
         return vs[0]
 
+    def footnotes(self):
+        """Returns an iterator of PdgFootnotes for this measurements."""
+        for foot_id in get_linked_ids(
+                self.api,
+                'pdgmeasurement_footnote',
+                'pdgmeasurement_id',
+                self.id,
+                'pdgfootnote_id'):
+            yield PdgFootnote(self.api, foot_id)
+
     @property
     def reference(self):
         """The PdgReference associated with this measurement."""
@@ -275,16 +285,6 @@ class PdgReference(object):
         return self.cache.get(
             'pdgreference',
             get_row_data(self.api, 'pdgreference', self.id))
-
-    def footnotes(self):
-        """Returns an iterator of PdgFootnotes for this reference."""
-        for foot_id in get_linked_ids(
-                self.api,
-                'pdgmeasurement_footnote',
-                'pdgmeasurement_id',
-                self.id,
-                'pdgfootnote_id'):
-            yield PdgFootnote(self.api, foot_id)
 
     @property
     def publication_name(self):
