@@ -23,8 +23,14 @@ To provide feedback on the PDG API or to report any bugs:
 * Starting with the 2025 update of the _Review of Particle Physics_, **experimental access to
   the data from the Particle Listings** is available.
 
+## Limitations and known bugs of the current API version
+- Fit information and correlation matrices are not yet accessible
+- Conservation law data is not yet accessible
+- Some header text/notes of Listing sections are not yet accessible
+- Some text representations of values in the Listings lack parentheses, for example the API might return "2.60361+-0.00052E-8" instead of "(2.60361+-0.00052)E-8"
+
 ## Features under development
-* Full access to data published in the Particle Listings
+* Implement access to the parts of the Listings data currently not yet accessible (see above)
 * Improved processing of aliases such as \ell and generic decay products in branching fractions
 * Improved handling of "indented" decay modes
 * Searching of PDG Identifiers and associated data (other than by low-level SQL querying of the data in the SQLite file)
