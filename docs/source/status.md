@@ -28,6 +28,7 @@ To provide feedback on the PDG API or to report any bugs:
 - Conservation law data is not yet accessible
 - Some header text/notes of Listing sections are not yet accessible
 - Some text representations of values in the Listings lack parentheses, for example the API might return "2.60361+-0.00052E-8" instead of "(2.60361+-0.00052)E-8"
+- Numerical values are missing for some limits (only text representation is available)
 
 ## Features under development
 * Implement access to the parts of the Listings data currently not yet accessible (see above)
