@@ -493,6 +493,21 @@ class PdgParticle(PdgData):
         """Whether the particle has at least one defined lifetime."""
         return next(self.lifetimes(), None) is not None
 
+    def mass_measurements(self, require_summary_data=True):
+        for m in self.masses(require_summary_data=require_summary_data):
+            for msmt in m.get_measurements():
+                yield msmt
+
+    def lifetime_measurements(self, require_summary_data=True):
+        for t in self.lifetimes(require_summary_data=require_summary_data):
+            for msmt in t.get_measurements():
+                yield msmt
+
+    def width_measurements(self, require_summary_data=True):
+        for g in self.widths(require_summary_data=require_summary_data):
+            for msmt in g.get_measurements():
+                yield msmt
+
 
 class PdgParticleList(PdgData, list):
     """A PdgData subclass to represent a list of PdgParticles. A PdgParticleList

@@ -49,6 +49,24 @@ The database file contains the following database tables:
   Note that each decay product is a `pdgitem` that may or may not be mapped to one or several
   particles using `pdgitem_map`. However, not all decay products are mapped to individual particles.
   For example _anything_ or _X_ are used in inclusive decays to specify further decay products.
+* `pdgmeasurement` is the central table for individual measurements from the
+  literature. It contains general information for each measurement, such as the
+  event count and confidence level, as well as foreign keys into the `pdgid` and
+  `pdgreference` tables.
+* `pdgmeasurement_values` contains information on the values associated with
+  each measurement, including their central values, their errors, and whether
+  they are used in PDG fits or averages.
+* `pdgreference` contains information on each literature reference, such as its
+  title, DOI, and year of publication. It is linked to `pdgmeasurement` by that
+  table's `pdgreference_id` column.
+* `pdgfootnote` contains the text of each footnote displayed in the Particle
+  Listings, as well as the PDG Identifier for the section in which the footnote
+  appears.
+* `pdgmeasurement_footnote` provides a one-to-many mapping between
+  `pdgmeasurement` and `pdgfootnote`.
+* `pdgtext` contains the text of section headers in the Particle Listings.
+* `pdgid_map` provides a general many-to-many mapping between PDG Identifiers,
+  for example between branching ratios and branching fractions.
 * `pdginfo` provides metadata about the contents of the database file, such as the edition of the
   _Review of Particle Physics_ from which the data was extracted, version and citation information.
 * `pdgdoc` serves as a documentation table for the different codes and flags used in other tables.
@@ -57,7 +75,7 @@ The figure below summarizes the database schema and the columns of each table.
 Arrows represent foreign key relations. Bold column names indicate constraints.
 Further details about the database file as well as examples of how to use it will be provided in the future.
 
-![Schema of the SQLite database file](schema-v0.2.png "Schema of the SQLite database file")
+![Schema of the SQLite database file](schema-v0.3.png "Schema of the SQLite database file")
 
 ## Usage example
 

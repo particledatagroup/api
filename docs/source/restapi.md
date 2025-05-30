@@ -38,12 +38,13 @@ https://pdgapi.lbl.gov/PATH
 where PATH is one of the paths given in the table below, and
 PDGID is the PDG Identifier of the desired quantity.
 
-| Path                     | Example                                                                                    | Description                                        |
-|--------------------------|--------------------------------------------------------------------------------------------|----------------------------------------------------|
-| /info                    | [https://pdgapi.lbl.gov/info](https://pdgapi.lbl.gov/info)                                 | Get metadata (edition, citation, version, license) |
-| /summaries/PDGID         | [https://pdgapi.lbl.gov/summaries/S126M](https://pdgapi.lbl.gov/summaries/S126M)           | Get summary data for PDG Identifiers               |
-| /summaries/PDGID/EDITION | [https://pdgapi.lbl.gov/summaries/S126M/2020](https://pdgapi.lbl.gov/summaries/S126M/2020) | Get summary data from an earlier edition           |
-| /doc                     | [https://pdgapi.lbl.gov/doc](https://pdgapi.lbl.gov/doc)                                   | This documentation (regular web page, not JSON)    |
+| Path                     | Example                                                                                    | Description                                                       |
+|--------------------------|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| /info                    | [https://pdgapi.lbl.gov/info](https://pdgapi.lbl.gov/info)                                 | Get metadata (edition, citation, version, license)                |
+| /summaries/PDGID         | [https://pdgapi.lbl.gov/summaries/S126M](https://pdgapi.lbl.gov/summaries/S126M)           | Get summary data for PDG Identifier                               |
+| /summaries/PDGID/EDITION | [https://pdgapi.lbl.gov/summaries/S126M/2020](https://pdgapi.lbl.gov/summaries/S126M/2020) | Get summary data from an earlier edition                          |
+ | /listings/PDGID         | [https://pdgapi.lbl.gov/listings/S126M](https://pdgapi.lbl.gov/listings/S126M) | Get Particle Listings (i.e. measurements) data for PDG Identifier | 
+| /doc                     | [https://pdgapi.lbl.gov/doc](https://pdgapi.lbl.gov/doc)                                   | This documentation (regular web page, not JSON)                   |
 
 Except for the documentation pages under `/doc`, all paths return JSON documents.
 
@@ -115,6 +116,78 @@ In case the PDG Identifier denotes a particle, the following is returned:
 | summaries   | Array     | A JSON objects with keys "properties" and/or "branching_fractions", each containing a list of JSON objects for the PDG Identfier(s) describing particle properties or branching fractions for this particle. These JSON objects are the same as what would be returned when querying for a single property or branching fraction, as documented above. |
 
 
+### Data returned by /listings
+
+The `/listings` path returns the data published for a given quantity
+in the Particle Listings of the *Review of Particle Physics*. This includes an annotated list
+of relevant measurements and information on how PDG arrived at its averages, fits or best limits published
+in the Summary Tables for this quantity. Note that the Summary Table information is NOT included under '/listings' but
+must be separately obtained via '/summaries' if desired.
+
+The following information is returned by '/listings'. As for '/summaries', properties without value are not included.
+
+| Key                | Data type | Description                                                                                                                                                                          |
+|--------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| pdgid              | String    | PDG Identifier/particle property for which data is returned                                                                                                                          |
+| description        | String    | Plain-ASCII description of the quantity the PDG Identifier refers to                                                                                                                 |
+| note               | String    | Explanatory note in ASCII format, typically shown in the header of the data table                                                                                                    |
+| parent_pdgid       | String    | Parent PDG Identifier/particle of the returned data                                                                                                                                  |
+| parent_description | String    | Plain-ASCII description of parent PDG Identifier/particle                                                                                                                            |
+| measurements       | Array     | An array of JSON objects, each describing a measurement of the corresponding quantities (see below)                                                                                  |
+| related_data       | Array     | An array of JSON objects for PDG Identifiers whose data contributes to the corresponding quantity. Each entry contains the JSON that /listings would return for that PDG Identifier. |
+
+The key related_data is present for branching fractions (example: S035.1) and provides the information for all measured quantities (typically ratios of branching fractions) used to determine the corresponding branching fraction. 
+
+Each JSON object describing a measurement may contain the following data
+(keys whose value is not meaningful or known for the present quantity are omitted):
+
+| Key                | Data type | Description                                                                                      |
+|--------------------|-----------|--------------------------------------------------------------------------------------------------|
+| document_id        | String    | PDG document id (example: "AAD 2023BP")                                                          |
+| publication_name   | String    | Publication reference (example: ""PRL 131 251802")                                               |
+| publication_year   | Integer   | Year of the publication                                                                          |
+| doi                | String    | DOI of the publication                                                                           |
+| inspire_id         | String    | INSPIRE ID of the publication                                                                    |
+| title              | String    | Title of the publication (from INSPIRE)                                                          |
+| technique          | String    | Abbreviation of the experiment or technique used by the measurement (example: "ATLS")            |
+| comment            | String    | Comment shown in the Particle Listings (example: "p p, 13 TeV, gamma gamma, Z Z^* --> 4 lepton") |
+| is_changed         | Boolean   | Flag indicating whether this measurement was added or changed compared to the previous edition   |
+| measurement_values | Array     | Array of values or other information measured by or associated with this publication             |
+| footnotes          | Array     | Array of footnotes associated with this publication                                              |
+
+The elements in measurement_values describe the individual columns of the row describing a given measurement in a
+table of the Particle Listings.
+In many cases, there is only a single data column named "VALUE" that gives the result of the corresponding measurement
+made by that publication. However, some data tables in the Listings give additional information such as measurement energy
+or model assumptions. In such cases, measurement_values would have multiple entries with the information for the different columns.
+
+Each JSON object in the measurement_values array may contain the following key/value pairs:
+
+| Key                  | Data type | Description                                                                                                                                                                             |
+|----------------------|-----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| column_name          | String    | Name of the column ("VALUE" for the value of a measurement)                                                                                                                             |
+| value                | Number    | Central numerical value                                                                                                                                                                 |
+| error_positive       | Number    | Positive total numerical uncertainty                                                                                                                                                    |
+| error_negative       | Number    | Negative total numerical uncertainty                                                                                                                                                    |
+| stat_error_positive  | Number    | Positive statistical numerical uncertainty                                                                                                                                              |
+| stat_error_negative  | Number    | Negative statistical numerical uncertainty                                                                                                                                              |
+| syst_error_positive  | Number    | Positive systematic numerical uncertainty                                                                                                                                               |
+| syst_error_negative  | Number    | Negative systematic numerical uncertainty                                                                                                                                               |
+| value_text           | String    | Text representation of value and uncertainties                                                                                                                                          |
+| unit                 | String    | Unit of the value, such as "GeV"                                                                                                                                                        |
+| used_in_average      | Boolean   | Flag indicating if value was used in PDG average                                                                                                                                        |
+| used_in_fit          | Boolean   | Flag indicating if value was used in PDG fit                                                                                                                                            |
+| display_value_text   | String    | Text representation of value and uncertainties as shown in the Particle Listings data table, factoring out any powers of ten and possible percent sign shown in the header of the table |
+| display_power_of_ten | Integer   | Power of ten factored out from display_value_text                                                                                                                                       |
+| display_in_percent   | Boolean   | Flag indicating if display_value_text is in percent (if true, display_power_of_ten is -2)                                                                                               |
+
+Each JSON object in the footnotes array contains the following key/value pairs:
+
+| Key        | Data type | Description                                                                                 |
+|------------|-----------|---------------------------------------------------------------------------------------------|
+| index      | Integer   | Index of the footnote                                                                       |
+| text       | String    | Text of the footnote (ASCII representation)                                                 |
+| is_changed | Boolean   | Flag indicating whether this footnote was added or changed compared to the previous edition |
 
 
 ## Error handling

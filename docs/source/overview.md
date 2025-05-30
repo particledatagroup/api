@@ -1,6 +1,6 @@
 # Overview
 
-The new API of the [Particle Data Group (PDG)](https://pdg.lbl.gov) provides programmatic access to the
+The API of the [Particle Data Group (PDG)](https://pdg.lbl.gov) provides programmatic access to the
 data published in the _Review of Particle Physics_.
 It provides three tools for accessing PDG data in machine-readable format that
 are aimed at different use cases. The three tools are:

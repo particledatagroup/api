@@ -48,7 +48,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(pion.quantum_J, '0')
         self.assertEqual(pion.quantum_P, '-')
         self.assertEqual(pion.quantum_C, None)
-        self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=False)), 12)
+        self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=False)), 14)
         self.assertEqual(sum(1 for _ in pion.properties(require_summary_data=True)), 10)
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions()), 9)
         self.assertEqual(sum(1 for _ in pion.exclusive_branching_fractions(include_subdecays=True)), 11)
@@ -74,6 +74,9 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(best_value.error,5), 0.00018)
         self.assertEqual(round(best_value.scale_factor, 1), 1.8)
         self.assertEqual(best_value.units, 'MeV')
+        # self.assertEqual(best_value.units_tex, 'MeV')
+        self.assertEqual(best_value.value_text, '139.57039+-0.00018')
+        # self.assertEqual(best_value.value_tex, None) # FIXME
         self.assertEqual(best_value.display_value_text, '139.57039+-0.00018')
         self.assertEqual(best_value.value_type_key, 'FC')
         self.assertEqual(str(best_value).strip(), '139.57039+-0.00018   OUR FIT')
@@ -102,9 +105,13 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(best_value.error_negative, 5), 0.00034)
         self.assertEqual(round(best_value.scale_factor, 1), 1.5)
         self.assertEqual(best_value.units, '')
-        self.assertEqual(best_value.display_value_text, '(98.823+-0.034)%')
+        # self.assertEqual(best_value.units_tex, '')
+        self.assertEqual(best_value.value_text, '(98.823+-0.034)E-2')
+        # self.assertEqual(best_value.value_tex, None)                # FIXME
+        self.assertEqual(best_value.display_value_text, '98.823+-0.034')
+        self.assertEqual(best_value.display_power_of_ten, -2)
         self.assertEqual(best_value.value_type_key, 'FC')
-        # self.assertEqual(best_value.display_in_percent, True)   # FIXME
+        self.assertEqual(best_value.display_in_percent, True)
 
     def test_subdecay_modes(self):
         self.assertEqual(self.api.get('S008.1').is_subdecay, False)
@@ -148,14 +155,14 @@ class TestData(unittest.TestCase):
         # Check that DISPLAY_VALUE_TEXT is being parsed properly
         # Symmetric errors:
         self.assertEqual(round(self.api.get('S086T').value*1e12, 2), 1.52)
-        self.assertEqual(round(self.api.get('S086T').error_positive*1e15, 1), 5)
-        self.assertEqual(round(self.api.get('S086T').error_negative*1e15, 1), 5)
-        self.assertEqual(round(self.api.get('S086T').error*1e15, 1), 5)
+        self.assertEqual(round(self.api.get('S086T').error_positive*1e15, 1), 6)
+        self.assertEqual(round(self.api.get('S086T').error_negative*1e15, 1), 6)
+        self.assertEqual(round(self.api.get('S086T').error*1e15, 1), 6)
         # Slightly asymmetric errors:
         self.assertEqual(round(self.api.get('S063T').value*1e12, 2), 1.64)
-        self.assertEqual(round(self.api.get('S063T').error_positive*1e13, 1), 1.8)
-        self.assertEqual(round(self.api.get('S063T').error_negative*1e13, 1), 1.7)
-        self.assertEqual(round(self.api.get('S063T').error*1e13, 2), 1.75)
+        self.assertEqual(round(self.api.get('S063T').error_positive*1e13, 1), 1.6)
+        self.assertEqual(round(self.api.get('S063T').error_negative*1e13, 1), 1.6)
+        self.assertEqual(round(self.api.get('S063T').error*1e13, 2), 1.6)
         # Very asymmetric errors:
         self.assertEqual(round(self.api.get('S041P63').value*1e3, 1), 10.2)
         self.assertEqual(round(self.api.get('S041P63').error_positive*1e3, 1), 3.2)
@@ -166,6 +173,24 @@ class TestData(unittest.TestCase):
         if int(self.api.default_edition) >= 2024:
             self.assertEqual(self.api.get('S042T').comment,
                              '(Produced by HFLAV)')
+
+    def test_parent_pdgid(self):
+        mass = self.api.get('Q007TP4')
+        # We want to verify that the intermediate section gets skipped, so
+        # first, we check that the direct parent is in fact such a section
+        direct_parent = self.api.get(mass._get_pdgid()['parent_pdgid'])
+        self.assertEqual(direct_parent.data_type, 'SEC')
+        # Now we can check that the section gets skipped
+        self.assertEqual(mass.get_parent_pdgid(include_edition=False), 'Q007')
+
+    def test_decay_pdgid_map(self):
+        bf = self.api.get('B000.2')
+        br_pdgids = sorted([br.baseid for br in bf.branching_ratios()])
+        self.assertEqual(br_pdgids, ['B000R01', 'B000R2'])
+        br = self.api.get('B000R2')
+        bf_pdgids = sorted([bf.baseid for bf in br.branching_fractions()])
+        self.assertEqual(bf_pdgids, ['B000.1', 'B000.2'])
+
 
 if __name__ == '__main__':
     unittest.main()
