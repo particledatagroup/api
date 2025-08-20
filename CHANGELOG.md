@@ -1,5 +1,10 @@
 # Release history (latest release first)
 
+## Version 0.2.1 (August 20, 2025)
+- SQLite bug fix: power-of-ten not applied to numerical values and errors for some measurements
+- SQLite bug fix: missing, duplicated, and truncated footnotes
+- Minor improvements to footnotes, descriptions, and comments: more consistent spacing and formatting
+
 ## Version 0.2.0 (May 30, 2025)
 - Data from 2025 update of Summary Tables and Particle Listings
 - Add experimental support for data from Particle Listings
