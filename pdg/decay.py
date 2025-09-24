@@ -90,6 +90,19 @@ class PdgBranchingFraction(PdgProperty):
         else:
             return 0
 
+    def subdecays(self):
+        """Return iterator over all subdecays of this decay."""
+        child_dtype = self.data_type[:3] + str(self.subdecay_level + 1)
+        pdgid = self.api.db.tables['pdgid']
+        query = select(pdgid.c.pdgid)
+        query = query.where(pdgid.c.parent_pdgid == bindparam('parent_pdgid'))
+        query = query.where(pdgid.c.data_type == bindparam('data_type'))
+        with self.api.engine.connect() as conn:
+            matches = conn.execute(query, {'parent_pdgid': self.baseid,
+                                           'data_type': child_dtype}).fetchall()
+        for row in matches:
+            yield PdgBranchingFraction(self.api, row.pdgid, self.edition)
+
     def branching_ratios(self):
         """Return iterator over all branching ratios associated with this
         branching fraction."""

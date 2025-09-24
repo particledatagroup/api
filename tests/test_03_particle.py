@@ -288,3 +288,23 @@ class TestData(unittest.TestCase):
         gamma = ps[1].item.particle
         self.assertIsInstance(gamma, PdgParticle)
         self.assertEqual(gamma.pdgid, 'S000/%s' % self.api.default_edition)
+
+    def test_subdecay_iterator(self):
+        decay = self.api.get('S040.4')
+        subdecay_pdgids = [dk.baseid for dk in decay.subdecays()]
+        expected = ['S040.22', 'S040.23', 'S040.24', 'S040.25']
+        self.assertEqual(sorted(subdecay_pdgids), expected)
+
+        decay = self.api.get('S042.143')
+        l = [dk for dk in decay.subdecays() if dk.baseid == 'S042.84']
+        self.assertEqual(len(l), 1)
+        subdecay = l[0]
+        l = [dk for dk in subdecay.subdecays() if dk.baseid == 'S042.15']
+        self.assertEqual(len(l), 1)
+        subsubdecay = l[0]
+        self.assertFalse(decay.is_subdecay)
+        self.assertEqual(decay.subdecay_level, 0)
+        self.assertTrue(subdecay.is_subdecay)
+        self.assertEqual(subdecay.subdecay_level, 1)
+        self.assertTrue(subsubdecay.is_subdecay)
+        self.assertEqual(subsubdecay.subdecay_level, 2)
