@@ -231,6 +231,22 @@ for decay in api.get_particle_by_name('B0').exclusive_branching_fractions():
         print(format(decay.description,'40s'), decay.display_value_text)
 ```
 
+A given decay may be associated with one or more subdecays, which may in turn have their own subdecays. In the following snippet, we print all of the direct subdecays of the `Lambda_b()0`:
+```python
+import pdg
+api = pdg.connect()
+
+for decay in api.get_particle_by_name('Lambda_b()0').exclusive_branching_fractions():
+    subdecays = list(decay.subdecays())
+    if subdecays:
+        print(f'Subdecays of {decay.description}:')
+        for subdecay in subdecays:
+            print(f'    {subdecay.description}')
+        print()
+```
+
+The subdecay data is returned as-is from the Particle Listings. For its interpretation, please refer to the relevant section of the Review of Particle Physics.
+
 ### Particle properties (except branching fractions)
 
 The following code snippet prints all properties other than branching fractions of the charged pion (retrieved this
