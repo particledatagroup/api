@@ -191,6 +191,16 @@ class TestData(unittest.TestCase):
         bf_pdgids = sorted([bf.baseid for bf in br.branching_fractions()])
         self.assertEqual(bf_pdgids, ['B000.1', 'B000.2'])
 
+    def test_meta_charge_flag(self):
+        m_plus = self.api.get('S026M+')
+        self.assertEqual(m_plus.meta_charge_flag, 1)
+        m_minus = self.api.get('S026M-')
+        self.assertEqual(m_minus.meta_charge_flag, -1)
+        m_zero = self.api.get('S042M')
+        self.assertEqual(m_zero.meta_charge_flag, 0)
+        m_none = self.api.get('S043M')
+        self.assertEqual(m_none.meta_charge_flag, None)
+
 
 if __name__ == '__main__':
     unittest.main()

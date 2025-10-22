@@ -5,7 +5,7 @@ Definition of top-level particle container class.
 from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
-from pdg.utils import make_id, best
+from pdg.utils import make_id
 from pdg.data import PdgData
 from pdg.units import HBAR_IN_GEV_S
 
@@ -154,6 +154,38 @@ class PdgParticle(PdgData):
 
     def _repr_extra(self):
         return "name='%s'" % self.name
+
+    def best(self, properties, quantity=None):
+        """Return the "best" property from an iterable of properties, using the API's pedantic setting.
+
+        quantity is an optional string that describes what was being sought in case of error.
+
+        PdgNoDataError is raised if no property qualifies.
+        PdgAmbiguousValueError is raised if there is ambiguity and the API is in pedantic mode.
+        """
+        for_what = ' for %s' % quantity if quantity else ''
+        props_without_alternates = [p for p in properties if 'A' not in p.data_flags]
+        # in non-pedantic mode, filter out "special" values
+        if not self.api.pedantic:
+            props_without_alternates = [p for p in props_without_alternates
+                                        if 's' not in p.data_flags]
+        # remove properties that correspond to the wrong meta-charge
+        props_without_alternates = [p for p in props_without_alternates
+                                    if p.meta_charge_flag in [None, self.meta_charge]]
+        if len(props_without_alternates) == 0:
+            raise PdgNoDataError('No best property found%s' % for_what)
+        elif len(props_without_alternates) == 1:
+            return props_without_alternates[0]
+        else:
+            if self.api.pedantic:
+                err = 'Ambiguous best property%s' % for_what
+                raise PdgAmbiguousValueError(err)
+            else:
+                props_best = [p for p in props_without_alternates if 'D' in p.data_flags]
+                if len(props_best) >= 1:
+                    return props_best[0]
+                else:
+                    return props_without_alternates[0]
 
     def _get_particle_data(self):
         """Get particle data."""
@@ -412,20 +444,20 @@ class PdgParticle(PdgData):
     @property
     def mass(self):
         """Mass of the particle in GeV."""
-        best_mass_property = best(self.masses(), self.api.pedantic, '%s mass (%s)' % (self.name, self.pdgid))
+        best_mass_property = self.best(self.masses(), '%s mass (%s)' % (self.name, self.pdgid))
         return self._if_not_limit(best_mass_property, 'GeV')
 
     @property
     def mass_error(self):
         """Symmetric error on mass of particle in GeV, or None if mass error are asymmetric or mass is a limit."""
-        best_mass_property = best(self.masses(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+        best_mass_property = self.best(self.masses(), '%s (%s)' % (self.pdgid, self.description))
         return self._if_not_limit(best_mass_property, 'GeV', error=True)
 
     @property
     def width(self):
         """Width of the particle in GeV."""
         try:
-            best_width_property = best(self.widths(), self.api.pedantic, '%s width (%s)' % (self.name, self.pdgid))
+            best_width_property = self.best(self.widths(), '%s width (%s)' % (self.name, self.pdgid))
             return self._if_not_limit(best_width_property, 'GeV')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -439,7 +471,7 @@ class PdgParticle(PdgData):
     def width_error(self):
         """Symmetric error on width of particle in GeV, or None if width error are asymmetric or width is a limit."""
         try:
-            best_width_property = best(self.widths(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+            best_width_property = self.best(self.widths(), '%s (%s)' % (self.pdgid, self.description))
             return self._if_not_limit(best_width_property, 'GeV', error=True)
         except PdgNoDataError:
             if self.api.pedantic:
@@ -453,7 +485,7 @@ class PdgParticle(PdgData):
     def lifetime(self):
         """Lifetime of the particle in seconds."""
         try:
-            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s lifetime (%s)' % (self.name, self.pdgid))
+            best_lifetime_property = self.best(self.lifetimes(), '%s lifetime (%s)' % (self.name, self.pdgid))
             return self._if_not_limit(best_lifetime_property, 's')
         except PdgNoDataError:
             if self.api.pedantic:
@@ -466,7 +498,7 @@ class PdgParticle(PdgData):
     def lifetime_error(self):
         """Symmetric error on lifetime of particle in seconds, or None if lifetime error are asymmetric or lifetime is a limit."""
         try:
-            best_lifetime_property = best(self.lifetimes(), self.api.pedantic, '%s (%s)' % (self.pdgid, self.description))
+            best_lifetime_property = self.best(self.lifetimes(), '%s (%s)' % (self.pdgid, self.description))
             err = self._if_not_limit(best_lifetime_property, 's', error=True)
             if err is None:
                 err = 0.
@@ -492,6 +524,18 @@ class PdgParticle(PdgData):
     def has_lifetime_entry(self):
         """Whether the particle has at least one defined lifetime."""
         return next(self.lifetimes(), None) is not None
+
+    @property
+    def meta_charge(self):
+        """The charge of the nominal "particle" (as opposed to "antiparticle")
+        for this species. E.g., for the proton and antiproton, this is 1.
+        Useful for distinguishing e.g. the Sigma_b()+ (and Sigmabar_b()-)
+        from the Sigma_b()- (and Sigmabar_b()+).
+        """
+        cc_type = self._get_particle_data()['cc_type']
+        assert cc_type in ['S', 'P', 'A']
+        sign = -1 if cc_type == 'A' else 1
+        return sign * int(self.charge)
 
     def mass_measurements(self, require_summary_data=True):
         for m in self.masses(require_summary_data=require_summary_data):

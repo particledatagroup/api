@@ -411,6 +411,24 @@ class PdgData(object):
         """Flags augmenting data type information."""
         return self._get_pdgid()['flags']
 
+    @property
+    def meta_charge_flag(self):
+        """The particular "meta-charge" (see PdgParticle documentation) that
+        this data corresponds to. This flag will be None if the data applies
+        to all particles listed under the PDG identifier.
+        """
+        digits = [c for c in self.data_flags if c.isdigit()]
+        if len(digits) == 0:
+            return None
+        assert len(digits) == 1
+        mag = int(digits[0])
+        if mag != 0:
+            pass
+            # FIXME: Ensure that anytime there's a nonzero digit in the flags, there's also a + or -
+            # assert ('+' in self.data_flags) ^ ('-' in self.data_flags)
+        sign = -1 if '-' in self.data_flags else 1
+        return sign * mag
+
 
 class PdgProperty(PdgData):
     """Base class for containers for data containers for particle properties."""
