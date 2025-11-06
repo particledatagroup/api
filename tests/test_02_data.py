@@ -139,7 +139,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('S003AMU').data_flags, 'As')
         self.assertEqual(self.api.get('S004AMU').data_flags, 'As')
         self.assertEqual(self.api.get('S016AMU').data_flags, 'As')
-        self.assertEqual(self.api.get('S017AMU').data_flags, 'A0s')
+        self.assertEqual(self.api.get('S017AMU').data_flags, 'As0')
         self.assertEqual(self.api.get('Q007TP').data_flags, 'D')
         self.assertEqual(self.api.get('Q007TP2').data_flags, 's')
         self.assertEqual(self.api.get('Q007TP4').data_flags, 's')
