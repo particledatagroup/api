@@ -423,9 +423,7 @@ class PdgData(object):
         assert len(digits) == 1
         mag = int(digits[0])
         if mag != 0:
-            pass
-            # FIXME: Ensure that anytime there's a nonzero digit in the flags, there's also a + or -
-            # assert ('+' in self.data_flags) ^ ('-' in self.data_flags)
+            assert ('+' in self.data_flags) ^ ('-' in self.data_flags)
         sign = -1 if '-' in self.data_flags else 1
         return sign * mag
 
@@ -498,6 +496,15 @@ class PdgProperty(PdgData):
         with self.api.engine.connect() as conn:
             for entry in conn.execute(query, {'pdgid': self.baseid}):
                 yield PdgMeasurement(self.api, entry.id)
+
+    @property
+    def num_measurements(self):
+        """The number of measurements associated with this property."""
+        pdgmsmt_table = self.api.db.tables['pdgmeasurement']
+        query = select(func.count('*'))
+        query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
+        with self.api.engine.connect() as conn:
+            return conn.execute(query, {'pdgid': self.baseid}).fetchone()[0]
 
     @property
     def confidence_level(self):

@@ -163,29 +163,44 @@ class PdgParticle(PdgData):
         PdgNoDataError is raised if no property qualifies.
         PdgAmbiguousValueError is raised if there is ambiguity and the API is in pedantic mode.
         """
-        for_what = ' for %s' % quantity if quantity else ''
-        props_without_alternates = [p for p in properties if 'A' not in p.data_flags]
+        # filter out "alternative" properties
+        props = [p for p in properties if 'A' not in p.data_flags]
         # in non-pedantic mode, filter out "special" values
         if not self.api.pedantic:
-            props_without_alternates = [p for p in props_without_alternates
-                                        if 's' not in p.data_flags]
-        # remove properties that correspond to the wrong meta-charge
-        props_without_alternates = [p for p in props_without_alternates
-                                    if p.meta_charge_flag in [None, self.meta_charge]]
-        if len(props_without_alternates) == 0:
+            props = [p for p in props if 's' not in p.data_flags]
+        # filter out properties that don't have measurements
+        props = [p for p in props if p.num_measurements > 0]
+
+        # if we have any default properties, filter out all the others
+        default_props = [p for p in props if 'D' in p.data_flags]
+        if default_props:
+            props = default_props
+        if len(props) == 1:
+            return props[0]
+
+        # filter out properties that have the wrong charge magnitude
+        props = [p for p in props
+                 if (p.meta_charge_flag is None)
+                 or (abs(p.meta_charge_flag) == abs(self.charge))]
+        if len(props) == 1:
+            return props[0]
+
+        # filter out properties that have the wrong "CP charge"
+        props = [p for p in props
+                 if (p.meta_charge_flag is None)
+                 or (p.meta_charge_flag == self.meta_charge)]
+        if len(props) == 1:
+            return props[0]
+
+        for_what = ' for %s' % quantity if quantity else ''
+        if len(props) == 0:
             raise PdgNoDataError('No best property found%s' % for_what)
-        elif len(props_without_alternates) == 1:
-            return props_without_alternates[0]
         else:
             if self.api.pedantic:
                 err = 'Ambiguous best property%s' % for_what
                 raise PdgAmbiguousValueError(err)
             else:
-                props_best = [p for p in props_without_alternates if 'D' in p.data_flags]
-                if len(props_best) >= 1:
-                    return props_best[0]
-                else:
-                    return props_without_alternates[0]
+                return props[0]
 
     def _get_particle_data(self):
         """Get particle data."""
