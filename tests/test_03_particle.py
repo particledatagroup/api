@@ -151,8 +151,8 @@ class TestData(unittest.TestCase):
                          [0, 0, 0, 0])
 
         self.api.pedantic = True
-        self.assertRaises(PdgAmbiguousValueError, lambda: ps[0].mass)
-        self.assertRaises(PdgAmbiguousValueError, lambda: ps[0].width)
+        self.assertEqual(round(ps[0].mass, 3), 0.892)
+        self.assertEqual(round(ps[0].width, 4), 0.0514)
         self.assertRaises(PdgNoDataError, lambda: ps[0].lifetime)
         self.assertEqual(ps[0].charge, 1)
 
@@ -175,8 +175,8 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(p.lifetime * 1e23, 2), 1.28)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(323)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.mass)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.width)
+        self.assertEqual(round(p.mass, 3), 0.892)
+        self.assertEqual(round(p.width, 4), 0.0514)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
         for self.api.pedantic in [True, False]:
@@ -192,8 +192,8 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(p.lifetime * 1e23, 2), 1.28)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(-323)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.mass)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.width)
+        self.assertEqual(round(p.mass, 3), 0.892)
+        self.assertEqual(round(p.width, 4), 0.0514)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
         for self.api.pedantic in [True, False]:
@@ -209,7 +209,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(p.lifetime * 1e23, 2), 1.39)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(313)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.mass)
+        self.assertEqual(round(p.mass, 3), 0.896)
         self.assertEqual(round(p.width, 4), 0.0473)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
