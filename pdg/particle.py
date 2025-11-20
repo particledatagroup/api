@@ -180,15 +180,15 @@ class PdgParticle(PdgData):
 
         # filter out properties that have the wrong charge magnitude
         props = [p for p in props
-                 if (p.meta_charge_flag is None)
-                 or (abs(p.meta_charge_flag) == abs(self.charge))]
+                 if (p.cp_charge_flag is None)
+                 or (abs(p.cp_charge_flag) == abs(self.charge))]
         if len(props) == 1:
             return props[0]
 
         # filter out properties that have the wrong "CP charge"
         props = [p for p in props
-                 if (p.meta_charge_flag is None)
-                 or (p.meta_charge_flag == self.meta_charge)]
+                 if (p.cp_charge_flag is None)
+                 or (p.cp_charge_flag == self.cp_charge)]
         if len(props) == 1:
             return props[0]
 
@@ -541,7 +541,7 @@ class PdgParticle(PdgData):
         return next(self.lifetimes(), None) is not None
 
     @property
-    def meta_charge(self):
+    def cp_charge(self):
         """The charge of the nominal "particle" (as opposed to "antiparticle")
         for this species. E.g., for the proton and antiproton, this is 1.
         Useful for distinguishing e.g. the Sigma_b()+ (and Sigmabar_b()-)

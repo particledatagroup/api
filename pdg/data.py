@@ -412,8 +412,8 @@ class PdgData(object):
         return self._get_pdgid()['flags']
 
     @property
-    def meta_charge_flag(self):
-        """The particular "meta-charge" (see PdgParticle documentation) that
+    def cp_charge_flag(self):
+        """The particular "CP charge" (see PdgParticle documentation) that
         this data corresponds to. This flag will be None if the data applies
         to all particles listed under the PDG identifier.
         """

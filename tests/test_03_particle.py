@@ -309,23 +309,23 @@ class TestData(unittest.TestCase):
         self.assertTrue(subsubdecay.is_subdecay)
         self.assertEqual(subsubdecay.subdecay_level, 2)
 
-    def test_meta_charge(self):
+    def test_cp_charge(self):
         p = self.api.get_particle_by_name('Sigma_b()+')
-        self.assertEqual(p.meta_charge, 1)
+        self.assertEqual(p.cp_charge, 1)
         p = self.api.get_particle_by_name('Sigmabar_b()-')
-        self.assertEqual(p.meta_charge, 1)
+        self.assertEqual(p.cp_charge, 1)
         p = self.api.get_particle_by_name('Sigma_b()-')
-        self.assertEqual(p.meta_charge, -1)
+        self.assertEqual(p.cp_charge, -1)
         p = self.api.get_particle_by_name('Sigmabar_b()+')
-        self.assertEqual(p.meta_charge, -1)
+        self.assertEqual(p.cp_charge, -1)
         p = self.api.get_particle_by_name('p')
-        self.assertEqual(p.meta_charge, 1)
+        self.assertEqual(p.cp_charge, 1)
         p = self.api.get_particle_by_name('pbar')
-        self.assertEqual(p.meta_charge, 1)
+        self.assertEqual(p.cp_charge, 1)
         p = self.api.get_particle_by_name('n')
-        self.assertEqual(p.meta_charge, 0)
+        self.assertEqual(p.cp_charge, 0)
         p = self.api.get_particle_by_name('nbar')
-        self.assertEqual(p.meta_charge, 0)
+        self.assertEqual(p.cp_charge, 0)
 
     def test_Sigma_b_mass(self):
         p = self.api.get_particle_by_name('Sigma_b()+')
