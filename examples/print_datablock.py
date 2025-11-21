@@ -7,7 +7,8 @@ from tabulate import tabulate
 
 import pdg
 from pdg.api import PdgApi
-from pdg.data import PdgSummaryValue
+from pdg.data import PdgData, PdgSummaryValue
+from pdg.decay import PdgBranchingFraction
 from pdg.measurement import PdgReference, PdgValue
 
 
@@ -35,6 +36,7 @@ def dictify_reference(ref: PdgReference):
         'TITLE': ref.title,
     }
 
+
 def dictify_summval(sv: PdgSummaryValue):
     return {
         'VALUE_TYPE': sv.value_type,
@@ -45,19 +47,7 @@ def dictify_summval(sv: PdgSummaryValue):
     }
 
 
-def print_datablock(api: PdgApi, pdgid: str):
-    node = api.get(pdgid)
-
-    print()
-    print(node.description)
-    print()
-
-    print('SUMMARY VALUES')
-    print('==============')
-
-    summvals = [dictify_summval(sv) for sv in node.summary_values()]
-    print(tabulate(summvals, headers='keys'))
-
+def print_listing(node: PdgData):
     values = chain.from_iterable(m.values() for m in node.get_measurements())
     values = list(values)
 
@@ -106,6 +96,32 @@ def print_datablock(api: PdgApi, pdgid: str):
         print('=========')
         for fn in footnotes:
             print(fn)
+
+
+def print_datablock(api: PdgApi, pdgid: str):
+    node = api.get(pdgid)
+
+    print()
+    print(node.description)
+    print()
+
+    print('SUMMARY VALUES')
+    print('==============')
+
+    summvals = [dictify_summval(sv) for sv in node.summary_values()]
+    print(tabulate(summvals, headers='keys'))
+
+    if type(node) is not PdgBranchingFraction:
+        print_listing(node)
+    else:
+        ratios = list(node.branching_ratios())
+        if not ratios:
+            return
+        print('\n\nThe following data is related to the above value:\n')
+        for ratio in ratios:
+            print('-'*80)
+            print_datablock(api, ratio.baseid)
+            print()
 
 
 if __name__ == '__main__':

@@ -411,6 +411,22 @@ class PdgData(object):
         """Flags augmenting data type information."""
         return self._get_pdgid()['flags']
 
+    @property
+    def cp_charge_flag(self):
+        """The particular "CP charge" (see PdgParticle documentation) that
+        this data corresponds to. This flag will be None if the data applies
+        to all particles listed under the PDG identifier.
+        """
+        digits = [c for c in self.data_flags if c.isdigit()]
+        if len(digits) == 0:
+            return None
+        assert len(digits) == 1
+        mag = int(digits[0])
+        if mag != 0:
+            assert ('+' in self.data_flags) ^ ('-' in self.data_flags)
+        sign = -1 if '-' in self.data_flags else 1
+        return sign * mag
+
 
 class PdgProperty(PdgData):
     """Base class for containers for data containers for particle properties."""
@@ -480,6 +496,15 @@ class PdgProperty(PdgData):
         with self.api.engine.connect() as conn:
             for entry in conn.execute(query, {'pdgid': self.baseid}):
                 yield PdgMeasurement(self.api, entry.id)
+
+    @property
+    def num_measurements(self):
+        """The number of measurements associated with this property."""
+        pdgmsmt_table = self.api.db.tables['pdgmeasurement']
+        query = select(func.count('*'))
+        query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
+        with self.api.engine.connect() as conn:
+            return conn.execute(query, {'pdgid': self.baseid}).fetchone()[0]
 
     @property
     def confidence_level(self):
