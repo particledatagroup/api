@@ -290,6 +290,8 @@ class TestData(unittest.TestCase):
         self.assertEqual(gamma.pdgid, 'S000/%s' % self.api.default_edition)
 
     def test_subdecay_iterator(self):
+        self.api._subdecay_warned = True # suppress warning about subdecays
+
         decay = self.api.get('S040.4')
         subdecay_pdgids = [dk.baseid for dk in decay.subdecays()]
         expected = ['S040.22', 'S040.23', 'S040.24', 'S040.25']
