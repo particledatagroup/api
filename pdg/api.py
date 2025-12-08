@@ -2,6 +2,7 @@
 PDG API top-level class.
 """
 
+import logging
 import sqlalchemy
 from sqlalchemy import func, select, bindparam, distinct, desc
 import pdg
@@ -53,6 +54,11 @@ class PdgApi:
         for k in self.info_keys():
             setattr(self, k, self.info(k))
         self.pedantic = pedantic
+
+        self.logger = logging.getLogger('PDG')
+        if not self.logger.handlers:
+            self.logger.addHandler(logging.StreamHandler())
+            self.logger.propagate = False
 
     def __str__(self):
         s = ['%s Review of Particle Physics, data release %s, API version %s' % (self.info('edition'),

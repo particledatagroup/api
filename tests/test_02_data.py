@@ -139,7 +139,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(self.api.get('S003AMU').data_flags, 'As')
         self.assertEqual(self.api.get('S004AMU').data_flags, 'As')
         self.assertEqual(self.api.get('S016AMU').data_flags, 'As')
-        self.assertEqual(self.api.get('S017AMU').data_flags, 'A0s')
+        self.assertEqual(self.api.get('S017AMU').data_flags, 'As0')
         self.assertEqual(self.api.get('Q007TP').data_flags, 'D')
         self.assertEqual(self.api.get('Q007TP2').data_flags, 's')
         self.assertEqual(self.api.get('Q007TP4').data_flags, 's')
@@ -190,6 +190,16 @@ class TestData(unittest.TestCase):
         br = self.api.get('B000R2')
         bf_pdgids = sorted([bf.baseid for bf in br.branching_fractions()])
         self.assertEqual(bf_pdgids, ['B000.1', 'B000.2'])
+
+    def test_cp_charge_flag(self):
+        m_plus = self.api.get('S026M+')
+        self.assertEqual(m_plus.cp_charge_flag, 1)
+        m_minus = self.api.get('S026M-')
+        self.assertEqual(m_minus.cp_charge_flag, -1)
+        m_zero = self.api.get('S042M')
+        self.assertEqual(m_zero.cp_charge_flag, 0)
+        m_none = self.api.get('S043M')
+        self.assertEqual(m_none.cp_charge_flag, None)
 
 
 if __name__ == '__main__':

@@ -151,8 +151,8 @@ class TestData(unittest.TestCase):
                          [0, 0, 0, 0])
 
         self.api.pedantic = True
-        self.assertRaises(PdgAmbiguousValueError, lambda: ps[0].mass)
-        self.assertRaises(PdgAmbiguousValueError, lambda: ps[0].width)
+        self.assertEqual(round(ps[0].mass, 3), 0.892)
+        self.assertEqual(round(ps[0].width, 4), 0.0514)
         self.assertRaises(PdgNoDataError, lambda: ps[0].lifetime)
         self.assertEqual(ps[0].charge, 1)
 
@@ -175,8 +175,8 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(p.lifetime * 1e23, 2), 1.28)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(323)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.mass)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.width)
+        self.assertEqual(round(p.mass, 3), 0.892)
+        self.assertEqual(round(p.width, 4), 0.0514)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
         for self.api.pedantic in [True, False]:
@@ -192,8 +192,8 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(p.lifetime * 1e23, 2), 1.28)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(-323)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.mass)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.width)
+        self.assertEqual(round(p.mass, 3), 0.892)
+        self.assertEqual(round(p.width, 4), 0.0514)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
         for self.api.pedantic in [True, False]:
@@ -209,7 +209,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(round(p.lifetime * 1e23, 2), 1.39)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(313)
-        self.assertRaises(PdgAmbiguousValueError, lambda: p.mass)
+        self.assertEqual(round(p.mass, 3), 0.896)
         self.assertEqual(round(p.width, 4), 0.0473)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
@@ -288,3 +288,64 @@ class TestData(unittest.TestCase):
         gamma = ps[1].item.particle
         self.assertIsInstance(gamma, PdgParticle)
         self.assertEqual(gamma.pdgid, 'S000/%s' % self.api.default_edition)
+
+    def test_subdecay_iterator(self):
+        self.api._subdecay_warned = True # suppress warning about subdecays
+
+        decay = self.api.get('S040.4')
+        subdecay_pdgids = [dk.baseid for dk in decay.subdecays()]
+        expected = ['S040.22', 'S040.23', 'S040.24', 'S040.25']
+        self.assertEqual(sorted(subdecay_pdgids), expected)
+
+        decay = self.api.get('S042.143')
+        l = [dk for dk in decay.subdecays() if dk.baseid == 'S042.84']
+        self.assertEqual(len(l), 1)
+        subdecay = l[0]
+        l = [dk for dk in subdecay.subdecays() if dk.baseid == 'S042.15']
+        self.assertEqual(len(l), 1)
+        subsubdecay = l[0]
+        self.assertFalse(decay.is_subdecay)
+        self.assertEqual(decay.subdecay_level, 0)
+        self.assertTrue(subdecay.is_subdecay)
+        self.assertEqual(subdecay.subdecay_level, 1)
+        self.assertTrue(subsubdecay.is_subdecay)
+        self.assertEqual(subsubdecay.subdecay_level, 2)
+
+    def test_cp_charge(self):
+        p = self.api.get_particle_by_name('Sigma_b()+')
+        self.assertEqual(p.cp_charge, 1)
+        p = self.api.get_particle_by_name('Sigmabar_b()-')
+        self.assertEqual(p.cp_charge, 1)
+        p = self.api.get_particle_by_name('Sigma_b()-')
+        self.assertEqual(p.cp_charge, -1)
+        p = self.api.get_particle_by_name('Sigmabar_b()+')
+        self.assertEqual(p.cp_charge, -1)
+        p = self.api.get_particle_by_name('p')
+        self.assertEqual(p.cp_charge, 1)
+        p = self.api.get_particle_by_name('pbar')
+        self.assertEqual(p.cp_charge, 1)
+        p = self.api.get_particle_by_name('n')
+        self.assertEqual(p.cp_charge, 0)
+        p = self.api.get_particle_by_name('nbar')
+        self.assertEqual(p.cp_charge, 0)
+
+    def test_Sigma_b_mass(self):
+        p = self.api.get_particle_by_name('Sigma_b()+')
+        self.assertEqual(round(p.mass, 4), 5.8106)
+        p = self.api.get_particle_by_mcid(5222)
+        self.assertEqual(round(p.mass, 4), 5.8106)
+
+        p = self.api.get_particle_by_name('Sigmabar_b()-')
+        self.assertEqual(round(p.mass, 4), 5.8106)
+        p = self.api.get_particle_by_mcid(-5222)
+        self.assertEqual(round(p.mass, 4), 5.8106)
+
+        p = self.api.get_particle_by_name('Sigma_b()-')
+        self.assertEqual(round(p.mass, 4), 5.8156)
+        p = self.api.get_particle_by_mcid(5112)
+        self.assertEqual(round(p.mass, 4), 5.8156)
+
+        p = self.api.get_particle_by_name('Sigmabar_b()+')
+        self.assertEqual(round(p.mass, 4), 5.8156)
+        p = self.api.get_particle_by_mcid(-5112)
+        self.assertEqual(round(p.mass, 4), 5.8156)
