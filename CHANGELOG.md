@@ -1,5 +1,11 @@
 # Release history (latest release first)
 
+## Version 0.2.2 (December 8, 2025)
+- Add support for iteration over subdecays (PdgBranchingFraction.subdecays)
+- Update "best properties" algorithm for e.g. selecting the correct mass for the various versions of the Sigma_b
+- Update SQLite file with updates to PDGID.FLAGS needed for the above, fixes for the names of tetra/pentaquarks, and updated tau fit due to erratum
+- Miscellaneous minor improvements and bug fixes
+
 ## Version 0.2.1 (August 20, 2025)
 - SQLite bug fix: power-of-ten not applied to numerical values and errors for some measurements
 - SQLite bug fix: missing, duplicated, and truncated footnotes
