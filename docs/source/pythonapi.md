@@ -26,7 +26,10 @@ The `pdg` package is released as open source software and can be found at
 ## Requirements
 
 The PDG Python API supports Python 3 and requires SQLAlchemy version 1.4 or greater.
-For the time being, Python 2.7 is still supported.
+
+Python 2.7 has been supported through API versions 0.2.x
+(i.e. up to and including the 2025 update of the *Review of Particle Physics*)
+but will no longer be supported starting with the API version for the 2026 edition (to be released in June 2026).
 
 ## Tutorial
 
