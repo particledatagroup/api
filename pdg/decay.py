@@ -7,6 +7,8 @@ from sqlalchemy import bindparam, select
 from pdg.data import PdgProperty
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.particle import PdgItem, PdgParticle
+from sqlalchemy.engine.row import RowMapping
+from typing import List
 
 
 class PdgDecayProduct(object):
@@ -14,7 +16,7 @@ class PdgDecayProduct(object):
     PdgItem (which may resolve to one or more PdgParticles), its multiplier, and
     its subdecay (if any).
     """
-    def __init__(self, item, multiplier, subdecay):
+    def __init__(self, item: PdgItem, multiplier: int, subdecay: None):
         """Instantiate a PdgDecayProduct."""
         assert isinstance(item, PdgItem)
         assert isinstance(multiplier, int)
@@ -33,7 +35,7 @@ class PdgBranchingFraction(PdgProperty):
     """Class for all information about a decay, including its branching
     fraction, decay products, and subdecays.
     """
-    def _get_decay(self):
+    def _get_decay(self) -> List[RowMapping]:
         """Load decay information from the database."""
         if 'pdgdecay' not in self.cache:
             pdgdecay_table = self.api.db.tables['pdgdecay']
@@ -50,7 +52,7 @@ class PdgBranchingFraction(PdgProperty):
         return '"%s"' % self.description
 
     @property
-    def decay_products(self):
+    def decay_products(self) -> List[PdgDecayProduct]:
         """A list of all PdgDecayProducts for the decay."""
         products = []
         for row in self._get_decay():
@@ -74,7 +76,7 @@ class PdgBranchingFraction(PdgProperty):
         return self._get_pdgid()['mode_number']
 
     @property
-    def is_subdecay(self):
+    def is_subdecay(self) -> bool:
         """True if this is a subdecay ("indented") decay mode."""
         data_type_code = self.data_type
         if len(data_type_code) < 4:
@@ -83,7 +85,7 @@ class PdgBranchingFraction(PdgProperty):
             return data_type_code[0:3] == 'BFX' or data_type_code[0:3] == 'BFI'
 
     @property
-    def subdecay_level(self):
+    def subdecay_level(self) -> int:
         """Return indentation level of a decay mode."""
         if self.is_subdecay:
             return int(self.data_type[3])

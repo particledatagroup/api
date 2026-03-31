@@ -2,16 +2,21 @@
 
 from pdg.errors import PdgAmbiguousValueError
 from pdg.utils import get_linked_ids, get_row_data
+from sqlalchemy.engine.row import RowMapping
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from pdg.api import PdgApi
 
 class PdgMeasurement(object):
     """Class for an individual measurement from the PDG Listings."""
 
-    def __init__(self, api, msmt_id):
+    def __init__(self, api: 'PdgApi', msmt_id: int):
         self.api = api
         self.id = msmt_id
         self.cache = {}
 
-    def _get_measurement_data(self):
+    def _get_measurement_data(self) -> RowMapping:
         return self.cache.get(
             'pdgmeasurement',
             get_row_data(self.api, 'pdgmeasurement', self.id))
@@ -48,45 +53,45 @@ class PdgMeasurement(object):
             yield PdgFootnote(self.api, foot_id)
 
     @property
-    def reference(self):
+    def reference(self) -> 'PdgReference':
         """The PdgReference associated with this measurement."""
         ref_id = self._get_measurement_data()['pdgreference_id']
         return PdgReference(self.api, ref_id)
 
     @property
-    def pdgid(self):
+    def pdgid(self) -> str:
         """The PDG Identifier to which this measurement applies."""
         return self._get_measurement_data()['pdgid']
 
     @property
-    def event_count(self):
+    def event_count(self) -> str:
         """The number of events in the sample used for this measurement."""
         return self._get_measurement_data()['event_count']
 
     @property
-    def confidence_level(self):
+    def confidence_level(self) -> None:
         """The confidence level of this measurement."""
         return self._get_measurement_data()['confidence_level']
 
     @property
-    def technique(self):
+    def technique(self) -> str:
         """The technique used in this measurement."""
         return self._get_measurement_data()['technique']
 
     @property
-    def charge(self):
+    def charge(self) -> str:
         """Case-specific representation of the charge(s) of the particles
            involved in this measurement."""
         return self._get_measurement_data()['charge']
 
     @property
-    def changebar(self):
+    def changebar(self) -> bool:
         """True if this measurement has been added or updated since the previous
            PDG edition"""
         return self._get_measurement_data()['changebar']
 
     @property
-    def comment(self):
+    def comment(self) -> str:
         """Inline comment displayed with this measurement in the PDG Listings."""
         return self._get_measurement_data()['comment']
 
@@ -94,24 +99,24 @@ class PdgMeasurement(object):
 class PdgValue(object):
     """Class for an individual numerical value associated with a PdgMeasurement."""
 
-    def __init__(self, api, value_id):
+    def __init__(self, api: 'PdgApi', value_id: int):
         self.api = api
         self.id = value_id
         self.cache = {}
 
-    def _get_value_data(self):
+    def _get_value_data(self) -> RowMapping:
         return self.cache.get(
             'pdgmeasurement_values',
             get_row_data(self.api, 'pdgmeasurement_values', self.id))
 
     @property
-    def measurement(self):
+    def measurement(self) -> PdgMeasurement:
         """The corresponding PdgMeasurement for this value."""
         msmt_id = self._get_value_data()['pdgmeasurement_id']
         return PdgMeasurement(self.api, msmt_id)
 
     @property
-    def column_name(self):
+    def column_name(self) -> str:
         """The name of the column (in plain text format) in which this value is
            displayed in the PDG Listings."""
         return self._get_value_data()['column_name']
@@ -123,7 +128,7 @@ class PdgValue(object):
         return self._get_value_data()['column_name_tex']
 
     @property
-    def unit_text(self):
+    def unit_text(self) -> str:
         """The units (in plain text format) in which this value is specified."""
         return self._get_value_data()['unit_text']
 
@@ -133,7 +138,7 @@ class PdgValue(object):
     #     return self._get_value_data()['unit_tex']
 
     @property
-    def value_text(self):
+    def value_text(self) -> str:
         """Value and uncertainty (in plain text format) in units given by
            property units, including the power of ten, if applicable
            (see display_power_of_ten)"""
@@ -147,7 +152,7 @@ class PdgValue(object):
     #     return self._get_value_data()['value_tex']
 
     @property
-    def display_value_text(self):
+    def display_value_text(self) -> str:
         """Value and uncertainty in plain text format as displayed in
            Listings tables. Does not include any power of ten or percent sign.
            Must be combined with the display_power_of_ten property in order
@@ -155,75 +160,75 @@ class PdgValue(object):
         return self._get_value_data()['display_value_text']
 
     @property
-    def display_power_of_ten(self):
+    def display_power_of_ten(self) -> int:
         """Unit multiplier (as power of ten) as used for display in Listings."""
         return self._get_value_data()['display_power_of_ten']
 
     @property
-    def display_in_percent(self):
+    def display_in_percent(self) -> bool:
         """True if value is rendered in percent for display in Listings.
            Implies that display_power_of_ten is -2."""
         return self._get_value_data()['display_in_percent']
 
     @property
-    def is_limit(self):
+    def is_limit(self) -> bool:
         """True if value is a limit."""
         return self._get_value_data()['limit_type'] is not None
 
     @property
-    def is_upper_limit(self):
+    def is_upper_limit(self) -> bool:
         """True if value is an upper limit."""
         return self._get_value_data()['limit_type'] == 'U'
 
     @property
-    def is_lower_limit(self):
+    def is_lower_limit(self) -> bool:
         """True if value is a lower limit."""
         return self._get_value_data()['limit_type'] == 'L'
 
     @property
-    def used_in_average(self):
+    def used_in_average(self) -> bool:
         """True if value is used for calculating averages shown in
            Summary Tables."""
         return self._get_value_data()['used_in_average']
 
     @property
-    def used_in_fit(self):
+    def used_in_fit(self) -> bool:
         """True if value is used for calculating best-fits shown in
            Summary Tables."""
         return self._get_value_data()['used_in_fit']
 
     @property
-    def value(self):
+    def value(self) -> float:
         """The numerical value itself."""
         return self._get_value_data()['value']
 
     @property
-    def error_positive(self):
+    def error_positive(self) -> float:
         """The total positive error for this value."""
         return self._get_value_data()['error_positive']
 
     @property
-    def error_negative(self):
+    def error_negative(self) -> float:
         """The total negative error for this value."""
         return self._get_value_data()['error_negative']
 
     @property
-    def stat_error_positive(self):
+    def stat_error_positive(self) -> Optional[float]:
         """The statistical component of the positive error for this value."""
         return self._get_value_data()['stat_error_positive']
 
     @property
-    def stat_error_negative(self):
+    def stat_error_negative(self) -> Optional[float]:
         """The statistical component of the negative error for this value."""
         return self._get_value_data()['stat_error_negative']
 
     @property
-    def syst_error_positive(self):
+    def syst_error_positive(self) -> Optional[float]:
         """The systematic component of the positive error for this value."""
         return self._get_value_data()['syst_error_positive']
 
     @property
-    def syst_error_negative(self):
+    def syst_error_negative(self) -> Optional[float]:
         """The systematic component of the negative error for this value."""
         return self._get_value_data()['syst_error_negative']
 
@@ -276,39 +281,39 @@ class PdgValue(object):
 class PdgReference(object):
     """Class for literature references associated with PdgMeasurements."""
 
-    def __init__(self, api, ref_id):
+    def __init__(self, api: 'PdgApi', ref_id: int):
         self.api = api
         self.id = ref_id
         self.cache = {}
 
-    def _get_reference_data(self):
+    def _get_reference_data(self) -> RowMapping:
         return self.cache.get(
             'pdgreference',
             get_row_data(self.api, 'pdgreference', self.id))
 
     @property
-    def publication_name(self):
+    def publication_name(self) -> str:
         """The abbreviated bibliographic name (e.g. journal initials, issue,
            page) of this publication."""
         return self._get_reference_data()['publication_name']
 
     @property
-    def publication_year(self):
+    def publication_year(self) -> int:
         """The year of this publication."""
         return self._get_reference_data()['publication_year']
 
     @property
-    def title(self):
+    def title(self) -> str:
         """The title of this publication."""
         return self._get_reference_data()['title']
 
     @property
-    def doi(self):
+    def doi(self) -> str:
         """The DOI of this publication."""
         return self._get_reference_data()['doi']
 
     @property
-    def inspire_id(self):
+    def inspire_id(self) -> str:
         """The INSPIRE identifier of this publication."""
         return self._get_reference_data()['inspire_id']
 
@@ -321,12 +326,12 @@ class PdgReference(object):
 class PdgFootnote(object):
     """Class for footnotes associated with PdgReferences."""
 
-    def __init__(self, api, foot_id):
+    def __init__(self, api: 'PdgApi', foot_id: int):
         self.api = api
         self.id = foot_id
         self.cache = {}
 
-    def _get_footnote_data(self):
+    def _get_footnote_data(self) -> RowMapping:
         return self.cache.get(
             'pdgfootnote',
             get_row_data(self.api, 'pdgfootnote', self.id))
@@ -342,7 +347,7 @@ class PdgFootnote(object):
             yield PdgMeasurement(self.api, ref_id)
 
     @property
-    def text(self):
+    def text(self) -> str:
         """The footnote text, in plain text format."""
         return self._get_footnote_data()['text']
 

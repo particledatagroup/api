@@ -8,9 +8,10 @@ from sqlalchemy import func, select, bindparam, distinct, desc
 import pdg
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.utils import parse_id
-from pdg.data import PdgProperty, PdgMass, PdgWidth, PdgLifetime, PdgText
+from pdg.data import PdgData, PdgProperty, PdgMass, PdgWidth, PdgLifetime, PdgText
 from pdg.decay import PdgBranchingFraction, PdgBranchingRatio, PdgItem
 from pdg.particle import PdgParticle, PdgParticleList
+from typing import List, Optional, Union
 
 
 # Map PDG data type codes to corresponding classes
@@ -38,7 +39,7 @@ DATA_TYPE_MAP = {
 
 class PdgApi:
 
-    def __init__(self, database_url, pedantic=False):
+    def __init__(self, database_url: str, pedantic: bool=False):
         """Initialize PDG API.
 
         database_url is the URL of the PDG database to connect to. The default database is the SQLite file
@@ -60,7 +61,7 @@ class PdgApi:
             self.logger.addHandler(logging.StreamHandler())
             self.logger.propagate = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = ['%s Review of Particle Physics, data release %s, API version %s' % (self.info('edition'),
                                                                                  self.info('data_release_timestamp'),
                                                                                  pdg.__version__),
@@ -70,14 +71,14 @@ class PdgApi:
              ]
         return '\n'.join(s)
 
-    def info(self, key):
+    def info(self, key: str) -> str:
         """Return metadata info specified by key."""
         pdginfo_table = self.db.tables['pdginfo']
         query = select(pdginfo_table.c.value).where(pdginfo_table.c.name == bindparam('key'))
         with self.engine.connect() as conn:
             return conn.execute(query, {'key': key}).scalar()
 
-    def info_keys(self):
+    def info_keys(self) -> List[str]:
         """Return list of all metadata keys."""
         pdginfo_table = self.db.tables['pdginfo']
         query = select(pdginfo_table.c.name)
@@ -85,7 +86,7 @@ class PdgApi:
             return [k[0] for k in conn.execute(query).fetchall()]
 
     @property
-    def editions(self):
+    def editions(self) -> List[str]:
         """List of all editions of the Review for which the database has data."""
         pdgdata_table = self.db.tables['pdgdata']
         query = select(distinct(pdgdata_table.c.edition)).order_by(desc(pdgdata_table.c.edition))
@@ -93,11 +94,11 @@ class PdgApi:
             return [e[0] for e in conn.execute(query).fetchall()]
 
     @property
-    def default_edition(self):
+    def default_edition(self) -> str:
         """Return the default edition for this database."""
         return self.info('edition')
 
-    def get(self, pdgid, edition=None):
+    def get(self, pdgid: str, edition: Optional[str]=None) -> PdgData:
         """Return PdgData object for given PDG Identifier.
 
         The get method checks what data the PDG Identifier describes and returns an
@@ -146,7 +147,7 @@ class PdgApi:
                     cls = PdgProperty
                 yield cls(self, item.pdgid, edition)
 
-    def _get_particles_by_name(self, name, case_sensitive=True, edition=None, unique=True):
+    def _get_particles_by_name(self, name: str, case_sensitive: bool=True, edition: None=None, unique: bool=True) -> Union[PdgParticle, List[PdgParticle]]:
         """Helper function used by get_particle(s)_by_name. Returns a
         PdgParticle (list thereof) if unique is True (False). Raises a
         PdgAmbiguousValueError if more than one PdgItem exists with the given
@@ -170,7 +171,7 @@ class PdgApi:
         else:
             raise PdgAmbiguousValueError('More than one PDGITEM named %s', name)
 
-    def get_particle_by_name(self, name, case_sensitive=True, edition=None):
+    def get_particle_by_name(self, name: str, case_sensitive: bool=True, edition: None=None) -> PdgParticle:
         """Get particle by its name.
 
         case_sensitive can be set False to indicate that the particle name should be
@@ -181,7 +182,7 @@ class PdgApi:
         return self._get_particles_by_name(name, case_sensitive=case_sensitive,
                                            edition=edition, unique=True)
 
-    def get_particles_by_name(self, name, case_sensitive=True, edition=None):
+    def get_particles_by_name(self, name: str, case_sensitive: bool=True, edition: None=None) -> List[PdgParticle]:
         """Get all particles for a (possibly generic) name.
 
         case_sensitive can be set False to indicate that the particle name should be
@@ -192,7 +193,7 @@ class PdgApi:
         return self._get_particles_by_name(name, case_sensitive=case_sensitive,
                                            edition=edition, unique=False)
 
-    def get_particle_by_mcid(self, mcid, edition=None):
+    def get_particle_by_mcid(self, mcid: int, edition: None=None) -> PdgParticle:
         """Get particle by its MC ID.
 
         edition can be set to a specific edition, from which data should later be retrieved.
@@ -209,7 +210,7 @@ class PdgApi:
         else:
             raise ValueError('MC number %s matches %i particles with PDG Identifiers %s' % (mcid, len(matches), matches))
 
-    def get_particles(self, edition=None):
+    def get_particles(self, edition: None=None):
         """Return iterator over all particles.
 
         edition can be set to a specific edition, from which data should later be retrieved.
