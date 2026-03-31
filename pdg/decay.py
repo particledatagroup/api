@@ -17,7 +17,7 @@ class PdgDecayProduct(object):
     its subdecay (if any).
     """
     def __init__(self, item: PdgItem, multiplier: int,
-                 subdecay: Optional[PdgBranchingFraction]=None):
+                 subdecay: Optional['PdgBranchingFraction']=None):
         """Instantiate a PdgDecayProduct."""
         assert isinstance(item, PdgItem)
         assert isinstance(multiplier, int)
