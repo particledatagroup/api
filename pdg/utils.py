@@ -2,13 +2,15 @@
 Utilities for PDG API.
 """
 import math
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Tuple
 
 from sqlalchemy import select, bindparam
+from sqlalchemy.engine.row import RowMapping
 
 from pdg.errors import PdgNoDataError, PdgAmbiguousValueError, PdgRoundingError
-from pdg.api import PdgApi
-from sqlalchemy.engine.row import RowMapping
-from typing import Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from pdg.api import PdgApi
 
 
 def pdg_round(value: float, error: float) -> Tuple[float, float]:
@@ -35,7 +37,7 @@ def pdg_round(value: float, error: float) -> Tuple[float, float]:
     return new_value, new_error
 
 
-def parse_id(pdgid: str) -> Union[Tuple[str, str], Tuple[str, None]]:
+def parse_id(pdgid: str) -> Tuple[str, Optional[str]]:
     """Parse PDG Identifier and return (normalized base identifier, edition)."""
     try:
         baseid, edition = pdgid.split('/')
@@ -62,7 +64,7 @@ def make_id(baseid: str, edition: Optional[str]=None) -> str:
 
 
 
-def get_row_data(api: PdgApi, table_name: str, row_id: int) -> RowMapping:
+def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> RowMapping:
     """Return dict built from the row of the specified table that has an id of
     row_id.
     """
@@ -74,7 +76,8 @@ def get_row_data(api: PdgApi, table_name: str, row_id: int) -> RowMapping:
     return matches[0]._mapping
 
 
-def get_linked_ids(api: PdgApi, table_name: str, src_col: str, src_id: int, dest_col: str='id'):
+def get_linked_ids(api: 'PdgApi', table_name: str, src_col: str, src_id: int, dest_col: str='id') \
+        -> Iterator[Any]:
     """Return iterator over all values of dest_col in the specified table for which
     src_col = src_id.
     """

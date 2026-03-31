@@ -6,10 +6,10 @@ from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
 from pdg.utils import make_id
-from pdg.data import PdgLifetime, PdgMass, PdgWidth, PdgData
+from pdg.data import PdgLifetime, PdgMass, PdgWidth, PdgData, PdgProperty
 from pdg.units import HBAR_IN_GEV_S
 from sqlalchemy.engine.row import RowMapping
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 if TYPE_CHECKING:
     from pdg.api import PdgApi
@@ -22,7 +22,7 @@ class PdgItem:
     queried (via the particle/particles properties) for the associated
     particle(s).
     """
-    def __init__(self, api: 'PdgApi', pdgitem_id: int, edition: None=None):
+    def __init__(self, api: 'PdgApi', pdgitem_id: int, edition: Optional[str]=None):
         """Constructor for a PdgItem. Intended for internal API use."""
         self.api = api
         self.pdgitem_id = pdgitem_id
@@ -159,7 +159,8 @@ class PdgParticle(PdgData):
     def _repr_extra(self):
         return "name='%s'" % self.name
 
-    def best(self, properties: Iterator[Any], quantity: Optional[str]=None) -> Union[PdgMass, PdgLifetime, PdgWidth]:
+    def best(self, properties: Iterator[PdgProperty], quantity: Optional[str]=None) \
+            -> PdgProperty:
         """Return the "best" property from an iterable of properties, using the API's pedantic setting.
 
         quantity is an optional string that describes what was being sought in case of error.
@@ -246,7 +247,7 @@ class PdgParticle(PdgData):
     def properties(self,
                    data_type_key: Optional[str]=None,
                    require_summary_data: bool=True,
-                   in_summary_table: None=None,
+                   in_summary_table: Optional[bool]=None,
                    omit_branching_ratios: bool=False):
         """Return iterator over specified particle property data.
 
@@ -321,7 +322,7 @@ class PdgParticle(PdgData):
                     yield prop
 
 
-    def masses(self, require_summary_data: bool=True) -> Iterator[Any]:
+    def masses(self, require_summary_data: bool=True) -> Iterator[PdgMass]:
         """Return iterator over mass data.
 
         For most particles, there is only a single mass property, and so the particle's
@@ -334,15 +335,15 @@ class PdgParticle(PdgData):
         """
         return self.properties('M', require_summary_data)
 
-    def widths(self, require_summary_data: bool=True) -> Iterator[Any]:
+    def widths(self, require_summary_data: bool=True) -> Iterator[PdgWidth]:
         """Return iterator over width data."""
         return self.properties('G', require_summary_data)
 
-    def lifetimes(self, require_summary_data: bool=True) -> Iterator[Any]:
+    def lifetimes(self, require_summary_data: bool=True) -> Iterator[PdgLifetime]:
         """Return iterator over lifetime data."""
         return self.properties('T', require_summary_data)
 
-    def branching_fractions(self, data_type_key='BF%', require_summary_data=True):
+    def branching_fractions(self, data_type_key: str='BF%', require_summary_data: bool=True):
         """Return iterator over given type(s) of branching fraction data.
 
         With data_type_key='BF%' (default), all branching fractions, including subdecay modes, are returned.
@@ -354,7 +355,7 @@ class PdgParticle(PdgData):
             raise PdgApiError('illegal branching fraction data type key %s' % data_type_key)
         return self.properties(data_type_key, require_summary_data)
 
-    def exclusive_branching_fractions(self, include_subdecays=False, require_summary_data=True):
+    def exclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True):
         """Return iterator over exclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
@@ -368,7 +369,7 @@ class PdgParticle(PdgData):
         else:
             return self.branching_fractions('BFX', require_summary_data)
 
-    def inclusive_branching_fractions(self, include_subdecays=False, require_summary_data=True):
+    def inclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True):
         """Return iterator over inclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
@@ -448,12 +449,13 @@ class PdgParticle(PdgData):
         return 'B' in self.data_flags
 
     @staticmethod
-    def _if_not_limit(prop: Union[PdgMass, PdgLifetime, PdgWidth], units: str, error: bool=False) -> float:
+    def _if_not_limit(prop: PdgProperty, units: str, error: bool=False) -> Optional[float]:
         """If a PdgProperty's best summary value is NOT a limit, return it in
         the specified units. Otherwise return None. If error is True, return the
         error instead of the value.
         """
         summary = prop.best_summary()
+        assert summary is not None
         if summary.is_limit:
             return None
         if error:
@@ -461,19 +463,19 @@ class PdgParticle(PdgData):
         return summary.get_value(units)
 
     @property
-    def mass(self) -> float:
+    def mass(self) -> Optional[float]:
         """Mass of the particle in GeV."""
         best_mass_property = self.best(self.masses(), '%s mass (%s)' % (self.name, self.pdgid))
         return self._if_not_limit(best_mass_property, 'GeV')
 
     @property
-    def mass_error(self):
+    def mass_error(self) -> Optional[float]:
         """Symmetric error on mass of particle in GeV, or None if mass error are asymmetric or mass is a limit."""
         best_mass_property = self.best(self.masses(), '%s (%s)' % (self.pdgid, self.description))
         return self._if_not_limit(best_mass_property, 'GeV', error=True)
 
     @property
-    def width(self) -> float:
+    def width(self) -> Optional[float]:
         """Width of the particle in GeV."""
         try:
             best_width_property = self.best(self.widths(), '%s width (%s)' % (self.name, self.pdgid))
@@ -487,7 +489,7 @@ class PdgParticle(PdgData):
             return HBAR_IN_GEV_S / self.lifetime
 
     @property
-    def width_error(self) -> float:
+    def width_error(self) -> Optional[float]:
         """Symmetric error on width of particle in GeV, or None if width error are asymmetric or width is a limit."""
         try:
             best_width_property = self.best(self.widths(), '%s (%s)' % (self.pdgid, self.description))
@@ -498,10 +500,13 @@ class PdgParticle(PdgData):
             # S063 has a lifetime entry but it's NULL
             if (not self.has_lifetime_entry) or (self.lifetime is None):
                 return 0.
-            return self.lifetime_error * HBAR_IN_GEV_S / self.lifetime**2
+            err = self.lifetime_error
+            if err is None:
+                return None
+            return err * HBAR_IN_GEV_S / self.lifetime**2
 
     @property
-    def lifetime(self) -> float:
+    def lifetime(self) -> Optional[float]:
         """Lifetime of the particle in seconds."""
         try:
             best_lifetime_property = self.best(self.lifetimes(), '%s lifetime (%s)' % (self.name, self.pdgid))
@@ -509,12 +514,13 @@ class PdgParticle(PdgData):
         except PdgNoDataError:
             if self.api.pedantic:
                 raise
-            if not self.has_width_entry:
+            width = self.width
+            if width is None:
                 return float('inf')
-            return HBAR_IN_GEV_S / self.width
+            return HBAR_IN_GEV_S / width
 
     @property
-    def lifetime_error(self) -> float:
+    def lifetime_error(self) -> Optional[float]:
         """Symmetric error on lifetime of particle in seconds, or None if lifetime error are asymmetric or lifetime is a limit."""
         try:
             best_lifetime_property = self.best(self.lifetimes(), '%s (%s)' % (self.pdgid, self.description))
@@ -527,10 +533,13 @@ class PdgParticle(PdgData):
                 raise
             if not self.has_width_entry:
                 return 0.
-            return self.width_error * HBAR_IN_GEV_S / self.width**2
+            width, err = self.width, self.width_error
+            if width is None or err is None:
+                return None
+            return err * HBAR_IN_GEV_S / width**2
 
     @property
-    def has_mass_entry(self):
+    def has_mass_entry(self) -> bool:
         """Whether the particle has at least one defined mass."""
         return next(self.masses(), None) is not None
 
@@ -566,7 +575,7 @@ class PdgParticle(PdgData):
             for msmt in t.get_measurements():
                 yield msmt
 
-    def width_measurements(self, require_summary_data=True):
+    def width_measurements(self, require_summary_data: bool=True):
         for g in self.widths(require_summary_data=require_summary_data):
             for msmt in g.get_measurements():
                 yield msmt

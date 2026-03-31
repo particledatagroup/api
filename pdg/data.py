@@ -36,7 +36,7 @@ class PdgSummaryValue(dict):
         """Print all data in this PdgSummaryValue object in a nice format (for debugging)."""
         pprint.pprint(self)
 
-    def get_value(self, units: Optional[str]=None) -> float:
+    def get_value(self, units: Optional[str]=None) -> Optional[float]:
         """Return value after conversion into units specified by parameter units (string).
 
         If units are not specified, the value is returned without conversion in the default units for this quantity.
@@ -72,7 +72,7 @@ class PdgSummaryValue(dict):
         else:
             return convert(self['error_negative'], self['unit_text'], units)
 
-    def get_error(self, units: Optional[str]=None) -> float:
+    def get_error(self, units: Optional[str]=None) -> Optional[float]:
         """Symmetric error or None, in units specified by parameter units (string).
 
         Returns symmetric error as average of positive and negative errors if they differ by less than 10% of
@@ -281,7 +281,7 @@ class PdgData(object):
         if self._edition is None:
             self._edition = edition
         if self._edition is None:
-            self._edition = self.api.edition
+            self._edition = self.api.default_edition
         self.pdgid = make_id(self.baseid, self._edition)
         self.cache = dict()
 
@@ -308,7 +308,9 @@ class PdgData(object):
             query = select(pdgid_table).where(pdgid_table.c.pdgid == bindparam('pdgid'))
             with self.api.engine.connect() as conn:
                 try:
-                    self.cache['pdgid'] = conn.execute(query, {'pdgid': self.baseid}).fetchone()._mapping
+                    row = conn.execute(query, {'pdgid': self.baseid}).fetchone()
+                    assert row is not None
+                    self.cache['pdgid'] = row._mapping
                 except AttributeError:
                     raise PdgInvalidPdgIdError('PDG Identifier %s not found' % self.pdgid)
         return self.cache['pdgid']
@@ -345,8 +347,6 @@ class PdgData(object):
         property's direct parent is a subsection header, it will be skipped, and
         the PDGID of the top-level section or particle will be returned
         instead."""
-        if self._get_pdgid()['parent_pdgid'] is None:
-            return None
         p = self
         while p._get_pdgid()['parent_pdgid'] is not None:
             p = self.api.get(p._get_pdgid()['parent_pdgid'], self.edition)
@@ -417,7 +417,7 @@ class PdgData(object):
         return self._get_pdgid()['flags']
 
     @property
-    def cp_charge_flag(self) -> int:
+    def cp_charge_flag(self) -> Optional[int]:
         """The particular "CP charge" (see PdgParticle documentation) that
         this data corresponds to. This flag will be None if the data applies
         to all particles listed under the PDG identifier.
@@ -452,7 +452,8 @@ class PdgProperty(PdgData):
         """Return number of summary values in Summary Table for this quantity."""
         return len(self.summary_values(summary_table_only=True))
 
-    def best_summary(self, summary_table_only: bool=False) -> PdgSummaryValue:
+    def best_summary(self, summary_table_only: bool=False) \
+            -> Optional[PdgSummaryValue]:
         """Return the PDG "best" summary value for this quantity.
 
         If there is either a single summary value in Particle Listings and Summary Tables, or there are multiple
@@ -509,62 +510,86 @@ class PdgProperty(PdgData):
         query = select(func.count('*'))
         query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
         with self.api.engine.connect() as conn:
-            return conn.execute(query, {'pdgid': self.baseid}).fetchone()[0]
+            row = conn.execute(query, {'pdgid': self.baseid}).fetchone()
+            assert row is not None
+            return row[0]
 
     @property
     def confidence_level(self):
         """Shortcut for best_summary().confidence_level."""
-        return self.best_summary().confidence_level
+        best = self.best_summary()
+        assert best is not None
+        return best.confidence_level
 
     @property
     def is_limit(self) -> bool:
         """Shortcut for best_summary().is_limit."""
-        return self.best_summary().is_limit
+        best = self.best_summary()
+        assert best is not None
+        return best.is_limit
 
     @property
     def value(self) -> float:
         """Shortcut for best_summary().value."""
-        return self.best_summary().value
+        best = self.best_summary()
+        assert best is not None
+        return best.value
 
     @property
     def error(self) -> Optional[float]:
         """Shortcut for best_summary().error."""
-        return self.best_summary().error
+        best = self.best_summary()
+        assert best is not None
+        return best.error
 
     @property
     def error_positive(self) -> float:
         """Shortcut for best_summary().error."""
-        return self.best_summary().error_positive
+        best = self.best_summary()
+        assert best is not None
+        return best.error_positive
 
     @property
     def error_negative(self) -> float:
         """Shortcut for best_summary().error."""
-        return self.best_summary().error_negative
+        best = self.best_summary()
+        assert best is not None
+        return best.error_negative
 
     @property
     def scale_factor(self):
         """Shortcut for best_summary().scale_factor."""
-        return self.best_summary().scale_factor
+        best = self.best_summary()
+        assert best is not None
+        return best.scale_factor
 
     @property
     def units(self):
         """Shortcut for best_summary().units."""
-        return self.best_summary().units
+        best = self.best_summary()
+        assert best is not None
+        return best.units
 
     @property
     def comment(self) -> str:
         """Shortcut for best_summary().comment."""
-        return self.best_summary().comment
+        best = self.best_summary()
+        assert best is not None
+        return best.comment
 
     @property
     def value_text(self):
         """Shortcut for best_summary().value_text."""
-        return self.best_summary().value_text
+        best = self.best_summary()
+        assert best is not None
+        return best.value_text
 
     @property
     def display_value_text(self):
         """Shortcut for best_summary().display_value_text."""
-        return self.best_summary().display_value_text
+        best = self.best_summary()
+        assert best is not None
+        return best.display_value_text
 
 
 class PdgMass(PdgProperty):

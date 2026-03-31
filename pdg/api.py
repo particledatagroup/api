@@ -5,13 +5,14 @@ PDG API top-level class.
 import logging
 import sqlalchemy
 from sqlalchemy import func, select, bindparam, distinct, desc
+from sqlalchemy.engine.row import RowMapping
 import pdg
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.utils import parse_id
 from pdg.data import PdgData, PdgProperty, PdgMass, PdgWidth, PdgLifetime, PdgText
 from pdg.decay import PdgBranchingFraction, PdgBranchingRatio, PdgItem
 from pdg.particle import PdgParticle, PdgParticleList
-from typing import List, Optional, Union
+from typing import Iterator, List, Optional
 
 
 # Map PDG data type codes to corresponding classes
@@ -60,6 +61,8 @@ class PdgApi:
         if not self.logger.handlers:
             self.logger.addHandler(logging.StreamHandler())
             self.logger.propagate = False
+
+        self._subdecay_warned = False # see PdgBranchingFraction.subdecays()
 
     def __str__(self) -> str:
         s = ['%s Review of Particle Physics, data release %s, API version %s' % (self.info('edition'),
@@ -117,7 +120,9 @@ class PdgApi:
         try:
             query = select(pdgid_table.c.data_type).where(pdgid_table.c.pdgid == bindparam('pdgid'))
             with self.engine.connect() as conn:
-                data_type = conn.execute(query, {'pdgid': baseid}).fetchone()[0]
+                row = conn.execute(query, {'pdgid': baseid}).fetchone()
+                assert row is not None
+                data_type = row[0]
         except Exception:
             raise PdgInvalidPdgIdError('PDG Identifier %s not found' % pdgid)
         try:
@@ -147,7 +152,9 @@ class PdgApi:
                     cls = PdgProperty
                 yield cls(self, item.pdgid, edition)
 
-    def _get_particles_by_name(self, name: str, case_sensitive: bool=True, edition: None=None, unique: bool=True) -> Union[PdgParticle, List[PdgParticle]]:
+    def _get_particles_by_name(self, name: str, case_sensitive: bool=True,
+                               edition: Optional[str]=None, unique: bool=True) \
+            -> PdgParticle | List[PdgParticle]:
         """Helper function used by get_particle(s)_by_name. Returns a
         PdgParticle (list thereof) if unique is True (False). Raises a
         PdgAmbiguousValueError if more than one PdgItem exists with the given
@@ -171,7 +178,8 @@ class PdgApi:
         else:
             raise PdgAmbiguousValueError('More than one PDGITEM named %s', name)
 
-    def get_particle_by_name(self, name: str, case_sensitive: bool=True, edition: None=None) -> PdgParticle:
+    def get_particle_by_name(self, name: str, case_sensitive: bool=True,
+                             edition: Optional[str]=None) -> PdgParticle:
         """Get particle by its name.
 
         case_sensitive can be set False to indicate that the particle name should be
@@ -179,10 +187,13 @@ class PdgApi:
 
         edition can be set to a specific edition, from which data should later be retrieved.
         """
-        return self._get_particles_by_name(name, case_sensitive=case_sensitive,
-                                           edition=edition, unique=True)
+        particle =  self._get_particles_by_name(name, case_sensitive=case_sensitive,
+                                                edition=edition, unique=True)
+        assert isinstance(particle, PdgParticle)
+        return particle
 
-    def get_particles_by_name(self, name: str, case_sensitive: bool=True, edition: None=None) -> List[PdgParticle]:
+    def get_particles_by_name(self, name: str, case_sensitive: bool=True,
+                              edition: Optional[str]=None) -> list[PdgParticle]:
         """Get all particles for a (possibly generic) name.
 
         case_sensitive can be set False to indicate that the particle name should be
@@ -190,10 +201,13 @@ class PdgApi:
 
         edition can be set to a specific edition, from which data should later be retrieved.
         """
-        return self._get_particles_by_name(name, case_sensitive=case_sensitive,
-                                           edition=edition, unique=False)
+        particles =  self._get_particles_by_name(name, case_sensitive=case_sensitive,
+                                                 edition=edition, unique=False)
+        assert not isinstance(particles, PdgParticle)
+        return particles
 
-    def get_particle_by_mcid(self, mcid: int, edition: None=None) -> PdgParticle:
+    def get_particle_by_mcid(self, mcid: int, edition: Optional[str]=None) \
+            -> PdgParticle:
         """Get particle by its MC ID.
 
         edition can be set to a specific edition, from which data should later be retrieved.
@@ -210,7 +224,7 @@ class PdgApi:
         else:
             raise ValueError('MC number %s matches %i particles with PDG Identifiers %s' % (mcid, len(matches), matches))
 
-    def get_particles(self, edition: None=None):
+    def get_particles(self, edition: Optional[str]=None) -> Iterator[PdgParticleList]:
         """Return iterator over all particles.
 
         edition can be set to a specific edition, from which data should later be retrieved.
@@ -224,10 +238,11 @@ class PdgApi:
             for item in conn.execute(query):
                 yield PdgParticleList(self, item.pdgid, edition)
 
-    def get_canonical_name(self, name):
+    def get_canonical_name(self, name: str) -> str:
         return self.get_particle_by_name(name).name
 
-    def doc_key_value(self, table_name, column_name, key):
+    def doc_key_value(self, table_name: str, column_name: str, key: str) \
+            -> RowMapping:
         """Get documentation on the meaning of key values or flags used in the PDG API."""
         pdgdoc_table = self.db.tables['pdgdoc']
         query = select(pdgdoc_table)
@@ -236,12 +251,14 @@ class PdgApi:
         query = query.where(pdgdoc_table.c.value == bindparam('value'))
         with self.engine.connect() as conn:
             try:
-                return conn.execute(query, {'table_name': table_name, 'column_name': column_name, 'value': key}).\
-                    fetchone()._mapping
+                row = conn.execute(query, {'table_name': table_name, 'column_name': column_name, 'value': key}).\
+                    fetchone()
+                assert row is not None
+                return row._mapping
             except AttributeError:
                 raise PdgNoDataError('No documentation for value %s in table %s.%s' % (key, table_name, column_name))
 
-    def doc_data_type_keys(self, as_text=True):
+    def doc_data_type_keys(self, as_text: bool=True) -> str | List[RowMapping]:
         """Get list of data type keys.
 
         The PDG API uses a data type key as part of the PDG Identifier metadata to denote the kind of information
@@ -272,7 +289,7 @@ class PdgApi:
         else:
             return keys
 
-    def doc_value_type_keys(self, as_text=True):
+    def doc_value_type_keys(self, as_text: bool=True) -> str | List[RowMapping]:
         """Get list of summary value type keys.
 
         For each summary value, the value type key specifies how this value was derived, e.g. whether it is the

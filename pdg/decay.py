@@ -8,7 +8,7 @@ from pdg.data import PdgProperty
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.particle import PdgItem, PdgParticle
 from sqlalchemy.engine.row import RowMapping
-from typing import List
+from typing import List, Optional
 
 
 class PdgDecayProduct(object):
@@ -16,7 +16,8 @@ class PdgDecayProduct(object):
     PdgItem (which may resolve to one or more PdgParticles), its multiplier, and
     its subdecay (if any).
     """
-    def __init__(self, item: PdgItem, multiplier: int, subdecay: None):
+    def __init__(self, item: PdgItem, multiplier: int,
+                 subdecay: Optional[PdgBranchingFraction]=None):
         """Instantiate a PdgDecayProduct."""
         assert isinstance(item, PdgItem)
         assert isinstance(multiplier, int)
