@@ -12,7 +12,7 @@ from pdg.utils import parse_id
 from pdg.data import PdgData, PdgProperty, PdgMass, PdgWidth, PdgLifetime, PdgText
 from pdg.decay import PdgBranchingFraction, PdgBranchingRatio, PdgItem
 from pdg.particle import PdgParticle, PdgParticleList
-from typing import Iterator, List, Optional
+from typing import Iterator, List, Optional, cast
 
 
 # Map PDG data type codes to corresponding classes
@@ -79,7 +79,7 @@ class PdgApi:
         pdginfo_table = self.db.tables['pdginfo']
         query = select(pdginfo_table.c.value).where(pdginfo_table.c.name == bindparam('key'))
         with self.engine.connect() as conn:
-            return conn.execute(query, {'key': key}).scalar()
+            return cast(str, conn.execute(query, {'key': key}).scalar())
 
     def info_keys(self) -> List[str]:
         """Return list of all metadata keys."""
@@ -269,25 +269,29 @@ class PdgApi:
         When as_text is True (default), the list is returned as a formatted string suitable for printing.
         Otherwise, a list of dict is returned, where each dict describes a possible key value.
         """
-        keys = []
-        if as_text:
-            keys.append('Key value     Description')
-            keys.append('-'*60)
         pdgdoc_table = self.db.tables['pdgdoc']
         query = select(pdgdoc_table)
         query = query.where(pdgdoc_table.c.table_name == 'PDGID')
         query = query.where(pdgdoc_table.c.column_name == 'DATA_TYPE')
         query.order_by(pdgdoc_table.c.indicator, pdgdoc_table.c.value)
+
+        if as_text:
+            lines: list[str] = []
+            lines.append('Key value     Description')
+            lines.append('-'*60)
+        else:
+            mappings: list[RowMapping] = []
+
         with self.engine.connect() as conn:
             for item in conn.execute(query):
                 if as_text:
-                    keys.append('  %-8s    %s' % (item.value, item.description))
+                    lines.append('  %-8s    %s' % (item.value, item.description))
                 else:
-                    keys.append(item._mapping)
+                    mappings.append(item._mapping)
         if as_text:
-            return '\n'.join(keys)
+            return '\n'.join(lines)
         else:
-            return keys
+            return mappings
 
     def doc_value_type_keys(self, as_text: bool=True) -> str | List[RowMapping]:
         """Get list of summary value type keys.
@@ -299,22 +303,26 @@ class PdgApi:
         When as_text is True (default), the list is returned as a formatted string suitable for printing.
         Otherwise, a list of dict is returned, where each dict describes a possible key value.
         """
-        keys = []
-        if as_text:
-            keys.append('Key value   Indicator            Description')
-            keys.append('-'*60)
         pdgdoc_table = self.db.tables['pdgdoc']
         query = select(pdgdoc_table)
         query = query.where(pdgdoc_table.c.table_name == 'PDGDATA')
         query = query.where(pdgdoc_table.c.column_name == 'VALUE_TYPE')
         query.order_by(pdgdoc_table.c.indicator, pdgdoc_table.c.value)
+
+        if as_text:
+            lines: list[str] = []
+            lines.append('Key value   Indicator            Description')
+            lines.append('-'*60)
+        else:
+            mappings: list[RowMapping] = []
+
         with self.engine.connect() as conn:
             for item in conn.execute(query):
                 if as_text:
-                    keys.append('  %-8s  %-20s  %s' % (item.value, item.indicator, item.description))
+                    lines.append('  %-8s  %-20s  %s' % (item.value, item.indicator, item.description))
                 else:
-                    keys.append(item._mapping)
+                    mappings.append(item._mapping)
         if as_text:
-            return '\n'.join(keys)
+            return '\n'.join(lines)
         else:
-            return keys
+            return mappings

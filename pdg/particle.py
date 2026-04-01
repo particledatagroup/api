@@ -9,7 +9,7 @@ from pdg.utils import make_id
 from pdg.data import PdgLifetime, PdgMass, PdgWidth, PdgData, PdgProperty
 from pdg.units import HBAR_IN_GEV_S
 from sqlalchemy.engine.row import RowMapping
-from typing import TYPE_CHECKING, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Iterator, List, Optional, Union, cast
 
 if TYPE_CHECKING:
     from pdg.api import PdgApi
@@ -26,7 +26,7 @@ class PdgItem:
         """Constructor for a PdgItem. Intended for internal API use."""
         self.api = api
         self.pdgitem_id = pdgitem_id
-        self.cache = {}
+        self.cache: dict[str, bool | RowMapping] = {}
         self.edition = edition
 
     def __repr__(self):
@@ -44,7 +44,7 @@ class PdgItem:
                 if result is None:
                     raise PdgNoDataError('No PDGITEM entry for %s' % self.pdgitem_id)
                 self.cache['pdgitem'] = result._mapping
-        return self.cache['pdgitem']
+        return cast(RowMapping, self.cache['pdgitem'])
 
     def _get_targets(self):
         """Get all PdgItems that this one maps directly to. Does not recurse."""
@@ -76,7 +76,7 @@ class PdgItem:
                         self.cache['has_particle'] = True
                     else:
                         self.cache['has_particle'] = False
-        return self.cache['has_particle']
+        return cast(bool, self.cache['has_particle'])
 
     @property
     def particle(self) -> 'PdgParticle':
@@ -88,7 +88,7 @@ class PdgItem:
             if self.has_particles:
                 raise PdgAmbiguousValueError('No unique PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
             raise PdgNoDataError('No PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
-        p = self.cache['pdgparticle']
+        p = cast(RowMapping, self.cache['pdgparticle'])
         return PdgParticle(self.api, p['pdgid'], edition=self.edition, set_mcid=p['mcid'],
                            set_name=p['name'])
 
@@ -242,7 +242,7 @@ class PdgParticle(PdgData):
                     names = [p.name for p in matches_g]
                     mcids = list(set([p.mcid for p in matches]))
                     raise PdgAmbiguousValueError('Multiple particles for %s: MCID %s, names %s' % (self.baseid, mcids, names))
-        return self.cache['pdgparticle']
+        return cast(RowMapping, self.cache['pdgparticle'])
 
     def properties(self,
                    data_type_key: Optional[str]=None,

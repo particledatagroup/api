@@ -17,7 +17,7 @@ from pdg.units import UNIT_CONVERSION_FACTORS, convert
 from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
 from pdg.measurement import PdgMeasurement
 from sqlalchemy.engine.row import RowMapping
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, cast
 
 if TYPE_CHECKING:
     from pdg.api import PdgApi
@@ -283,7 +283,7 @@ class PdgData(object):
         if self._edition is None:
             self._edition = self.api.default_edition
         self.pdgid = make_id(self.baseid, self._edition)
-        self.cache = dict()
+        self.cache: dict[str, RowMapping | list[RowMapping] | list[PdgSummaryValue]] = {}
 
     def __str__(self):
         return 'Data for PDG Identifier %s: %s' % (self.pdgid, self.description)
@@ -313,6 +313,7 @@ class PdgData(object):
                     self.cache['pdgid'] = row._mapping
                 except AttributeError:
                     raise PdgInvalidPdgIdError('PDG Identifier %s not found' % self.pdgid)
+        assert isinstance(self.cache['pdgid'], RowMapping)
         return self.cache['pdgid']
 
     def _get_summary_values(self) -> List[PdgSummaryValue]:
@@ -324,11 +325,12 @@ class PdgData(object):
             query = query.where(pdgid_table.c.pdgid == bindparam('pdgid'))
             query = query.where(pdgdata_table.c.edition == bindparam('edition'))
             query = query.order_by(pdgdata_table.c.sort)
-            self.cache['summary'] = []
+            summary: list[PdgSummaryValue] = []
             with self.api.engine.connect() as conn:
                 for entry in conn.execute(query, {'pdgid': self.baseid, 'edition': self.edition}):
-                    self.cache['summary'].append(PdgSummaryValue(entry._mapping))
-        return self.cache['summary']
+                    summary.append(PdgSummaryValue(entry._mapping))
+            self.cache['summary'] = summary
+        return cast(list[PdgSummaryValue], self.cache['summary'])
 
     def _count_data_entries(self, pdgid, edition):
         """Count number of data entries for a given PDG identifier and edition."""

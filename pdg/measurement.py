@@ -14,7 +14,7 @@ class PdgMeasurement(object):
     def __init__(self, api: 'PdgApi', msmt_id: int):
         self.api = api
         self.id = msmt_id
-        self.cache = {}
+        self.cache: dict[str, RowMapping] = {}
 
     def _get_measurement_data(self) -> RowMapping:
         return self.cache.get(
@@ -102,7 +102,7 @@ class PdgValue(object):
     def __init__(self, api: 'PdgApi', value_id: int):
         self.api = api
         self.id = value_id
-        self.cache = {}
+        self.cache: dict[str, RowMapping] = {}
 
     def _get_value_data(self) -> RowMapping:
         return self.cache.get(
@@ -284,7 +284,7 @@ class PdgReference(object):
     def __init__(self, api: 'PdgApi', ref_id: int):
         self.api = api
         self.id = ref_id
-        self.cache = {}
+        self.cache: dict[str, RowMapping] = {}
 
     def _get_reference_data(self) -> RowMapping:
         return self.cache.get(
@@ -329,7 +329,7 @@ class PdgFootnote(object):
     def __init__(self, api: 'PdgApi', foot_id: int):
         self.api = api
         self.id = foot_id
-        self.cache = {}
+        self.cache: dict[str, RowMapping] = {}
 
     def _get_footnote_data(self) -> RowMapping:
         return self.cache.get(

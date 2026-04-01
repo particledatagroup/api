@@ -8,7 +8,7 @@ from pdg.data import PdgProperty
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.particle import PdgItem, PdgParticle
 from sqlalchemy.engine.row import RowMapping
-from typing import List, Optional
+from typing import List, Optional, cast
 
 
 class PdgDecayProduct(object):
@@ -46,8 +46,8 @@ class PdgBranchingFraction(PdgProperty):
                     result = conn.execute(query, {'pdgid': self.baseid}).fetchall()
                     self.cache['pdgdecay'] = [row._mapping for row in result]
                 except AttributeError:
-                    raise PdgInvalidPdgIdError('No PDGDECAY entry for ' % self.pdgid)
-        return self.cache['pdgdecay']
+                    raise PdgInvalidPdgIdError('No PDGDECAY entry for %s' % self.pdgid)
+        return cast(list[RowMapping], self.cache['pdgdecay'])
 
     def _repr_extra(self):
         return '"%s"' % self.description
