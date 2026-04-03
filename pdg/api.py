@@ -275,12 +275,12 @@ class PdgApi:
         query = query.where(pdgdoc_table.c.column_name == 'DATA_TYPE')
         query.order_by(pdgdoc_table.c.indicator, pdgdoc_table.c.value)
 
+        lines: list[str] = []
+        mappings: list[RowMapping] = []
+
         if as_text:
-            lines: list[str] = []
             lines.append('Key value     Description')
             lines.append('-'*60)
-        else:
-            mappings: list[RowMapping] = []
 
         with self.engine.connect() as conn:
             for item in conn.execute(query):
@@ -309,12 +309,12 @@ class PdgApi:
         query = query.where(pdgdoc_table.c.column_name == 'VALUE_TYPE')
         query.order_by(pdgdoc_table.c.indicator, pdgdoc_table.c.value)
 
+        lines: list[str] = []
+        mappings: list[RowMapping] = []
+
         if as_text:
-            lines: list[str] = []
             lines.append('Key value   Indicator            Description')
             lines.append('-'*60)
-        else:
-            mappings: list[RowMapping] = []
 
         with self.engine.connect() as conn:
             for item in conn.execute(query):

@@ -333,15 +333,18 @@ class PdgParticle(PdgData):
         For other particles (e.g. for the top quark) there are different ways to determine the mass and the user
         needs to decide which mass value is the most appropriate for their use case.
         """
-        return self.properties('M', require_summary_data)
+        return cast(Iterator[PdgMass],
+                    self.properties('M', require_summary_data))
 
     def widths(self, require_summary_data: bool=True) -> Iterator[PdgWidth]:
         """Return iterator over width data."""
-        return self.properties('G', require_summary_data)
+        return cast(Iterator[PdgWidth],
+                    self.properties('G', require_summary_data))
 
     def lifetimes(self, require_summary_data: bool=True) -> Iterator[PdgLifetime]:
         """Return iterator over lifetime data."""
-        return self.properties('T', require_summary_data)
+        return cast(Iterator[PdgLifetime],
+                    self.properties('T', require_summary_data))
 
     def branching_fractions(self, data_type_key: str='BF%', require_summary_data: bool=True):
         """Return iterator over given type(s) of branching fraction data.

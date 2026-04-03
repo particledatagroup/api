@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, List, Optional, cast
 
 if TYPE_CHECKING:
     from pdg.api import PdgApi
+    from pdg.particle import PdgParticle, PdgParticleList
 
 
 class PdgSummaryValue(dict):
@@ -295,7 +296,7 @@ class PdgData(object):
         return "%s('%s'%s)" % (self.__class__.__name__, make_id(self.baseid, self.edition),
                                extra)
 
-    def _repr_extra(self):
+    def _repr_extra(self) -> str:
         """A method that subclasses can override in order to add info to the
         result of __repr__.
         """
@@ -354,15 +355,15 @@ class PdgData(object):
             p = self.api.get(p._get_pdgid()['parent_pdgid'], self.edition)
         return p.pdgid if include_edition else p.baseid
 
-    def get_particles(self):
+    def get_particles(self) -> 'PdgParticleList':
         """Return PdgParticleList for this property's particle."""
         p = self.api.get(self.get_parent_pdgid())
         if p.data_type != 'PART':
             err = 'Identifier %s does not have a parent particle'
             raise PdgNoDataError(err)
-        return p
+        return cast('PdgParticleList', p)
 
-    def get_particle(self):
+    def get_particle(self) -> 'PdgParticle':
         """Returns PdgParticle for this property's particle. Raises
         PdgAmbiguousValueError when there are multiple matches."""
         ps = self.get_particles()
