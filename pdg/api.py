@@ -12,7 +12,7 @@ from pdg.utils import parse_id
 from pdg.data import PdgData, PdgProperty, PdgMass, PdgWidth, PdgLifetime, PdgText
 from pdg.decay import PdgBranchingFraction, PdgBranchingRatio, PdgItem
 from pdg.particle import PdgParticle, PdgParticleList
-from typing import Iterator, List, Optional, cast
+from typing import Iterator, Optional, cast
 
 
 # Map PDG data type codes to corresponding classes
@@ -81,7 +81,7 @@ class PdgApi:
         with self.engine.connect() as conn:
             return cast(str, conn.execute(query, {'key': key}).scalar())
 
-    def info_keys(self) -> List[str]:
+    def info_keys(self) -> list[str]:
         """Return list of all metadata keys."""
         pdginfo_table = self.db.tables['pdginfo']
         query = select(pdginfo_table.c.name)
@@ -89,7 +89,7 @@ class PdgApi:
             return [k[0] for k in conn.execute(query).fetchall()]
 
     @property
-    def editions(self) -> List[str]:
+    def editions(self) -> list[str]:
         """List of all editions of the Review for which the database has data."""
         pdgdata_table = self.db.tables['pdgdata']
         query = select(distinct(pdgdata_table.c.edition)).order_by(desc(pdgdata_table.c.edition))
@@ -131,7 +131,7 @@ class PdgApi:
             cls = PdgProperty
         return cls(self, baseid, edition)
 
-    def get_all(self, data_type_key=None, edition=None):
+    def get_all(self, data_type_key=None, edition=None) -> Iterator[PdgData]:
         """Return iterator over all PDG Identifiers / quantities. Returns PdgProperties or derived classes.
 
         If data_type_key is set, only quantities of the given type are returned.
@@ -154,7 +154,7 @@ class PdgApi:
 
     def _get_particles_by_name(self, name: str, case_sensitive: bool=True,
                                edition: Optional[str]=None, unique: bool=True) \
-            -> PdgParticle | List[PdgParticle]:
+            -> PdgParticle | list[PdgParticle]:
         """Helper function used by get_particle(s)_by_name. Returns a
         PdgParticle (list thereof) if unique is True (False). Raises a
         PdgAmbiguousValueError if more than one PdgItem exists with the given
@@ -258,7 +258,7 @@ class PdgApi:
             except AttributeError:
                 raise PdgNoDataError('No documentation for value %s in table %s.%s' % (key, table_name, column_name))
 
-    def doc_data_type_keys(self, as_text: bool=True) -> str | List[RowMapping]:
+    def doc_data_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
         """Get list of data type keys.
 
         The PDG API uses a data type key as part of the PDG Identifier metadata to denote the kind of information
@@ -293,7 +293,7 @@ class PdgApi:
         else:
             return mappings
 
-    def doc_value_type_keys(self, as_text: bool=True) -> str | List[RowMapping]:
+    def doc_value_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
         """Get list of summary value type keys.
 
         For each summary value, the value type key specifies how this value was derived, e.g. whether it is the

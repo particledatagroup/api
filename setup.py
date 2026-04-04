@@ -16,7 +16,8 @@ setup(
     license='Modified BSD',
     packages=find_packages(),
     package_data={"pdg": ["pdg.sqlite"]},
-    install_requires=['SQLAlchemy>=1.4'],
+    install_requires=['SQLAlchemy>=1.4', 'typing_extensions>=4.15'],
+    python_requires='>=3.10',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',

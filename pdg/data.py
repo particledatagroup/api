@@ -17,7 +17,7 @@ from pdg.units import UNIT_CONVERSION_FACTORS, convert
 from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
 from pdg.measurement import PdgMeasurement
 from sqlalchemy.engine.row import RowMapping
-from typing import TYPE_CHECKING, List, Optional, cast
+from typing import TYPE_CHECKING, Iterator, Optional, cast
 
 if TYPE_CHECKING:
     from pdg.api import PdgApi
@@ -27,13 +27,13 @@ if TYPE_CHECKING:
 class PdgSummaryValue(dict):
     """Container for a single value from the Summary Tables."""
 
-    def __str__(self):
+    def __str__(self) -> str:
         indicator = self.value_type
         if not indicator:
             indicator = '[key = %s]' % self.value_type_key
         return '%-20s %-20s  %s' % (self.value_text, indicator, self.comment if self.comment else '')
 
-    def pprint(self):
+    def pprint(self) -> None:
         """Print all data in this PdgSummaryValue object in a nice format (for debugging)."""
         pprint.pprint(self)
 
@@ -51,7 +51,7 @@ class PdgSummaryValue(dict):
             except TypeError:
                 return None
 
-    def get_error_positive(self, units=None):
+    def get_error_positive(self, units: Optional[str]=None) -> float:
         """Return positive error after conversion into units specified by parameter units (string).
 
         If units are not specified, the positive error is returned without conversion in the default
@@ -62,7 +62,7 @@ class PdgSummaryValue(dict):
         else:
             return convert(self['error_positive'], self['unit_text'], units)
 
-    def get_error_negative(self, units=None):
+    def get_error_negative(self, units: Optional[str]=None) -> float:
         """Return negative error after conversion into units specified by parameter units (string).
 
         If units are not specified, the negative error is returned without conversion in the default
@@ -90,24 +90,24 @@ class PdgSummaryValue(dict):
             return None
 
     @property
-    def pdgid(self):
+    def pdgid(self) -> str:
         """PDG Identifier of quantity for which value is given."""
         return self['pdgid']
 
     @property
-    def description(self):
+    def description(self) -> str:
         """Description of quantity for which value is given"""
         return self['description']
 
     @property
-    def value_type_key(self):
+    def value_type_key(self) -> str:
         """Type of value, given by its key.
 
         See PdgApi.doc_value_type_keys() for the meaning of the different value type keys."""
         return self['value_type']
 
     @property
-    def value_type(self):
+    def value_type(self) -> str:
         """Type of value, given as the PDG indicator string."""
         if self.value_type_key in ('AC', 'D', 'E'):
             return 'OUR AVERAGE'
@@ -128,7 +128,7 @@ class PdgSummaryValue(dict):
         return self['in_summary_table']
 
     @property
-    def confidence_level(self):
+    def confidence_level(self) -> Optional[float]:
         """Confidence level for limits, None otherwise."""
         return self['confidence_level']
 
@@ -138,12 +138,12 @@ class PdgSummaryValue(dict):
         return self['confidence_level'] is not None or self['limit_type'] is not None
 
     @property
-    def is_upper_limit(self):
+    def is_upper_limit(self) -> bool:
         """True if value is an upper limit."""
         return self['limit_type'] == 'U'
 
     @property
-    def is_lower_limit(self):
+    def is_lower_limit(self) -> bool:
         """True if value is an lower limit."""
         return self['limit_type'] == 'L'
 
@@ -168,7 +168,6 @@ class PdgSummaryValue(dict):
     @property
     def error_negative(self) -> float:
         """Numerical value of negative error in units given by property units."""
-
         return self['error_negative']
 
     @property
@@ -180,12 +179,12 @@ class PdgSummaryValue(dict):
         return self.get_error()
 
     @property
-    def scale_factor(self):
+    def scale_factor(self) -> float:
         """PDG error scale factor that was applied to error_positive and error_negative."""
         return self['scale_factor'] or 1.0
 
     @property
-    def units(self):
+    def units(self) -> str:
         """Units (in plain text format) used by value, error_positive,
         error_negative, and display_value_text."""
         return self['unit_text']
@@ -197,7 +196,7 @@ class PdgSummaryValue(dict):
     #     return self['unit_tex']
 
     @property
-    def value_text(self):
+    def value_text(self) -> str:
         """Value and uncertainty (in plain text format) in units given by
            property units, including the power of ten, if applicable
            (see display_power_of_ten)"""
@@ -211,7 +210,7 @@ class PdgSummaryValue(dict):
     #     return self['value_tex']
 
     @property
-    def display_value_text(self):
+    def display_value_text(self) -> str:
         """Value and uncertainty in plain text format as displayed in
            Listings tables. Does not include any power of ten or percent sign.
            Must be combined with the display_power_of_ten property in order
@@ -219,12 +218,12 @@ class PdgSummaryValue(dict):
         return self['display_value_text']
 
     @property
-    def display_power_of_ten(self):
+    def display_power_of_ten(self) -> int:
         """Unit multiplier (as power of ten) as used for display in Listings."""
         return self['display_power_of_ten']
 
     @property
-    def display_in_percent(self):
+    def display_in_percent(self) -> bool:
         """True if value is rendered in percent for display in Listings.
            Implies that display_power_of_ten is -2."""
         return self['display_in_percent']
@@ -233,7 +232,7 @@ class PdgSummaryValue(dict):
 class PdgConvertedValue(PdgSummaryValue):
     """A PdgSummaryValue class for storing summary values after unit conversion."""
 
-    def __init__(self, value, to_units):
+    def __init__(self, value: PdgSummaryValue, to_units: str):
         """Instantiate a copy of PdgSummaryValue value with new units to_unit."""
         super(PdgConvertedValue, self).__init__(value)
         self.original_units = value.units
@@ -286,10 +285,10 @@ class PdgData(object):
         self.pdgid = make_id(self.baseid, self._edition)
         self.cache: dict[str, RowMapping | list[RowMapping] | list[PdgSummaryValue]] = {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'Data for PDG Identifier %s: %s' % (self.pdgid, self.description)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         extra = self._repr_extra()
         if extra:
             extra = ', ' + extra
@@ -317,7 +316,7 @@ class PdgData(object):
         assert isinstance(self.cache['pdgid'], RowMapping)
         return self.cache['pdgid']
 
-    def _get_summary_values(self) -> List[PdgSummaryValue]:
+    def _get_summary_values(self) -> list[PdgSummaryValue]:
         """Get all summary data values."""
         if 'summary' not in self.cache:
             pdgid_table = self.api.db.tables['pdgid']
@@ -333,14 +332,16 @@ class PdgData(object):
             self.cache['summary'] = summary
         return cast(list[PdgSummaryValue], self.cache['summary'])
 
-    def _count_data_entries(self, pdgid, edition):
+    def _count_data_entries(self, pdgid: str, edition: str) -> int:
         """Count number of data entries for a given PDG identifier and edition."""
         pdgdata_table = self.api.db.tables['pdgdata']
         query = select(func.count("*")).select_from(pdgdata_table)
         query = query.where(pdgdata_table.c.pdgid == bindparam('pdgid'))
         query = query.where(pdgdata_table.c.edition == bindparam('edition'))
         with self.api.engine.connect() as conn:
-            return conn.execute(query, {'pdgid': pdgid.upper(), 'edition': edition}).scalar()
+            count = conn.execute(query, {'pdgid': pdgid.upper(), 'edition': edition}).scalar()
+            assert count is not None
+            return count
 
     def get_parent_pdgid(self, include_edition: bool=True) -> str:
         """Return PDG Identifier of this property's parent. In most cases, this
@@ -373,7 +374,7 @@ class PdgData(object):
             raise PdgAmbiguousValueError(err)
         return ps[0]
 
-    def get_children(self, recurse=False):
+    def get_children(self, recurse: bool=False) -> Iterator['PdgData']:
         pdgid_table = self.api.db.tables['pdgid']
         ## NOTE: Querying on IDs doesn't work because the `parent_id` seems off
         # query = select(pdgid_table.c.pdgid) \
@@ -393,12 +394,12 @@ class PdgData(object):
                     yield c
 
     @property
-    def edition(self):
+    def edition(self) -> Optional[str]:
         """Year of edition for which data is requested."""
         return self._edition
 
     @edition.setter
-    def edition(self, edition):
+    def edition(self, edition: str) -> None:
         """Set year of edition used for retrieving data (invalidates cache)."""
         self._edition = edition
         self.pdgid = make_id(self.baseid, self._edition)
@@ -439,7 +440,7 @@ class PdgData(object):
 class PdgProperty(PdgData):
     """Base class for containers for data containers for particle properties."""
 
-    def summary_values(self, summary_table_only: bool=False) -> List[PdgSummaryValue]:
+    def summary_values(self, summary_table_only: bool=False) -> list[PdgSummaryValue]:
         """Return list of summary values for this quantity.
 
         By default, all summary values are included, even if they are only shown in the
@@ -451,7 +452,7 @@ class PdgProperty(PdgData):
         else:
             return self._get_summary_values()
 
-    def n_summary_table_values(self):
+    def n_summary_table_values(self) -> int:
         """Return number of summary values in Summary Table for this quantity."""
         return len(self.summary_values(summary_table_only=True))
 
@@ -490,14 +491,14 @@ class PdgProperty(PdgData):
                 else:
                     return summaries[0]
 
-    def has_best_summary(self, summary_table_only=False):
+    def has_best_summary(self, summary_table_only: bool=False) -> bool:
         """Return True if there is a single PDG "best" value (see best_value() for definition)."""
         try:
             return self.best_summary(summary_table_only) is not None
         except PdgAmbiguousValueError:
             return False
 
-    def get_measurements(self):
+    def get_measurements(self) -> Iterator[PdgMeasurement]:
         """Return all of the measurements associated with this property."""
         pdgmsmt_table = self.api.db.tables['pdgmeasurement']
         query = select(pdgmsmt_table.c.id)
@@ -518,7 +519,7 @@ class PdgProperty(PdgData):
             return row[0]
 
     @property
-    def confidence_level(self):
+    def confidence_level(self) -> Optional[float]:
         """Shortcut for best_summary().confidence_level."""
         best = self.best_summary()
         assert best is not None
@@ -560,14 +561,14 @@ class PdgProperty(PdgData):
         return best.error_negative
 
     @property
-    def scale_factor(self):
+    def scale_factor(self) -> float:
         """Shortcut for best_summary().scale_factor."""
         best = self.best_summary()
         assert best is not None
         return best.scale_factor
 
     @property
-    def units(self):
+    def units(self) -> str:
         """Shortcut for best_summary().units."""
         best = self.best_summary()
         assert best is not None
@@ -581,14 +582,14 @@ class PdgProperty(PdgData):
         return best.comment
 
     @property
-    def value_text(self):
+    def value_text(self) -> str:
         """Shortcut for best_summary().value_text."""
         best = self.best_summary()
         assert best is not None
         return best.value_text
 
     @property
-    def display_value_text(self):
+    def display_value_text(self) -> str:
         """Shortcut for best_summary().display_value_text."""
         best = self.best_summary()
         assert best is not None

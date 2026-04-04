@@ -5,14 +5,17 @@ Definition of top-level particle container class.
 from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
+from pdg.measurement import PdgMeasurement
 from pdg.utils import make_id
 from pdg.data import PdgLifetime, PdgMass, PdgWidth, PdgData, PdgProperty
 from pdg.units import HBAR_IN_GEV_S
 from sqlalchemy.engine.row import RowMapping
-from typing import TYPE_CHECKING, Iterator, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Iterator, Optional, cast
 
 if TYPE_CHECKING:
     from pdg.api import PdgApi
+    from pdg.decay import PdgBranchingFraction
+
 
 class PdgItem:
     """A class to represent an "item" encountered in e.g. a description of a
@@ -29,7 +32,7 @@ class PdgItem:
         self.cache: dict[str, bool | RowMapping] = {}
         self.edition = edition
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a human-readable representation of the PdgItem."""
         name = self._get_pdgitem()['name']
         return 'PdgItem("%s")' % name
@@ -46,7 +49,7 @@ class PdgItem:
                 self.cache['pdgitem'] = result._mapping
         return cast(RowMapping, self.cache['pdgitem'])
 
-    def _get_targets(self):
+    def _get_targets(self) -> Iterator['PdgItem']:
         """Get all PdgItems that this one maps directly to. Does not recurse."""
         pdgitem_map_table = self.api.db.tables['pdgitem_map']
         query = select(pdgitem_map_table).where(pdgitem_map_table.c.pdgitem_id == bindparam('pdgitem_id'))
@@ -93,7 +96,7 @@ class PdgItem:
                            set_name=p['name'])
 
     @property
-    def particles(self) -> List['PdgParticle']:
+    def particles(self) -> list['PdgParticle']:
         """The list of all particles associated with the PdgItem."""
         if self.has_particle:
             return [self.particle]
@@ -150,13 +153,13 @@ class PdgParticle(PdgData):
         self.set_mcid = set_mcid
         self.set_name = set_name
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             return 'Data for PDG Particle %s: %s' % (self.pdgid, self.name)
         except PdgAmbiguousValueError:
             return 'Data for PDG Particle %s: multiple particle matches' % self.pdgid
 
-    def _repr_extra(self):
+    def _repr_extra(self) -> str:
         return "name='%s'" % self.name
 
     def best(self, properties: Iterator[PdgProperty], quantity: Optional[str]=None) \
@@ -248,7 +251,8 @@ class PdgParticle(PdgData):
                    data_type_key: Optional[str]=None,
                    require_summary_data: bool=True,
                    in_summary_table: Optional[bool]=None,
-                   omit_branching_ratios: bool=False):
+                   omit_branching_ratios: bool=False) \
+            -> Iterator[PdgData]:
         """Return iterator over specified particle property data.
 
         By default, all properties excluding branching fractions and branching fraction ratios are returned.
@@ -346,7 +350,8 @@ class PdgParticle(PdgData):
         return cast(Iterator[PdgLifetime],
                     self.properties('T', require_summary_data))
 
-    def branching_fractions(self, data_type_key: str='BF%', require_summary_data: bool=True):
+    def branching_fractions(self, data_type_key: str='BF%', require_summary_data: bool=True) \
+            -> Iterator['PdgBranchingFraction']:
         """Return iterator over given type(s) of branching fraction data.
 
         With data_type_key='BF%' (default), all branching fractions, including subdecay modes, are returned.
@@ -356,9 +361,11 @@ class PdgParticle(PdgData):
         """
         if data_type_key[0:2] != 'BF':
             raise PdgApiError('illegal branching fraction data type key %s' % data_type_key)
-        return self.properties(data_type_key, require_summary_data)
+        return cast(Iterator['PdgBranchingFraction'],
+                    self.properties(data_type_key, require_summary_data))
 
-    def exclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True):
+    def exclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True) \
+            -> Iterator['PdgBranchingFraction']:
         """Return iterator over exclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
@@ -372,7 +379,8 @@ class PdgParticle(PdgData):
         else:
             return self.branching_fractions('BFX', require_summary_data)
 
-    def inclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True):
+    def inclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True) \
+            -> Iterator['PdgBranchingFraction']:
         """Return iterator over inclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
@@ -402,17 +410,17 @@ class PdgParticle(PdgData):
         return self._get_particle_data()['charge']
 
     @property
-    def quantum_I(self):
+    def quantum_I(self) -> str:
         """Quantum number I (isospin) of particle."""
         return self._get_particle_data()['quantum_i']
 
     @property
-    def quantum_G(self):
+    def quantum_G(self) -> str:
         """Quantum number G (G parity) of particle."""
         return self._get_particle_data()['quantum_g']
 
     @property
-    def quantum_J(self):
+    def quantum_J(self) -> str:
         """Quantum number J (spin) of particle."""
         return self._get_particle_data()['quantum_j']
 
@@ -422,7 +430,7 @@ class PdgParticle(PdgData):
         return self._get_particle_data()['quantum_p']
 
     @property
-    def quantum_C(self):
+    def quantum_C(self) -> str:
         """Quantum number C (C parity) of particle."""
         return self._get_particle_data()['quantum_c']
 
@@ -568,17 +576,20 @@ class PdgParticle(PdgData):
         sign = -1 if cc_type == 'A' else 1
         return sign * int(self.charge)
 
-    def mass_measurements(self, require_summary_data: bool=True):
+    def mass_measurements(self, require_summary_data: bool=True) \
+            -> Iterator[PdgMeasurement]:
         for m in self.masses(require_summary_data=require_summary_data):
             for msmt in m.get_measurements():
                 yield msmt
 
-    def lifetime_measurements(self, require_summary_data: bool=True):
+    def lifetime_measurements(self, require_summary_data: bool=True) \
+            -> Iterator[PdgMeasurement]:
         for t in self.lifetimes(require_summary_data=require_summary_data):
             for msmt in t.get_measurements():
                 yield msmt
 
-    def width_measurements(self, require_summary_data: bool=True):
+    def width_measurements(self, require_summary_data: bool=True) \
+            -> Iterator[PdgMeasurement]:
         for g in self.widths(require_summary_data=require_summary_data):
             for msmt in g.get_measurements():
                 yield msmt

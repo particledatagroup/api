@@ -3,7 +3,8 @@
 from pdg.errors import PdgAmbiguousValueError
 from pdg.utils import get_linked_ids, get_row_data
 from sqlalchemy.engine.row import RowMapping
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Iterator, Optional
+from typing_extensions import deprecated
 
 if TYPE_CHECKING:
     from pdg.api import PdgApi
@@ -21,7 +22,7 @@ class PdgMeasurement(object):
             'pdgmeasurement',
             get_row_data(self.api, 'pdgmeasurement', self.id))
 
-    def values(self):
+    def values(self) -> Iterator['PdgValue']:
         """Returns a iterator of PdgValues for all of the quanities associated
            with this measurement."""
         for value_id in get_linked_ids(
@@ -31,7 +32,7 @@ class PdgMeasurement(object):
                 self.id):
             yield PdgValue(self.api, value_id)
 
-    def get_value(self):
+    def get_value(self) -> 'PdgValue':
         """Returns the PdgValue associated with this measurement. Raises
         PdgAmbiguousValueError if there are multiple values (i.e. this is a
         multi-column measurement)."""
@@ -42,7 +43,7 @@ class PdgMeasurement(object):
             raise PdgAmbiguousValueError(err)
         return vs[0]
 
-    def footnotes(self):
+    def footnotes(self) -> Iterator['PdgFootnote']:
         """Returns an iterator of PdgFootnotes for this measurements."""
         for foot_id in get_linked_ids(
                 self.api,
@@ -69,7 +70,7 @@ class PdgMeasurement(object):
         return self._get_measurement_data()['event_count']
 
     @property
-    def confidence_level(self) -> None:
+    def confidence_level(self) -> Optional[float]:
         """The confidence level of this measurement."""
         return self._get_measurement_data()['confidence_level']
 
@@ -122,7 +123,7 @@ class PdgValue(object):
         return self._get_value_data()['column_name']
 
     @property
-    def column_name_tex(self):
+    def column_name_tex(self) -> str:
         """The name of the column (in TeX format) in which this value is
         displayed in the PDG Listings."""
         return self._get_value_data()['column_name_tex']
@@ -203,12 +204,12 @@ class PdgValue(object):
         return self._get_value_data()['value']
 
     @property
-    def error_positive(self) -> float:
+    def error_positive(self) -> Optional[float]:
         """The total positive error for this value."""
         return self._get_value_data()['error_positive']
 
     @property
-    def error_negative(self) -> float:
+    def error_negative(self) -> Optional[float]:
         """The total negative error for this value."""
         return self._get_value_data()['error_negative']
 
@@ -233,7 +234,7 @@ class PdgValue(object):
         return self._get_value_data()['syst_error_negative']
 
     @property
-    def error(self):
+    def error(self) -> Optional[float]:
         """The total symmetric error for this value. If the positive and
            negative errors differ, accessing this property will give the average
            of the two, unless you are in pedantic mode, in which case a
@@ -248,7 +249,7 @@ class PdgValue(object):
         return 0.5*(self.error_positive + self.error_negative)
 
     @property
-    def stat_error(self):
+    def stat_error(self) -> Optional[float]:
         """The statistical symmetric error for this value. If the positive and
            negative statistical errors differ, accessing this property will give
            the average of the two, unless you are in pedantic mode, in which case a
@@ -263,7 +264,7 @@ class PdgValue(object):
         return 0.5*(self.stat_error_positive + self.stat_error_negative)
 
     @property
-    def syst_error(self):
+    def syst_error(self) -> Optional[float]:
         """The systematic symmetric error for this value. If the positive and
            negative systematic errors differ, accessing this property will give
            the average of the two, unless you are in pedantic mode, in which case a
@@ -318,7 +319,7 @@ class PdgReference(object):
         return self._get_reference_data()['inspire_id']
 
     @property
-    def document_id(self):
+    def document_id(self) -> str:
         """The identifier for this publication in AUTHOR YEAR format."""
         return self._get_reference_data()['document_id']
 
@@ -336,8 +337,12 @@ class PdgFootnote(object):
             'pdgfootnote',
             get_row_data(self.api, 'pdgfootnote', self.id))
 
-    def references(self):
-        """Returns an iterator of PdgReferences that refer to this footnote."""
+    @deprecated('Use "measurements" instead')
+    def references(self) -> Iterator[PdgMeasurement]:
+        return self.measurements()
+
+    def measurements(self) -> Iterator[PdgMeasurement]:
+        """Returns an iterator of PdgMeasurements that refer to this footnote."""
         for ref_id in get_linked_ids(
                 self.api,
                 'pdgmeasurement_footnote',

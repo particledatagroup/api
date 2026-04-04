@@ -2,7 +2,7 @@
 Utilities for PDG API.
 """
 import math
-from typing import TYPE_CHECKING, Any, Iterator, Optional, Tuple
+from typing import TYPE_CHECKING, Iterator, Optional, Tuple, cast
 
 from sqlalchemy import select, bindparam
 from sqlalchemy.engine.row import RowMapping
@@ -62,8 +62,6 @@ def make_id(baseid: str, edition: Optional[str]=None) -> str:
         return ('%s/%s' % (baseid, edition)).upper()
 
 
-
-
 def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> RowMapping:
     """Return dict built from the row of the specified table that has an id of
     row_id.
@@ -77,13 +75,13 @@ def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> RowMapping:
 
 
 def get_linked_ids(api: 'PdgApi', table_name: str, src_col: str, src_id: int, dest_col: str='id') \
-        -> Iterator[Any]:
+        -> Iterator[int]:
     """Return iterator over all values of dest_col in the specified table for which
-    src_col = src_id.
+    src_col = src_id; dest_col is assumed to be an ID column (i.e. an int)
     """
     table = api.db.tables[table_name]
     query = select(table.c[dest_col]) \
         .where(table.c[src_col] == bindparam('src_id'))
     with api.engine.connect() as conn:
         for entry in conn.execute(query, {'src_id': src_id}):
-            yield entry._mapping[dest_col]
+            yield cast(int, entry._mapping[dest_col])
