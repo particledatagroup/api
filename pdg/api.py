@@ -261,13 +261,19 @@ class PdgApi:
     def doc_data_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
         """Get list of data type keys.
 
-        The PDG API uses a data type key as part of the PDG Identifier metadata to denote the kind of information
-        described by a given identifier. These data type keys can be used to select desired particle properties in
+        The PDG API uses a data type key as part of the PDG Identifier metadata
+        to denote the kind of information described by a given identifier. These
+        data type keys can be used to select desired particle properties in
         methods such as PdgParticle.properties().
 
-        doc_data_type_keys() returns a list of all possible data type key values.
-        When as_text is True (default), the list is returned as a formatted string suitable for printing.
-        Otherwise, a list of dict is returned, where each dict describes a possible key value.
+        Args:
+            as_text: If `True`, returns the list as a formatted string suitable
+                for printing. Otherwise, a list of dict is returned, where each
+                dict describes a possible key value.
+
+        Returns:
+            Documentation of all possible data type key values.
+
         """
         pdgdoc_table = self.db.tables['pdgdoc']
         query = select(pdgdoc_table)
