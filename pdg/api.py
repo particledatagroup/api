@@ -258,27 +258,13 @@ class PdgApi:
             except AttributeError:
                 raise PdgNoDataError('No documentation for value %s in table %s.%s' % (key, table_name, column_name))
 
-    def doc_data_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
-        """Get list of data type keys.
-
-        The PDG API uses a data type key as part of the PDG Identifier metadata
-        to denote the kind of information described by a given identifier. These
-        data type keys can be used to select desired particle properties in
-        methods such as PdgParticle.properties().
-
-        Args:
-            as_text: If `True`, returns the list as a formatted string suitable
-                for printing. Otherwise, a list of dict is returned, where each
-                dict describes a possible key value.
-
-        Returns:
-            Documentation of all possible data type key values.
-
-        """
+    def _doc_keys(self, table_name: str, column_name: str, as_text: bool) \
+            -> str | list[RowMapping]:
+        """Helper used by doc_data_type_keys etc."""
         pdgdoc_table = self.db.tables['pdgdoc']
         query = select(pdgdoc_table)
-        query = query.where(pdgdoc_table.c.table_name == 'PDGID')
-        query = query.where(pdgdoc_table.c.column_name == 'DATA_TYPE')
+        query = query.where(pdgdoc_table.c.table_name == table_name)
+        query = query.where(pdgdoc_table.c.column_name == column_name)
         query.order_by(pdgdoc_table.c.indicator, pdgdoc_table.c.value)
 
         lines: list[str] = []
@@ -298,6 +284,43 @@ class PdgApi:
             return '\n'.join(lines)
         else:
             return mappings
+
+    def doc_data_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
+        """Get list of data type keys.
+
+        The PDG API uses a data type key as part of the PDG Identifier metadata
+        to denote the kind of information described by a given identifier. These
+        data type keys can be used to select desired particle properties in
+        methods such as PdgParticle.properties().
+
+        Args:
+            as_text: If `True`, returns the list as a formatted string suitable
+                for printing. Otherwise, a list of dict is returned, where each
+                dict describes a possible key value.
+
+        Returns:
+            Documentation of all possible data type key values.
+
+        """
+        return self._doc_keys('PDGID', 'DATA_TYPE', as_text)
+
+    def doc_item_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
+        """Get list of PdgItem item_type keys.
+
+        PdgItems are used to represent decay products. The item_type
+        distinguishes between concrete particles, aliases for concrete
+        particles, generic states (e.g. charge multiplets), unparsed text, etc.
+
+        Args:
+            as_text: If `True`, returns the list as a formatted string suitable
+                for printing. Otherwise, a list of dict is returned, where each
+                dict describes a possible key value.
+
+        Returns:
+            Documentation of all possible PdgItem item_type key values.
+
+        """
+        return self._doc_keys('PDGITEM', 'ITEM_TYPE', as_text)
 
     def doc_value_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
         """Get list of summary value type keys.
