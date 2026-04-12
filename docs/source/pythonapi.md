@@ -1,4 +1,4 @@
-# Python API
+# Python API overview
 
 The PDG Python API provides a high-level tool for programmatically accessing PDG data.
 For most users, this is the recommended way to access PDG data in machine-readable format.
@@ -68,7 +68,7 @@ Any use of the PDG Python API starts with importing the package and connecting t
 import pdg
 api = pdg.connect()
 ```
-As discussed below, `connect()` takes two optional arguments:
+As discussed in the [API reference](pdg.rst), `connect()` takes two optional arguments:
 1. The URL of the database to use. The default is to use the SQLite database file installed with the `pdg` package.
 2. Whether the API should operate in pedantic mode or not. Pedantic mode is disabled by default.
 
@@ -312,11 +312,7 @@ for p in api.get_particle_by_mcid(211).properties():
 ## Detailed software documentation
 
 Detailed information on all public classes, methods and utility functions provided by the PDG Python API
-is given below, based on the inline code documentation.
-
-```{eval-rst}
-.. include:: pdg.rst
-```
+is given in the [API reference](pdg.rst), based on the inline code documentation.
 
 ## License
 

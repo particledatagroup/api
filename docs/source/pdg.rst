@@ -1,5 +1,5 @@
-pdg package
-===========
+Python API reference
+====================
 
 .. automodule:: pdg
    :members:

@@ -22,6 +22,7 @@ PDG API.
    pdgidentifiers
    restapi
    pythonapi
+   pdg
    schema
    status
    about
