@@ -596,6 +596,19 @@ class PdgParticle(PdgData):
             for msmt in g.get_measurements():
                 yield msmt
 
+    @property
+    def self_conjugate(self) -> bool:
+        cc_type = self._get_particle_data()['cc_type']
+        return cc_type == 'S'
+
+    @property
+    def antiparticle(self) -> PdgParticle:
+        """This particle's antiparticle (or itself, if self-conjugate)"""
+        if self.self_conjugate:
+            return self
+        return PdgParticle(self.api, self.pdgid, edition=self.edition,
+                           set_mcid=-self.mcid)
+
 
 class PdgParticleList(PdgData, list):
     """A PdgData subclass to represent a list of PdgParticles. A PdgParticleList
