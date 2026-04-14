@@ -177,7 +177,9 @@ class PdgParticle(PdgData):
         if not self.api.pedantic:
             props = [p for p in props if 's' not in p.data_flags]
         # filter out properties that don't have measurements
-        props = [p for p in props if p.num_measurements > 0]
+        # (unless there are no other options; see pi0)
+        if len(props) > 1:
+            props = [p for p in props if p.num_measurements > 0]
 
         # if we have any default properties, filter out all the others
         default_props = [p for p in props if 'D' in p.data_flags]
