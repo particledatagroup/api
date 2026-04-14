@@ -117,6 +117,16 @@ class PdgItem:
         """The name of the PdgItem."""
         return self._get_pdgitem()['name']
 
+    @property
+    def canonical_name(self) -> str:
+        """The canonical name of the particle referred to by this item, if
+        this item refers to exactly one unique particle. If not, this is
+        equal to the `name` property.
+        """
+        if self.has_particle:
+            return self.particle.name
+        return self.name
+
     # @property
     # def name_tex(self):
     #     """The TeX name of the PdgItem."""
