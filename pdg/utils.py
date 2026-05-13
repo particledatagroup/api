@@ -14,7 +14,15 @@ if TYPE_CHECKING:
 
 
 def pdg_round(value: float, error: float) -> Tuple[float, float]:
-    """Return (value, error) as numbers rounded following PDG rounding rules."""
+    """Apply PDG rounding rules to a value and error.
+
+    Args:
+        value: Value
+        error: Error
+
+    Returns:
+        `(value, error)` after rounding
+    """
     # FIXME: might switch to returning decimal.Decimal rather than floats
     if error <= 0.:
         raise PdgRoundingError('PDG rounding requires error larger than zero')
@@ -38,7 +46,15 @@ def pdg_round(value: float, error: float) -> Tuple[float, float]:
 
 
 def parse_id(pdgid: str) -> Tuple[str, Optional[str]]:
-    """Parse PDG Identifier and return (normalized base identifier, edition)."""
+    """Parse and normalize a PDG Identifier.
+
+    Args:
+        pdgid: String representation of a PDG Identifier.
+
+    Returns:
+        Tuple of the normalized PDG Identifier (capitalized and without edition)
+        and the edition (or `None` if the edition was unspecified in `pdgid`).
+    """
     try:
         baseid, edition = pdgid.split('/')
     except ValueError:
@@ -48,12 +64,28 @@ def parse_id(pdgid: str) -> Tuple[str, Optional[str]]:
 
 
 def base_id(pdgid: str) -> str:
-    """Return normalized base part of PDG Identifier."""
+    """Get normalized base part of PDG Identifier.
+
+    Equivalent to calling :func:`parse_id` and discarding the edition.
+
+    Args:
+        pdgid: String representation of a PDG Identifier.
+    """
     return parse_id(pdgid)[0]
 
 
 def make_id(baseid: str, edition: Optional[str]=None) -> str:
-    """Return normalized full PDG Identifier, possibly including edition."""
+    """Get normalized full PDG Identifier, possibly including edition.
+
+    Args:
+        baseid: String representation of a PDG Identifier, assumed not to
+            specify an edition.
+        edition: Optional edition.
+
+    Returns:
+        Normalized base part of identifier, along with edition (if specified),
+        separated by a slash.
+    """
     if baseid is None:
         return None
     if edition is None:
@@ -63,8 +95,12 @@ def make_id(baseid: str, edition: Optional[str]=None) -> str:
 
 
 def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> RowMapping:
-    """Return dict built from the row of the specified table that has an id of
-    row_id.
+    """Get a dict built from a specified table row.
+
+    Args:
+        api: API object for retrieving data.
+        table_name: Name of the table in the SQLite file.
+        row_id: Value of the `id` column (i.e. the primary key) to look up.
     """
     table = api.db.tables[table_name]
     query = select(table).where(table.c.id == bindparam('id'))
@@ -76,8 +112,21 @@ def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> RowMapping:
 
 def get_linked_ids(api: 'PdgApi', table_name: str, src_col: str, src_id: int, dest_col: str='id') \
         -> Iterator[int]:
-    """Return iterator over all values of dest_col in the specified table for which
-    src_col = src_id; dest_col is assumed to be an ID column (i.e. an int)
+    """Get an iterator over internal links in a specified table.
+
+    Note:
+        `dest_col` is assumed to be an ID column (i.e. an int).
+
+    Args:
+        table_name: Name of the table in the SQLite file.
+        src_col: The column in which to search for the `src_id`.
+        src_id: The value (in the `src_col` column) corresponding to the
+            "source" rows.
+        dest_col: The column containing the IDs of the "destination" rows.
+
+    Returns:
+        The values of the `dest_col` column for all rows in which the `src_col`
+        column is equal to `src_id`.
     """
     table = api.db.tables[table_name]
     query = select(table.c[dest_col]) \
