@@ -161,18 +161,18 @@ class PdgItem:
         A single character with the following meanings:
 
         ====  ======================================
-        type  meaning
+        Type  Meaning
         ====  ======================================
-        P     specific state (e.g. "pi+")
-        A     "also" alias
-        W     "was" alias
-        S     shortcut
-        B     both charges (e.g. "pi+-")
-        C     both charges, conjugate (e.g. "pi-+")
-        G     generic state (e.g. "pi")
-        L     general list (e.g. "leptons")
-        I     inclusive indicator (e.g. "X")
-        T     arbitrary text
+        P     Specific state (e.g. "pi+")
+        A     "Also" alias
+        W     "Was" alias
+        S     Shortcut
+        B     Both charges (e.g. "pi+-")
+        C     Both charges, conjugate (e.g. "pi-+")
+        G     Generic state (e.g. "pi")
+        L     General list (e.g. "leptons")
+        I     Inclusive indicator (e.g. "X")
+        T     Arbitrary text
         ====  ======================================
         """
         return self._get_pdgitem()['item_type']

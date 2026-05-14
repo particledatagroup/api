@@ -21,11 +21,19 @@ UNIT_CONVERSION_FACTORS = {
     'year': (31536000, 's'),
     'years': (31536000, 's'),
 }
-"Factors used for unit conversions"
 
 
 def convert(value: float, old_units: Optional[str]=None, new_units: Optional[str]=None) -> float:
     """Convert a value to a different unit.
+
+    The following units are supported (in some cases under multiple names):
+
+    ========  ===================================
+    Quantity  Units
+    ========  ===================================
+    Energy    meV, eV, keV, MeV, GeV, TeV, PeV, u
+    Time      s, yr, year, years
+    ========  ===================================
 
     Args:
         value: Value to be converted.

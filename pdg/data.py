@@ -52,9 +52,9 @@ class PdgSummaryValue(dict):
 
         Args:
             units: Can be set to the desired unit (see
-                :data:`pdg.units.UNIT_CONVERSION_FACTORS` for supported units).
-                If unspecified, the value is returned without conversion in the
-                default units for this quantity.
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the value is returned without conversion in the default units
+                for this quantity.
 
         Returns:
             Value, or `None` if there is no value in the database or if the unit
@@ -73,9 +73,9 @@ class PdgSummaryValue(dict):
 
         Args:
             units: Can be set to the desired unit (see
-                :data:`pdg.units.UNIT_CONVERSION_FACTORS` for supported units).
-                If unspecified, the positive error is returned without
-                conversion in the default units for this quantity.
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the positive error is returned without conversion in the default
+                units for this quantity.
 
         Returns:
             Positive error, or `None` if there is no positive error in the
@@ -91,9 +91,9 @@ class PdgSummaryValue(dict):
 
         Args:
             units: Can be set to the desired unit (see
-                :data:`pdg.units.UNIT_CONVERSION_FACTORS` for supported units).
-                If unspecified, the negative error is returned without
-                conversion in the default units for this quantity.
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the negative error is returned without conversion in the default
+                units for this quantity.
 
         Returns:
             Negative error, or `None` if there is no negative error in the
@@ -109,9 +109,9 @@ class PdgSummaryValue(dict):
 
         Args:
             units: Can be set to the desired unit (see
-                :data:`pdg.units.UNIT_CONVERSION_FACTORS` for supported units).
-                If unspecified, the error is returned without conversion in the
-                default units for this quantity.
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the error is returned without conversion in the default units
+                for this quantity.
 
         Returns:
             Symmetric error as average of positive and negative errors if they
@@ -304,7 +304,7 @@ class PdgConvertedValue(PdgSummaryValue):
         """
         Args:
             value: A :class:`~pdg.data.PdgSummaryValue` to convert.
-            to_units: The new units. See :data:`pdg.units.UNIT_CONVERSION_FACTORS`
+            to_units: The new units. See :func:`~pdg.units.convert`
                 for supported units.
         """
         super(PdgConvertedValue, self).__init__(value)
