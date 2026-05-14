@@ -23,11 +23,13 @@ class PdgItem:
 
     An item can correspond directly to one particle, indirectly to one particle
     (as an alias), to a set of particles (as a generic name), or to an arbitrary
-    string. When possible, a PdgItem can be queried (via the particle/particles
-    properties) for the associated particle(s).
+    string. When possible, a `PdgItem` can be queried (via the :attr:`particle`
+    and :attr:`particles` properties) for the associated particle(s).
     """
     def __init__(self, api: 'PdgApi', pdgitem_id: int, edition: Optional[str]=None):
-        """Constructor for a `PdgItem`. Intended for internal API use.
+        """
+        Note:
+            The constructor is intended for internal API use.
 
         Args:
             api: API object for retrieving data.
@@ -154,17 +156,24 @@ class PdgItem:
 
     @property
     def item_type(self) -> str:
-        """The type of the PdgItem. A single character with the following meanings:
-              'P': specific state (e.g. "pi+"),
-              'A': "also" alias,
-              'W': "was" alias,
-              'S': shortcut,
-              'B': both charges (e.g. "pi+-"),
-              'C': both charges, conjugate (e.g. "pi-+"),
-              'G': generic state (e.g. "pi"),
-              'L': general list (e.g. "leptons"),
-              'I': inclusive indicator (e.g. "X"),
-              'T': arbitrary text
+        """The type of the PdgItem.
+
+        A single character with the following meanings:
+
+        ====  ======================================
+        type  meaning
+        ====  ======================================
+        P     specific state (e.g. "pi+")
+        A     "also" alias
+        W     "was" alias
+        S     shortcut
+        B     both charges (e.g. "pi+-")
+        C     both charges, conjugate (e.g. "pi-+")
+        G     generic state (e.g. "pi")
+        L     general list (e.g. "leptons")
+        I     inclusive indicator (e.g. "X")
+        T     arbitrary text
+        ====  ======================================
         """
         return self._get_pdgitem()['item_type']
 
@@ -173,13 +182,12 @@ class PdgParticle(PdgData):
     """Container class for all information about a given particle.
 
     In addition to access to basic particle properties such as mass, charge, quantum numbers and
-    PDG MC ID, this class provides methods to iterate over the data on all particle properties listed
+    MC ID, this class provides methods to iterate over the data on all particle properties listed
     in Particle Listings and Summary Tables, including branching fractions, masses, life-times, etc.
     """
 
     def __init__(self, api: 'PdgApi', pdgid: str, edition: Optional[str]=None, set_mcid: Optional[int]=None, set_name: Optional[str]=None):
-        """Constructor for a PdgParticle given its PDG Identifier and possibly its MC ID.
-
+        """
         Args:
             api: PDG API object to be used for retrieving data.
             pdgid: PDG Identifier for this particle (or multiplet, etc.).
@@ -219,9 +227,9 @@ class PdgParticle(PdgData):
 
         Returns:
             "Best" property. If, after filtering, multiple candidates remain,
-            then (unless the API is in pedantic) the returned property is the
-            one that appears first according to the `sort` column in the SQLite
-            file.
+            then (unless the API is in pedantic mode) the returned property is
+            the one that appears first according to the `sort` column in the
+            SQLite file.
 
         Raises:
             :exc:`PdgNoDataError`: If no property qualifies.
@@ -322,9 +330,9 @@ class PdgParticle(PdgData):
                 :meth:`PdgApi.doc_data_type_keys
                 <pdg.api.PdgApi.doc_data_type_keys>`. The SQL wildcard character
                 ('%') is allowed, so to select all properties, including
-                branching fractions and ratios, set data_type_key='%'. As
-                another example, to get all mass properties, use
-                data_type_key='M'.
+                branching fractions and ratios, set `data_type_key` to '%'. As
+                another example, to get all mass properties, set
+                `data_type_key` to 'M'.
             require_summary_data: Can be set to `False` to also include
                 properties where the selected edition of the Review of Particle
                 Physics has no summary value(s) in the Particle Listings or
@@ -332,7 +340,8 @@ class PdgParticle(PdgData):
             in_summary_table: Can be set to select properties, where a summary
                 value is (`True`) or is not (`False`) included in the Summary
                 Table for the selected edition. Setting `in_summary_table` to a
-                value other than `None` implies `require_summary_data=True`.
+                value other than `None` implies that `require_summary_data` is
+                `True`.
             omit_branching_ratios: Can be set to `True` to exclude any branching
                 fraction ratio properties that would be selected otherwise.
 
@@ -396,15 +405,9 @@ class PdgParticle(PdgData):
     def masses(self, require_summary_data: bool=True) -> Iterator[PdgMass]:
         """Get iterator over mass data.
 
-        For most particles, there is only a single mass property, and so the
-        particle's PDG best mass value in GeV can be obtained e.g. from
-
-        ```python
-        list(some_particle.masses())[0].best_value_in_GeV()
-        ```
-
-        For other particles (e.g. for the top quark) there are different ways to
-        determine the, mass and the user needs to decide which mass value is the
+        For most particles, there is only a single mass property. However, for
+        some particles (e.g. the top quark) there are different ways to
+        determine the mass, and the user needs to decide which mass value is the
         most appropriate for their use case.
 
         Args:
@@ -451,7 +454,7 @@ class PdgParticle(PdgData):
         Args:
             data_type_key: Can be set to e.g. 'BFX2' to select only those
                 exclusive branching fractions that are two levels deep in the
-                subdecay hierarchy. With a `data_type_key` of `'BF%'` (the
+                subdecay hierarchy. With a `data_type_key` of 'BF%' (the
                 default), all branching fractions, including subdecay modes, are
                 returned.
             require_summary_data: Can be set `False` to include branching
@@ -509,7 +512,7 @@ class PdgParticle(PdgData):
 
     @property
     def charge(self) -> float:
-        "Charge of particle in units of e."
+        "Charge of particle in units of `e`."
         return self._get_particle_data()['charge']
 
     @property
@@ -539,27 +542,27 @@ class PdgParticle(PdgData):
 
     @property
     def is_boson(self) -> bool:
-        "True if particle is a gauge boson."
+        "`True` if particle is a gauge boson."
         return 'G' in self.data_flags
 
     @property
     def is_quark(self) -> bool:
-        "True if particle is a quark."
+        "`True` if particle is a quark."
         return 'Q' in self.data_flags
 
     @property
     def is_lepton(self) -> bool:
-        "True if particle is a lepton."
+        "`True` if particle is a lepton."
         return 'L' in self.data_flags
 
     @property
     def is_meson(self) -> bool:
-        "True if particle is a meson."
+        "`True` if particle is a meson."
         return 'M' in self.data_flags
 
     @property
     def is_baryon(self) -> bool:
-        "True if particle is a baryon."
+        "`True` if particle is a baryon."
         return 'B' in self.data_flags
 
     @staticmethod
@@ -637,11 +640,10 @@ class PdgParticle(PdgData):
 
         Returns:
             Lifetime, or `None` if there is no best lifetime property and the
-                API is not in pedantic mode. In non-pedantic mode, if there is
-                no lifetime data, then the decay width will be used, if
-                available. If there is no width data either, then the particle
-                is assumed to be stable and a lifetime of infinity will be
-                returned.
+            API is not in pedantic mode. In non-pedantic mode, if there is no
+            lifetime data, then the decay width will be used, if available. If
+            there is no width data either, then the particle is assumed to be
+            stable and a lifetime of infinity will be returned.
 
         Raises:
             :exc:`~pdg.errors.PdgNoDataError`: If there is no best lifetime
@@ -752,13 +754,15 @@ class PdgParticle(PdgData):
 
 
 class PdgParticleList(PdgData, list):
-    """A PdgData subclass to represent a list of PdgParticles. A PdgParticleList
-    is returned when PdgApi.get is called with the PDGID of a (group of)
-    particles.
+    """A `PdgData` subclass to represent a list of `PdgParticle` object.
+
+    A `PdgParticleList` is returned when :meth:`PdgApi.get <pdg.api.PdgApi.get>`
+    is called with the PDG Identifier of a (group of) particles.
     """
     def __init__(self, api: 'PdgApi', pdgid: str, edition: Optional[str]=None):
-        """Constructor for a PdgParticleList given its PDG Identifier. Intended
-        for internal API use.
+        """
+        Note:
+            The constructor is intended for internal API use.
 
         Args:
             api: API object for retrieving data.

@@ -39,7 +39,7 @@ class PdgSummaryValue(dict):
         return '%-20s %-20s  %s' % (self.value_text, indicator, self.comment if self.comment else '')
 
     def pprint(self) -> None:
-        "Print all data in this PdgSummaryValue object in a nice format (for debugging)."
+        "Print all data in this `PdgSummaryValue` object in a nice format (for debugging)."
         pprint.pprint(self)
 
     def get_value(self, units: Optional[str]=None) -> Optional[float]:
@@ -116,7 +116,7 @@ class PdgSummaryValue(dict):
         Returns:
             Symmetric error as average of positive and negative errors if they
             differ by less than 10% of their average. Otherwise, returns `None`.
-            Also returns `None`` if the quantity is a limit, or if there is
+            Also returns `None` if the quantity is a limit, or if there is
             otherwise no positive or negative error in the database, or if the
             unit conversion is invalid or unsupported.
         """
@@ -169,27 +169,27 @@ class PdgSummaryValue(dict):
 
     @property
     def in_summary_table(self) -> bool:
-        "True if value is included in Summary Table."
+        "`True` if value is included in Summary Table."
         return self['in_summary_table']
 
     @property
     def confidence_level(self) -> Optional[float]:
-        "Confidence level for limits, None otherwise."
+        "Confidence level for limits, `None` otherwise."
         return self['confidence_level']
 
     @property
     def is_limit(self) -> bool:
-        "True if value is a limit."
+        "`True` if value is a limit."
         return self['confidence_level'] is not None or self['limit_type'] is not None
 
     @property
     def is_upper_limit(self) -> bool:
-        "True if value is an upper limit."
+        "`True` if value is an upper limit."
         return self['limit_type'] == 'U'
 
     @property
     def is_lower_limit(self) -> bool:
-        "True if value is an lower limit."
+        "`True` if value is an lower limit."
         return self['limit_type'] == 'L'
 
     @property
@@ -334,25 +334,23 @@ class PdgData(object):
 
     This class implements the lazy data retrieval from the database
     and is the base class for all PDG data container classes.
+
+    When a `PdgData` object is instantiated, the edition of the Review of
+    Particle Physics from which data will be retrieved is determined by the
+    first edition information found from the following list:
+
+    1. An edition specified as part of the PDG Identifier
+    2. An edition specified by parameter `edition` of the constructor
+    3. The default edition specified by the database to which the API is connected
+
+    The chosen edition can be queried by calling :func:`edition` and changed
+    at any time by calling :func:`set_edition`.
     """
-
     def __init__(self, api: 'PdgApi', pdgid: str, edition: Optional[str]=None):
-        """Instantiate a PdgData object for the given PDG Identifier pdgid.
-
-        When a PdgData object is instantiated, the edition of the Review of
-        Particle Physics from which data will be retrieved is determined by the
-        first edition information found from the following list:
-
-        1. An edition specified as part of the PDG Identifier
-        2. An edition specified by parameter edition
-        3. The default edition specified by the database to which the API is connected
-
-        The chosen edition can be queried by calling :func:`edition` and changed
-        at any time by calling :func:`set_edition`.
-
+        """
         Note:
-            In most cases, user code should not need to call this constructor
-            directly. Instead, the use of e.g. :meth:`PDGAPI.get
+            In most cases, user code should not need to call the constructor
+            directly. Instead, the use of e.g. :meth:`PdgApi.get
             <pdg.api.PdgApi.get>` is recommended.
 
         Args:
@@ -617,10 +615,10 @@ class PdgProperty(PdgData):
         best value.
 
         If there are multiple summary values (e.g. based on assuming or not
-        assuming CPT in the evaluation) and :attr:`PdgApi.pedantic
-        <pdg.api.PdgApi.pedantic>` is False, the first value shown in Summary
-        Tables or Particle Listings will be returned. If `PdgApi.pedantic` is
-        True, a :exc:`~pdg.errors.PdgAmbiguousValue` exception will be raised.
+        assuming CPT in the evaluation) and the API is not in pedantic mode, the
+        first value shown in Summary Tables or Particle Listings will be
+        returned. In pedantic mode, a :exc:`~pdg.errors.PdgAmbiguousValueError`
+        exception will be raised.
 
         If there are no summary values, `None` is returned.
 
@@ -631,6 +629,10 @@ class PdgProperty(PdgData):
 
         Returns:
              "Best" summary value, or `None` (see above).
+
+        Raises:
+            :exc:`~pdg.errors.PdgAmbiguousValueError`: If the API is in pedantic
+                mode and there are multiple relevant summary values.
         """
         if not summary_table_only:
             summaries = self.summary_values(summary_table_only=False)

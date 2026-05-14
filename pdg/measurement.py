@@ -13,7 +13,9 @@ class PdgMeasurement(object):
     """Class for an individual measurement from the PDG Listings."""
 
     def __init__(self, api: 'PdgApi', msmt_id: int):
-        """Constructor for a `PdgMeasurement`. Intended for internal API use.
+        """
+        Note:
+            The constructor is intended for internal API use.
 
         Args:
             api: API object for retrieving data.
@@ -44,7 +46,7 @@ class PdgMeasurement(object):
         """Get the :class:`PdgValue` associated with this measurement.
 
         Raises:
-            :exc:`~pdg.errors.PdgAmbiguousValueError` if there are multiple
+            :exc:`~pdg.errors.PdgAmbiguousValueError`: If there are multiple
                 values (i.e. this is a multi-column measurement).
         """
         vs = list(self.values())
@@ -66,7 +68,7 @@ class PdgMeasurement(object):
 
     @property
     def reference(self) -> 'PdgReference':
-        "The PdgReference associated with this measurement."
+        "The `PdgReference` associated with this measurement."
         ref_id = self._get_measurement_data()['pdgreference_id']
         return PdgReference(self.api, ref_id)
 
@@ -99,7 +101,7 @@ class PdgMeasurement(object):
 
     @property
     def changebar(self) -> bool:
-        """True if this measurement has been added or updated since the previous
+        """`True` if this measurement has been added or updated since the previous
         PDG edition
         """
         return self._get_measurement_data()['changebar']
@@ -114,7 +116,9 @@ class PdgValue(object):
     "Class for an individual numerical value associated with a `PdgMeasurement`."
 
     def __init__(self, api: 'PdgApi', value_id: int):
-        """Constructor for a `PdgItem`. Intended for internal API use.
+        """
+        Note:
+            The constructor is intended for internal API use.
 
         Args:
             api: API object for retrieving data.
@@ -194,7 +198,7 @@ class PdgValue(object):
 
     @property
     def display_in_percent(self) -> bool:
-        """True if value is rendered in percent for display in Listings.
+        """`True` if value is rendered in percent for display in Listings.
 
         Implies that :attr:`display_power_of_ten` is `-2`.
         """
@@ -202,29 +206,29 @@ class PdgValue(object):
 
     @property
     def is_limit(self) -> bool:
-        "True if value is a limit."
+        "`True` if value is a limit."
         return self._get_value_data()['limit_type'] is not None
 
     @property
     def is_upper_limit(self) -> bool:
-        "True if value is an upper limit."
+        "`True` if value is an upper limit."
         return self._get_value_data()['limit_type'] == 'U'
 
     @property
     def is_lower_limit(self) -> bool:
-        "True if value is a lower limit."
+        "`True` if value is a lower limit."
         return self._get_value_data()['limit_type'] == 'L'
 
     @property
     def used_in_average(self) -> bool:
-        """True if value is used for calculating averages shown in
+        """`True` if value is used for calculating averages shown in
         Summary Tables.
         """
         return self._get_value_data()['used_in_average']
 
     @property
     def used_in_fit(self) -> bool:
-        """True if value is used for calculating best-fits shown in
+        """`True` if value is used for calculating best-fits shown in
         Summary Tables.
         """
         return self._get_value_data()['used_in_fit']
@@ -273,7 +277,7 @@ class PdgValue(object):
 
         Raises:
             :exc:`~pdg.errors.PdgAmbiguousValueError`: If the error is
-            asymmetric and the API is in pedantic mode.
+                asymmetric and the API is in pedantic mode.
         """
         is_asymm = self.error_positive != self.error_negative
         if self.api.pedantic and is_asymm:
@@ -293,7 +297,7 @@ class PdgValue(object):
 
         Raises:
             :exc:`~pdg.errors.PdgAmbiguousValueError`: If the error is
-            asymmetric and the API is in pedantic mode.
+                asymmetric and the API is in pedantic mode.
         """
         is_asymm = self.stat_error_positive != self.stat_error_negative
         if self.api.pedantic and is_asymm:
@@ -313,7 +317,7 @@ class PdgValue(object):
 
         Raises:
             :exc:`~pdg.errors.PdgAmbiguousValueError`: If the error is
-            asymmetric and the API is in pedantic mode.
+                asymmetric and the API is in pedantic mode.
         """
         is_asymm = self.syst_error_positive != self.syst_error_negative
         if self.api.pedantic and is_asymm:
@@ -326,10 +330,12 @@ class PdgValue(object):
 
 
 class PdgReference(object):
-    "Class for literature references associated with PdgMeasurements."
+    "Class for literature references associated with a `PdgMeasurement`."
 
     def __init__(self, api: 'PdgApi', ref_id: int):
-        """Constructor for a `PdgReference`. Intended for internal API use.
+        """
+        Note:
+            The constructor is intended for internal API use.
 
         Args:
             api: API object for retrieving data.
@@ -379,10 +385,12 @@ class PdgReference(object):
 
 
 class PdgFootnote(object):
-    """Class for footnotes associated with PdgReferences."""
+    """Class for footnotes associated with a `PdgMeasurement`."""
 
     def __init__(self, api: 'PdgApi', foot_id: int):
-        """Constructor for a `PdgFootnote`. Intended for internal API use.
+        """
+        Note:
+            The constructor is intended for internal API use.
 
         Args:
             api: API object for retrieving data.

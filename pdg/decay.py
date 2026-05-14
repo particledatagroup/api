@@ -20,7 +20,9 @@ class PdgDecayProduct(object):
     """
     def __init__(self, item: PdgItem, multiplier: int,
                  subdecay: Optional['PdgBranchingFraction']=None):
-        """Instantiate a PdgDecayProduct. Intended for internal API use.
+        """
+        Note:
+            The constructor is intended for internal API use.
 
         Args:
             item: Corresponding :class:`~pdg.particle.PdgItem`.
