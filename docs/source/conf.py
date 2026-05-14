@@ -42,7 +42,10 @@ html_show_sourcelink = False
 html_title = 'PDG API'
 html_static_path = ['_static']
 html_js_files = [
-    'matomo.js'
+    'matomo.js',
+]
+html_css_files = [
+    'pdg_sphinx.css',
 ]
 
 ## The below concatenates the class and __init__ docstrings
