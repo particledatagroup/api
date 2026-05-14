@@ -41,8 +41,7 @@ DATA_TYPE_MAP = {
 class PdgApi:
 
     def __init__(self, database_url: str, pedantic: bool=False):
-        """Initialize PDG API.
-
+        """
         Args:
             database_url: URL of the PDG database to connect to. The default
                 database is the SQLite file installed together with package pdg.
@@ -425,10 +424,10 @@ class PdgApi:
         return self._doc_keys('PDGID', 'DATA_TYPE', as_text)
 
     def doc_item_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
-        """Get list of PdgItem item_type keys.
+        """Get list of `PdgItem` `item_type` keys.
 
-        A :class:`pdg.particle.PdgItem` is used to represent a decay product.
-        The item_type distinguishes between concrete particles, aliases for
+        A :class:`~pdg.particle.PdgItem` is used to represent a decay product.
+        The `item_type` distinguishes between concrete particles, aliases for
         concrete particles, generic states (e.g. charge multiplets), unparsed
         text, etc.
 

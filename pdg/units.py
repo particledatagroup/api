@@ -21,6 +21,7 @@ UNIT_CONVERSION_FACTORS = {
     'year': (31536000, 's'),
     'years': (31536000, 's'),
 }
+"Factors used for unit conversions"
 
 
 def convert(value: float, old_units: Optional[str]=None, new_units: Optional[str]=None) -> float:

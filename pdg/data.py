@@ -2,10 +2,10 @@
 Container base classes for PDG data.
 
 All PDG data classes use lazy (i.e. only when needed) loading of data from the database
-as implemented in the PdgData base class. In most cases, the data is read only once and
+as implemented in the `PdgData` base class. In most cases, the data is read only once and
 cached for subsequent use.
 
-PdgProperty is a subclass of PdgData and adds the retrieval of summary values, measurement
+`PdgProperty` is a subclass of `PdgData` and adds the retrieval of summary values, measurement
 data, etc., that is shared by all classes supporting the retrieval of different kinds of
 particle physics properties such as branching fractions or particle masses.
 """
@@ -292,11 +292,16 @@ class PdgSummaryValue(dict):
 
 
 class PdgConvertedValue(PdgSummaryValue):
-    "A PdgSummaryValue class for storing summary values after unit conversion."
+    """A `PdgSummaryValue` subclass for storing summary values after unit conversion.
+
+    After being initialized from some other `PdgSummaryValue`, a
+    `PdgConvertedValue` can be treated like any `PdgSummaryValue`. The unit
+    conversion will be reflected in all properties relating to the numerical
+    value, its errors, and its units.
+    """
 
     def __init__(self, value: PdgSummaryValue, to_units: str):
-        """Instantiate a unit-converted copy of a `PdgSummaryValue`.
-
+        """
         Args:
             value: A :class:`~pdg.data.PdgSummaryValue` to convert.
             to_units: The new units. See :data:`pdg.units.UNIT_CONVERSION_FACTORS`
@@ -565,7 +570,7 @@ class PdgData(object):
 
         See :attr:`PdgParticle.cp_charge <pdg.particle.PdgParticle.cp_charge>`
         documentation for the meaning of the "CP charge". This flag will be `None`
-        if the data applies to all particles listed under the PDG identifier.
+        if the data applies to ALL particles listed under the PDG identifier.
         """
         digits = [c for c in self.data_flags if c.isdigit()]
         if len(digits) == 0:
