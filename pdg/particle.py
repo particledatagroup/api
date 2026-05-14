@@ -209,7 +209,7 @@ class PdgParticle(PdgData):
             return 'Data for PDG Particle %s: multiple particle matches' % self.pdgid
 
     def _repr_extra(self) -> str:
-        "Extra details for `__repr`"
+        "Extra details for `__repr__`"
         return "name='%s'" % self.name
 
     def best(self, properties: Iterator[PdgProperty], quantity: Optional[str]=None) \

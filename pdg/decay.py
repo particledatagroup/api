@@ -59,7 +59,7 @@ class PdgBranchingFraction(PdgProperty):
         return cast(list[RowMapping], self.cache['pdgdecay'])
 
     def _repr_extra(self) -> str:
-        "Extra details for `__repr`"
+        "Extra details for `__repr__`"
         return '"%s"' % self.description
 
     @property
@@ -156,5 +156,5 @@ class PdgBranchingRatio(PdgProperty):
             yield PdgBranchingFraction(self.api, row.source, self.edition)
 
     def _repr_extra(self) -> str:
-        "Extra details for `__repr`"
+        "Extra details for `__repr__`"
         return '"%s"' % self.description

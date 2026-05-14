@@ -44,12 +44,12 @@ class PdgApi:
         """
         Args:
             database_url: URL of the PDG database to connect to. The default
-                database is the SQLite file installed together with package pdg.
+                database is the SQLite file installed together with package `pdg`.
 
-            pedantic: Can be set True to enable pedantic mode, where, in cases
+            pedantic: Can be set `True` to enable pedantic mode, where, in cases
                 where the choice of "PDG best value" might be ambiguous, no
-                assumptions are made and instead a PdgAmbiguousValue exception is
-                raised.
+                assumptions are made and instead a
+                :exc:`~pdg.errors.PdgAmbiguousValueError` exception is raised.
         """
         self.database_url = database_url
         self.engine = sqlalchemy.create_engine(self.database_url)
