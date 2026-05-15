@@ -16,7 +16,6 @@ from pdg.utils import parse_id, make_id
 from pdg.units import UNIT_CONVERSION_FACTORS, convert
 from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
 from pdg.measurement import PdgMeasurement
-from sqlalchemy.engine.row import RowMapping
 from typing import TYPE_CHECKING, Iterator, Optional, cast
 
 if TYPE_CHECKING:
@@ -366,7 +365,7 @@ class PdgData(object):
         if self._edition is None:
             self._edition = self.api.default_edition
         self.pdgid = make_id(self.baseid, self._edition)
-        self.cache: dict[str, RowMapping | list[RowMapping] | list[PdgSummaryValue]] = {}
+        self.cache: dict[str, dict | list[dict] | list[PdgSummaryValue]] = {}
 
     def __str__(self) -> str:
         """Get human-readable description of the data.
@@ -395,7 +394,7 @@ class PdgData(object):
         """
         return ''
 
-    def _get_pdgid(self) -> RowMapping:
+    def _get_pdgid(self) -> dict:
         """Get PDG Identifier information.
 
         Returns:
@@ -409,10 +408,10 @@ class PdgData(object):
                 try:
                     row = conn.execute(query, {'pdgid': self.baseid}).fetchone()
                     assert row is not None
-                    self.cache['pdgid'] = row._mapping
+                    self.cache['pdgid'] = dict(row._mapping)
                 except AttributeError:
                     raise PdgInvalidPdgIdError('PDG Identifier %s not found' % self.pdgid)
-        assert isinstance(self.cache['pdgid'], RowMapping)
+        assert isinstance(self.cache['pdgid'], dict)
         return self.cache['pdgid']
 
     def _get_summary_values(self) -> list[PdgSummaryValue]:

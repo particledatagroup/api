@@ -2,7 +2,6 @@
 
 from pdg.errors import PdgAmbiguousValueError
 from pdg.utils import get_linked_ids, get_row_data
-from sqlalchemy.engine.row import RowMapping
 from typing import TYPE_CHECKING, Iterator, Optional
 from typing_extensions import deprecated
 
@@ -23,9 +22,9 @@ class PdgMeasurement(object):
         """
         self.api = api
         self.id = msmt_id
-        self.cache: dict[str, RowMapping] = {}
+        self.cache: dict[str, dict] = {}
 
-    def _get_measurement_data(self) -> RowMapping:
+    def _get_measurement_data(self) -> dict:
         "Helper for retrieving SQLite data for this measurement."
         return self.cache.get(
             'pdgmeasurement',
@@ -126,9 +125,9 @@ class PdgValue(object):
         """
         self.api = api
         self.id = value_id
-        self.cache: dict[str, RowMapping] = {}
+        self.cache: dict[str, dict] = {}
 
-    def _get_value_data(self) -> RowMapping:
+    def _get_value_data(self) -> dict:
         "Helper for retrieving SQLite data for this value."
         return self.cache.get(
             'pdgmeasurement_values',
@@ -343,9 +342,9 @@ class PdgReference(object):
         """
         self.api = api
         self.id = ref_id
-        self.cache: dict[str, RowMapping] = {}
+        self.cache: dict[str, dict] = {}
 
-    def _get_reference_data(self) -> RowMapping:
+    def _get_reference_data(self) -> dict:
         "Helper for retrieving SQLite data for this refernce."
         return self.cache.get(
             'pdgreference',
@@ -398,9 +397,9 @@ class PdgFootnote(object):
         """
         self.api = api
         self.id = foot_id
-        self.cache: dict[str, RowMapping] = {}
+        self.cache: dict[str, dict] = {}
 
-    def _get_footnote_data(self) -> RowMapping:
+    def _get_footnote_data(self) -> dict:
         "Helper for retrieving SQLite data for this footnote."
         return self.cache.get(
             'pdgfootnote',

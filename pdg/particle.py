@@ -9,7 +9,6 @@ from pdg.measurement import PdgMeasurement
 from pdg.utils import make_id
 from pdg.data import PdgLifetime, PdgMass, PdgWidth, PdgData, PdgProperty
 from pdg.units import HBAR_IN_GEV_S
-from sqlalchemy.engine.row import RowMapping
 from typing import TYPE_CHECKING, Iterator, Optional, cast
 
 if TYPE_CHECKING:
@@ -38,7 +37,7 @@ class PdgItem:
         """
         self.api = api
         self.pdgitem_id = pdgitem_id
-        self.cache: dict[str, bool | RowMapping] = {}
+        self.cache: dict[str, bool | dict] = {}
         self.edition = edition
 
     def __repr__(self) -> str:
@@ -46,7 +45,7 @@ class PdgItem:
         name = self._get_pdgitem()['name']
         return 'PdgItem("%s")' % name
 
-    def _get_pdgitem(self) -> RowMapping:
+    def _get_pdgitem(self) -> dict:
         "Load the `PdgItem`'s data from the database."
         if 'pdgitem' not in self.cache:
             pdgitem_table = self.api.db.tables['pdgitem']
@@ -55,8 +54,8 @@ class PdgItem:
                 result = conn.execute(query, {'pdgitem_id': self.pdgitem_id}).fetchone()
                 if result is None:
                     raise PdgNoDataError('No PDGITEM entry for %s' % self.pdgitem_id)
-                self.cache['pdgitem'] = result._mapping
-        return cast(RowMapping, self.cache['pdgitem'])
+                self.cache['pdgitem'] = dict(result._mapping)
+        return cast(dict, self.cache['pdgitem'])
 
     def _get_targets(self) -> Iterator['PdgItem']:
         "Get all `PdgItem`s that this one maps directly to. Does not recurse."
@@ -80,7 +79,7 @@ class PdgItem:
             with self.api.engine.connect() as conn:
                 result = conn.execute(query, {'pdgitem_id': self.pdgitem_id}).fetchone()
                 if result:
-                    self.cache['pdgparticle'] = result._mapping
+                    self.cache['pdgparticle'] = dict(result._mapping)
                     self.cache['has_particle'] = True
                 else:
                     targets = list(self._get_targets())
@@ -104,7 +103,7 @@ class PdgItem:
             if self.has_particles:
                 raise PdgAmbiguousValueError('No unique PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
             raise PdgNoDataError('No PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
-        p = cast(RowMapping, self.cache['pdgparticle'])
+        p = cast(dict, self.cache['pdgparticle'])
         return PdgParticle(self.api, p['pdgid'], edition=self.edition, set_mcid=p['mcid'],
                            set_name=p['name'])
 
@@ -277,7 +276,7 @@ class PdgParticle(PdgData):
             else:
                 return props[0]
 
-    def _get_particle_data(self) -> RowMapping:
+    def _get_particle_data(self) -> dict:
         "Get particle data."
         if 'pdgparticle' not in self.cache:
             pdgparticle_table = self.api.db.tables['pdgparticle']
@@ -291,7 +290,7 @@ class PdgParticle(PdgData):
                 params = {'pdgid': self.baseid, 'mcid': self.set_mcid, 'name': self.set_name}
                 matches = conn.execute(query, params).fetchall()
             if len(matches) == 1:
-                self.cache['pdgparticle'] = matches[0]._mapping
+                self.cache['pdgparticle'] = dict(matches[0]._mapping)
             else:
                 # Charge-specific state either not found or ambiguous
                 query = select(pdgparticle_table)
@@ -307,12 +306,12 @@ class PdgParticle(PdgData):
                     mcid_string = ', MC ID = %s' % self.set_mcid if self.set_mcid else ''
                     raise PdgNoDataError('Particle data for %s%s not found' % (self.pdgid, mcid_string))
                 elif len(matches_g) == 1:
-                    self.cache['pdgparticle'] = matches_g[0]._mapping
+                    self.cache['pdgparticle'] = dict(matches_g[0]._mapping)
                 else:
                     names = [p.name for p in matches_g]
                     mcids = list(set([p.mcid for p in matches]))
                     raise PdgAmbiguousValueError('Multiple particles for %s: MCID %s, names %s' % (self.baseid, mcids, names))
-        return cast(RowMapping, self.cache['pdgparticle'])
+        return cast(dict, self.cache['pdgparticle'])
 
     def properties(self,
                    data_type_key: Optional[str]=None,

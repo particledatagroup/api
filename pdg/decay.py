@@ -7,7 +7,6 @@ from sqlalchemy import bindparam, select
 from pdg.data import PdgProperty
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.particle import PdgItem, PdgParticle
-from sqlalchemy.engine.row import RowMapping
 from typing import Iterator, Optional, cast
 
 
@@ -45,7 +44,7 @@ class PdgBranchingFraction(PdgProperty):
     This information includes the decay's branching fraction, decay products,
     and subdecays.
     """
-    def _get_decay(self) -> list[RowMapping]:
+    def _get_decay(self) -> list[dict]:
         """Get decay information from the database."""
         if 'pdgdecay' not in self.cache:
             pdgdecay_table = self.api.db.tables['pdgdecay']
@@ -53,10 +52,10 @@ class PdgBranchingFraction(PdgProperty):
             with self.api.engine.connect() as conn:
                 try:
                     result = conn.execute(query, {'pdgid': self.baseid}).fetchall()
-                    self.cache['pdgdecay'] = [row._mapping for row in result]
+                    self.cache['pdgdecay'] = [dict(row._mapping) for row in result]
                 except AttributeError:
                     raise PdgInvalidPdgIdError('No PDGDECAY entry for %s' % self.pdgid)
-        return cast(list[RowMapping], self.cache['pdgdecay'])
+        return cast(list[dict], self.cache['pdgdecay'])
 
     def _repr_extra(self) -> str:
         "Extra details for `__repr__`"

@@ -5,7 +5,6 @@ PDG API top-level class.
 import logging
 import sqlalchemy
 from sqlalchemy import func, select, bindparam, distinct, desc
-from sqlalchemy.engine.row import RowMapping
 import pdg
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.utils import parse_id
@@ -335,7 +334,7 @@ class PdgApi:
         return self.get_particle_by_name(name).name
 
     def doc_key_value(self, table_name: str, column_name: str, key: str) \
-            -> RowMapping:
+            -> dict:
         """Get documentation on the meaning of key values or flags used in the PDG API.
 
         Args:
@@ -360,12 +359,12 @@ class PdgApi:
                 row = conn.execute(query, {'table_name': table_name, 'column_name': column_name, 'value': key}).\
                     fetchone()
                 assert row is not None
-                return row._mapping
+                return dict(row._mapping)
             except AttributeError:
                 raise PdgNoDataError('No documentation for value %s in table %s.%s' % (key, table_name, column_name))
 
     def _doc_keys(self, table_name: str, column_name: str, as_text: bool) \
-            -> str | list[RowMapping]:
+            -> str | list[dict]:
         """Helper used by doc_data_type_keys etc.
 
         Args:
@@ -385,7 +384,7 @@ class PdgApi:
         query.order_by(pdgdoc_table.c.indicator, pdgdoc_table.c.value)
 
         lines: list[str] = []
-        mappings: list[RowMapping] = []
+        mappings: list[dict] = []
 
         if as_text:
             lines.append('Key value     Description')
@@ -396,13 +395,13 @@ class PdgApi:
                 if as_text:
                     lines.append('  %-8s    %s' % (item.value, item.description))
                 else:
-                    mappings.append(item._mapping)
+                    mappings.append(dict(item._mapping))
         if as_text:
             return '\n'.join(lines)
         else:
             return mappings
 
-    def doc_data_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
+    def doc_data_type_keys(self, as_text: bool=True) -> str | list[dict]:
         """Get list of data type keys.
 
         The PDG API uses a data type key as part of the PDG Identifier metadata
@@ -423,7 +422,7 @@ class PdgApi:
         """
         return self._doc_keys('PDGID', 'DATA_TYPE', as_text)
 
-    def doc_item_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
+    def doc_item_type_keys(self, as_text: bool=True) -> str | list[dict]:
         """Get list of `PdgItem` `item_type` keys.
 
         A :class:`~pdg.particle.PdgItem` is used to represent a decay product.
@@ -443,7 +442,7 @@ class PdgApi:
         """
         return self._doc_keys('PDGITEM', 'ITEM_TYPE', as_text)
 
-    def doc_value_type_keys(self, as_text: bool=True) -> str | list[RowMapping]:
+    def doc_value_type_keys(self, as_text: bool=True) -> str | list[dict]:
         """Get list of summary value type keys.
 
         For each summary value, the `value_type` key specifies how this value was
@@ -471,7 +470,7 @@ class PdgApi:
         query.order_by(pdgdoc_table.c.indicator, pdgdoc_table.c.value)
 
         lines: list[str] = []
-        mappings: list[RowMapping] = []
+        mappings: list[dict] = []
 
         if as_text:
             lines.append('Key value   Indicator            Description')
@@ -482,7 +481,7 @@ class PdgApi:
                 if as_text:
                     lines.append('  %-8s  %-20s  %s' % (item.value, item.indicator, item.description))
                 else:
-                    mappings.append(item._mapping)
+                    mappings.append(dict(item._mapping))
         if as_text:
             return '\n'.join(lines)
         else:

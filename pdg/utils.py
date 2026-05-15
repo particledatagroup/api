@@ -5,7 +5,6 @@ import math
 from typing import TYPE_CHECKING, Iterator, Optional, Tuple, cast
 
 from sqlalchemy import select, bindparam
-from sqlalchemy.engine.row import RowMapping
 
 from pdg.errors import PdgNoDataError, PdgAmbiguousValueError, PdgRoundingError
 
@@ -94,7 +93,7 @@ def make_id(baseid: str, edition: Optional[str]=None) -> str:
         return ('%s/%s' % (baseid, edition)).upper()
 
 
-def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> RowMapping:
+def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> dict:
     """Get a dict built from a specified table row.
 
     Args:
@@ -107,7 +106,7 @@ def get_row_data(api: 'PdgApi', table_name: str, row_id: int) -> RowMapping:
     with api.engine.connect() as conn:
         matches = conn.execute(query, {'id': row_id}).fetchall()
     assert len(matches) == 1
-    return matches[0]._mapping
+    return dict(matches[0]._mapping)
 
 
 def get_linked_ids(api: 'PdgApi', table_name: str, src_col: str, src_id: int, dest_col: str='id') \
