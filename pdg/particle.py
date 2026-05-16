@@ -704,12 +704,12 @@ class PdgParticle(PdgData):
 
     @property
     def cp_charge(self) -> int:
-        """The charge of the nominal "particle" (as opposed to "antiparticle")
+        r"""The charge of the nominal "particle" (as opposed to "antiparticle")
         for this species.
 
         E.g., for the proton and antiproton, this is 1. Useful for
-        distinguishing e.g. the `Sigma_b()+` (and `Sigmabar_b()-`) from the
-        `Sigma_b()-` (and `Sigmabar_b()+`).
+        distinguishing e.g. the \\(\\Sigma_b^+\\) (and \\(\\bar\\Sigma_b^-\\))
+        from the \\(\\Sigma_b^-\\) (and \\(\\bar\\Sigma_b^+\\)).
         """
         cc_type = self._get_particle_data()['cc_type']
         assert cc_type in ['S', 'P', 'A']
