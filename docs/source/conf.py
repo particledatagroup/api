@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath("../.."))
 
 project = 'PDG API'
-copyright = '2024, Particle Data Group'
+copyright = '2024-2026, Particle Data Group'
 author = 'Particle Data Group'
 
 # -- General configuration ---------------------------------------------------
@@ -23,9 +23,13 @@ extensions = [
     "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
-    # "sphinx.ext.viewcode",
     "sphinx.ext.linkcode",
+    "sphinx.ext.mathjax",
     "sphinx_rtd_theme",
+]
+
+myst_enable_extensions = [
+    "amsmath"
 ]
 
 templates_path = ['_templates']
@@ -48,17 +52,19 @@ html_css_files = [
     'pdg_sphinx.css',
 ]
 
-## The below concatenates the class and __init__ docstrings
-## (default is to just include the class's docstring)
+# Concatenate the class and __init__ docstrings
+# (default is to just include the class's docstring)
 autoclass_content = 'both'
 
-## However, explicitly listing __init__ may be clearer
-# autodoc_default_options = {
-#     'members': True,
-#     'special-members': '__init__',
-#     'undoc-members': False,
-# }
 
+# Force MathJax JS to be loaded. Normally the extension only adds the <script>
+# tag if it detects that there is math in the documentation. Unfortunately, the
+# math in our docstrings fails to get detected.
+def setup(app):
+    app.set_html_assets_policy('always')
+
+
+# Tell linkcode where to find the source code
 def linkcode_resolve(domain, info):
     if domain != 'py':
         return None
