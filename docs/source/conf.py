@@ -6,12 +6,14 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import inspect
 import sys
 import os
+from pathlib import Path
 sys.path.insert(0, os.path.abspath("../.."))
 
 project = 'PDG API'
-copyright = '2024, Particle Data Group'
+copyright = '2024-2026, Particle Data Group'
 author = 'Particle Data Group'
 
 # -- General configuration ---------------------------------------------------
@@ -20,8 +22,14 @@ author = 'Particle Data Group'
 extensions = [
     "myst_parser",
     "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.linkcode",
+    "sphinx.ext.mathjax",
     "sphinx_rtd_theme",
+]
+
+myst_enable_extensions = [
+    "amsmath"
 ]
 
 templates_path = ['_templates']
@@ -38,5 +46,60 @@ html_show_sourcelink = False
 html_title = 'PDG API'
 html_static_path = ['_static']
 html_js_files = [
-    'matomo.js'
+    'matomo.js',
 ]
+html_css_files = [
+    'pdg_sphinx.css',
+]
+
+# Concatenate the class and __init__ docstrings
+# (default is to just include the class's docstring)
+autoclass_content = 'both'
+
+
+# Force MathJax JS to be loaded. Normally the extension only adds the <script>
+# tag if it detects that there is math in the documentation. Unfortunately, the
+# math in our docstrings fails to get detected.
+def setup(app):
+    app.set_html_assets_policy('always')
+
+
+# Tell linkcode where to find the source code
+def linkcode_resolve(domain, info):
+    if domain != 'py':
+        return None
+    if not info['module']:
+        return None
+
+    module = sys.modules.get(info['module'])
+    if module is None:
+        return None
+
+    obj = module
+    for part in info['fullname'].split('.'):
+        try:
+            obj = getattr(obj, part)
+        except AttributeError:
+            return None
+
+    # Unwrap properties to get the underlying function
+    if isinstance(obj, property):
+        obj = obj.fget
+
+    try:
+        obj = inspect.unwrap(obj)
+        filename = inspect.getsourcefile(obj)
+        source, lineno = inspect.getsourcelines(obj)
+    except (TypeError, OSError):
+        return None
+
+    if filename is None:
+        return None
+
+    # Make path relative to the repo root
+    start = Path(__file__).parent.parent.parent
+    filename = os.path.relpath(filename, start=start)
+
+    repo = os.getenv('PDGAPI_REPO', 'particledatagroup/api')
+    branch = os.getenv('PDGAPI_BRANCH', 'main')
+    return f"https://github.com/{repo}/blob/{branch}/{filename}#L{lineno}-L{lineno + len(source) - 1}"

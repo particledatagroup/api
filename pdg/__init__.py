@@ -1,7 +1,7 @@
 """
 Python API to access PDG data.
 
-The Python package pdg provides access to the particle physics data
+The Python package `pdg` provides access to the particle physics data
 published by the Particle Data Group (PDG) in the Review of Particle Physics.
 
 For documentation see https://pdgapi.lbl.gov/doc.
@@ -28,7 +28,16 @@ MIN_SCHEMA_VERSION = 0.3            # Minimum schema version required by this ve
 
 
 def connect(database_url: Optional[str]=None, pedantic: bool=False) -> PdgApi:
-    """Connect to PDG database and return configured PDG API object."""
+    """Connect to PDG database and return configured PDG API object.
+
+    Args:
+        database_url: SQLAlchemy-style URL of the PDG database. If `None`, the
+            bundled SQLite file will be used.
+        pedantic: Whether to enable the API's "pedantic" mode.
+
+    Returns:
+        A :class:`~pdg.api.PdgApi` object.
+    """
     if database_url is None:
         api = PdgApi('sqlite:///%s' % os.path.join(os.path.dirname(__file__), SQLITE_FILENAME), pedantic)
     else:

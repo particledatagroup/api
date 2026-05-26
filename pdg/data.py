@@ -2,10 +2,10 @@
 Container base classes for PDG data.
 
 All PDG data classes use lazy (i.e. only when needed) loading of data from the database
-as implemented in the PdgData base class. In most cases, the data is read only once and
+as implemented in the `PdgData` base class. In most cases, the data is read only once and
 cached for subsequent use.
 
-PdgProperty is a subclass of PdgData and adds the retrieval of summary values, measurement
+`PdgProperty` is a subclass of `PdgData` and adds the retrieval of summary values, measurement
 data, etc., that is shared by all classes supporting the retrieval of different kinds of
 particle physics properties such as branching fractions or particle masses.
 """
@@ -16,7 +16,6 @@ from pdg.utils import parse_id, make_id
 from pdg.units import UNIT_CONVERSION_FACTORS, convert
 from pdg.errors import PdgApiError, PdgInvalidPdgIdError, PdgAmbiguousValueError, PdgNoDataError
 from pdg.measurement import PdgMeasurement
-from sqlalchemy.engine.row import RowMapping
 from typing import TYPE_CHECKING, Iterator, Optional, cast
 
 if TYPE_CHECKING:
@@ -25,23 +24,40 @@ if TYPE_CHECKING:
 
 
 class PdgSummaryValue(dict):
-    """Container for a single value from the Summary Tables."""
+    "Container for a single value from the Summary Tables."
 
     def __str__(self) -> str:
+        """Get description of the summary value.
+
+        Returns:
+            String with details including the value, its type, and any comments.
+        """
         indicator = self.value_type
         if not indicator:
             indicator = '[key = %s]' % self.value_type_key
         return '%-20s %-20s  %s' % (self.value_text, indicator, self.comment if self.comment else '')
 
     def pprint(self) -> None:
-        """Print all data in this PdgSummaryValue object in a nice format (for debugging)."""
+        "Print all data in this `PdgSummaryValue` object in a nice format (for debugging)."
         pprint.pprint(self)
 
     def get_value(self, units: Optional[str]=None) -> Optional[float]:
-        """Return value after conversion into units specified by parameter units (string).
+        """Get value in specified units.
 
-        If units are not specified, the value is returned without conversion in the default units for this quantity.
-        Check properties is_limit, is_lower_limit and is_upper_limit to determine if value is a central value or limit.
+        Note:
+            Check properties :func:`is_limit`, :func:`is_lower_limit` and
+            :func:`is_upper_limit` to determine if value is a central value or
+            limit.
+
+        Args:
+            units: Can be set to the desired unit (see
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the value is returned without conversion in the default units
+                for this quantity.
+
+        Returns:
+            Value, or `None` if there is no value in the database or if the unit
+            conversion is invalid or unsupported.
         """
         if units is None:
             return self['value']
@@ -52,10 +68,17 @@ class PdgSummaryValue(dict):
                 return None
 
     def get_error_positive(self, units: Optional[str]=None) -> float:
-        """Return positive error after conversion into units specified by parameter units (string).
+        """Get positive error in specified units.
 
-        If units are not specified, the positive error is returned without conversion in the default
-        units for this quantity.
+        Args:
+            units: Can be set to the desired unit (see
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the positive error is returned without conversion in the default
+                units for this quantity.
+
+        Returns:
+            Positive error, or `None` if there is no positive error in the
+            database or if the unit conversion is invalid or unsupported.
         """
         if units is None:
             return self['error_positive']
@@ -63,10 +86,17 @@ class PdgSummaryValue(dict):
             return convert(self['error_positive'], self['unit_text'], units)
 
     def get_error_negative(self, units: Optional[str]=None) -> float:
-        """Return negative error after conversion into units specified by parameter units (string).
+        """Get negative error in specified units.
 
-        If units are not specified, the negative error is returned without conversion in the default
-        units for this quantity.
+        Args:
+            units: Can be set to the desired unit (see
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the negative error is returned without conversion in the default
+                units for this quantity.
+
+        Returns:
+            Negative error, or `None` if there is no negative error in the
+            database or if the unit conversion is invalid or unsupported.
         """
         if units is None:
             return self['error_negative']
@@ -74,10 +104,21 @@ class PdgSummaryValue(dict):
             return convert(self['error_negative'], self['unit_text'], units)
 
     def get_error(self, units: Optional[str]=None) -> Optional[float]:
-        """Symmetric error or None, in units specified by parameter units (string).
+        """Get symmetric error in specified units.
 
-        Returns symmetric error as average of positive and negative errors if they differ by less than 10% of
-        their average. Otherwise, returns None. Also returns None if the quantity is a limit."""
+        Args:
+            units: Can be set to the desired unit (see
+                :func:`~pdg.units.convert` for supported units). If unspecified,
+                the error is returned without conversion in the default units
+                for this quantity.
+
+        Returns:
+            Symmetric error as average of positive and negative errors if they
+            differ by less than 10% of their average. Otherwise, returns `None`.
+            Also returns `None` if the quantity is a limit, or if there is
+            otherwise no positive or negative error in the database, or if the
+            unit conversion is invalid or unsupported.
+        """
         if self.is_limit:
             return None
         try:
@@ -91,24 +132,27 @@ class PdgSummaryValue(dict):
 
     @property
     def pdgid(self) -> str:
-        """PDG Identifier of quantity for which value is given."""
+        "PDG Identifier of quantity for which value is given."
         return self['pdgid']
 
     @property
     def description(self) -> str:
-        """Description of quantity for which value is given"""
+        "Description of quantity for which value is given"
         return self['description']
 
     @property
     def value_type_key(self) -> str:
         """Type of value, given by its key.
 
-        See PdgApi.doc_value_type_keys() for the meaning of the different value type keys."""
+        See :meth:`PdgApi.doc_value_type_keys
+        <pdg.api.PdgApi.doc_value_type_keys>` for the meaning of the different
+        value type keys.
+        """
         return self['value_type']
 
     @property
     def value_type(self) -> str:
-        """Type of value, given as the PDG indicator string."""
+        "Type of value, given as the PDG indicator string."
         if self.value_type_key in ('AC', 'D', 'E'):
             return 'OUR AVERAGE'
         elif self.value_type_key in ('L',):
@@ -124,116 +168,144 @@ class PdgSummaryValue(dict):
 
     @property
     def in_summary_table(self) -> bool:
-        """True if value is included in Summary Table."""
+        "`True` if value is included in Summary Table."
         return self['in_summary_table']
 
     @property
     def confidence_level(self) -> Optional[float]:
-        """Confidence level for limits, None otherwise."""
+        "Confidence level for limits, `None` otherwise."
         return self['confidence_level']
 
     @property
     def is_limit(self) -> bool:
-        """True if value is a limit."""
+        "`True` if value is a limit."
         return self['confidence_level'] is not None or self['limit_type'] is not None
 
     @property
     def is_upper_limit(self) -> bool:
-        """True if value is an upper limit."""
+        "`True` if value is an upper limit."
         return self['limit_type'] == 'U'
 
     @property
     def is_lower_limit(self) -> bool:
-        """True if value is an lower limit."""
+        "`True` if value is an lower limit."
         return self['limit_type'] == 'L'
 
     @property
     def comment(self) -> str:
-        """Details for or comments on this value."""
+        "Details for or comments on this value."
         return self['comment']
 
     @property
     def value(self) -> float:
-        """Numerical value in units given by property units.
+        """Numerical value in units given by property :attr:`units`.
 
-        Check properties is_limit, is_lower_limit and is_upper_limit to determine if value is a central value or limit.
+        Check properties :attr:`is_limit`, :attr:`is_lower_limit` and
+        :attr:`is_upper_limit` to determine if value is a central value or limit.
         """
         return self['value']
 
     @property
     def error_positive(self) -> float:
-        """Numerical value of positive error in units given by property units."""
+        """Numerical value of positive error in units given by property
+        :attr:`units`.
+        """
         return self['error_positive']
 
     @property
     def error_negative(self) -> float:
-        """Numerical value of negative error in units given by property units."""
+        """Numerical value of negative error in units given by property
+        :attr:`units`.
+        """
         return self['error_negative']
 
     @property
     def error(self) -> Optional[float]:
-        """Symmetric error or None.
+        """Symmetric error or `None`.
 
-        Returns symmetric error as average of positive and negative errors if they differ by less than 10% of
-        their average. Otherwise, returns None. Also returns None if the quantity is a limit."""
+        The symmetric error is the average of positive and negative errors if
+        they differ by less than 10% of their average. If not, or if the
+        quantity is a limit, the symmetric error is `None`.
+        """
         return self.get_error()
 
     @property
     def scale_factor(self) -> float:
-        """PDG error scale factor that was applied to error_positive and error_negative."""
+        """PDG error scale factor that was applied to :attr:`error_positive` and
+        :attr:`error_negative`.
+        """
         return self['scale_factor'] or 1.0
 
     @property
     def units(self) -> str:
-        """Units (in plain text format) used by value, error_positive,
-        error_negative, and display_value_text."""
+        """Units (in plain text format) used by :attr:`value`,
+        :attr:`error_positive`, :attr:`error_negative`, and
+        :attr:`display_value_text`.
+        """
         return self['unit_text']
 
     # @property
     # def units_tex(self):
-    #     """Units (in TeX format) used by value, error_positive, error_negative,
-    #     and display_value_text."""
+    #     """Units (in TeX format) used by :attr:`value`,
+    #     :attr:`error_positive`, :attr:`error_negative`, and
+    #     :attr:`display_value_text`.
+    #     """
     #     return self['unit_tex']
 
     @property
     def value_text(self) -> str:
         """Value and uncertainty (in plain text format) in units given by
-           property units, including the power of ten, if applicable
-           (see display_power_of_ten)"""
+        property :attr:`units`, including the power of ten, if applicable
+        (see :attr:`display_power_of_ten`)
+        """
         return self['value_text']
 
     # @property
     # def value_tex(self):
     #     """Value and uncertainty (in TeX format) in units given by property
-    #        units, including the power of ten, if applicable (see
-    #        display_power_of_ten)"""
+    #     units, including the power of ten, if applicable (see
+    #     display_power_of_ten)"""
     #     return self['value_tex']
 
     @property
     def display_value_text(self) -> str:
         """Value and uncertainty in plain text format as displayed in
            Listings tables. Does not include any power of ten or percent sign.
-           Must be combined with the display_power_of_ten property in order
-           to obtain the numerical value in units given by the property units."""
+           Must be combined with the :attr:`display_power_of_ten` property in
+           order to obtain the numerical value in units given by the property
+           :attr:`units`.
+        """
         return self['display_value_text']
 
     @property
     def display_power_of_ten(self) -> int:
-        """Unit multiplier (as power of ten) as used for display in Listings."""
+        "Unit multiplier (as power of ten) as used for display in Listings."
         return self['display_power_of_ten']
 
     @property
     def display_in_percent(self) -> bool:
-        """True if value is rendered in percent for display in Listings.
-           Implies that display_power_of_ten is -2."""
+        """`True` if value is rendered in percent for display in Listings.
+        Implies that :attr:`display_power_of_ten` is -2.
+        """
         return self['display_in_percent']
 
 
 class PdgConvertedValue(PdgSummaryValue):
-    """A PdgSummaryValue class for storing summary values after unit conversion."""
+    """A `PdgSummaryValue` subclass for storing summary values after unit conversion.
+
+    After being initialized from some other `PdgSummaryValue`, a
+    `PdgConvertedValue` can be treated like any `PdgSummaryValue`. The unit
+    conversion will be reflected in all properties relating to the numerical
+    value, its errors, and its units.
+    """
 
     def __init__(self, value: PdgSummaryValue, to_units: str):
-        """Instantiate a copy of PdgSummaryValue value with new units to_unit."""
+        """
+        Args:
+            value: A :class:`~pdg.data.PdgSummaryValue` to convert.
+            to_units: The new units. See :func:`~pdg.units.convert`
+                for supported units.
+        """
         super(PdgConvertedValue, self).__init__(value)
         self.original_units = value.units
         try:
@@ -261,20 +333,30 @@ class PdgData(object):
 
     This class implements the lazy data retrieval from the database
     and is the base class for all PDG data container classes.
+
+    When a `PdgData` object is instantiated, the edition of the Review of
+    Particle Physics from which data will be retrieved is determined by the
+    first edition information found from the following list:
+
+    1. An edition specified as part of the PDG Identifier
+    2. An edition specified by parameter `edition` of the constructor
+    3. The default edition specified by the database to which the API is connected
+
+    The chosen edition can be queried by calling :func:`edition` and changed
+    at any time by calling :func:`set_edition`.
     """
-
     def __init__(self, api: 'PdgApi', pdgid: str, edition: Optional[str]=None):
-        """Instantiate a PdgData object for the given PDG Identifier pdgid.
+        """
+        Note:
+            In most cases, user code should not need to call the constructor
+            directly. Instead, the use of e.g. :meth:`PdgApi.get
+            <pdg.api.PdgApi.get>` is recommended.
 
-        When a PdgData object is instantiated, the edition of the Review of Particle Physics
-        from which data will be retrieved is determined by the first edition information found
-        from the following list:
-
-        1. An edition specified as part of the PDG Identifier
-        2. An edition specified by parameter edition
-        3. The default edition specified by the database to which the API is connected
-
-        The chosen edition can be queried by calling edition() and changed at any by calling set_edition().
+        Args:
+            api: A :class:`~pdg.api.PdgApi` object to be used for retrieving data.
+            pdgid: The PDG Identifier for the desired data.
+            edition: If set, and if the `pdgid` does not specify the edition, then
+                the data will be looked up in this edition.
         """
         self.api = api
         self.baseid, self._edition = parse_id(pdgid)
@@ -283,12 +365,23 @@ class PdgData(object):
         if self._edition is None:
             self._edition = self.api.default_edition
         self.pdgid = make_id(self.baseid, self._edition)
-        self.cache: dict[str, RowMapping | list[RowMapping] | list[PdgSummaryValue]] = {}
+        self.cache: dict[str, dict | list[dict] | list[PdgSummaryValue]] = {}
 
     def __str__(self) -> str:
+        """Get human-readable description of the data.
+
+        Returns:
+            Details including the identifier's name and description.
+        """
         return 'Data for PDG Identifier %s: %s' % (self.pdgid, self.description)
 
     def __repr__(self) -> str:
+        """Get concise description of the data.
+
+        Returns:
+            Details including the class name, the identifier, and any additional
+            information specific to a subclass of :class:`PdgData`.
+        """
         extra = self._repr_extra()
         if extra:
             extra = ', ' + extra
@@ -297,12 +390,17 @@ class PdgData(object):
 
     def _repr_extra(self) -> str:
         """A method that subclasses can override in order to add info to the
-        result of __repr__.
+        result of :func:`__repr__`.
         """
         return ''
 
-    def _get_pdgid(self) -> RowMapping:
-        """Get PDG Identifier information."""
+    def _get_pdgid(self) -> dict:
+        """Get PDG Identifier information.
+
+        Returns:
+            Contents of this data's corresponding row in the SQLite file's
+            `pdgid` table. 
+        """
         if 'pdgid' not in self.cache:
             pdgid_table = self.api.db.tables['pdgid']
             query = select(pdgid_table).where(pdgid_table.c.pdgid == bindparam('pdgid'))
@@ -310,14 +408,18 @@ class PdgData(object):
                 try:
                     row = conn.execute(query, {'pdgid': self.baseid}).fetchone()
                     assert row is not None
-                    self.cache['pdgid'] = row._mapping
+                    self.cache['pdgid'] = dict(row._mapping)
                 except AttributeError:
                     raise PdgInvalidPdgIdError('PDG Identifier %s not found' % self.pdgid)
-        assert isinstance(self.cache['pdgid'], RowMapping)
+        assert isinstance(self.cache['pdgid'], dict)
         return self.cache['pdgid']
 
     def _get_summary_values(self) -> list[PdgSummaryValue]:
-        """Get all summary data values."""
+        """Get all summary data values.
+
+        Returns:
+            List of all :class:`PdgSummaryValue` objects for this data.
+        """
         if 'summary' not in self.cache:
             pdgid_table = self.api.db.tables['pdgid']
             pdgdata_table = self.api.db.tables['pdgdata']
@@ -333,7 +435,15 @@ class PdgData(object):
         return cast(list[PdgSummaryValue], self.cache['summary'])
 
     def _count_data_entries(self, pdgid: str, edition: str) -> int:
-        """Count number of data entries for a given PDG identifier and edition."""
+        """Count number of data entries for a given PDG identifier and edition.
+
+        Args:
+            pdgid: PDG identifier.
+            edition: Edition.
+
+        Returns:
+            Number of data entries.
+        """
         pdgdata_table = self.api.db.tables['pdgdata']
         query = select(func.count("*")).select_from(pdgdata_table)
         query = query.where(pdgdata_table.c.pdgid == bindparam('pdgid'))
@@ -344,20 +454,37 @@ class PdgData(object):
             return count
 
     def get_parent_pdgid(self, include_edition: bool=True) -> str:
-        """Return PDG Identifier of this property's parent. In most cases, this
-        will be the PDG ID of the particle itself. For those properties, such as
-        neutrino mixing angles, that don't have a specific parent particle, the
-        parent will be a top-level section (S067 in this case). If this
-        property's direct parent is a subsection header, it will be skipped, and
-        the PDGID of the top-level section or particle will be returned
-        instead."""
+        """Return PDG Identifier of this data's parent.
+
+        In most cases, this will be the PDG ID of the particle itself. For those
+        properties, such as neutrino mixing angles, that don't have a specific
+        parent particle, the parent will be a top-level section (`S067` in this
+        case). If this property's direct parent is a subsection header, it will
+        be skipped, and the PDG Identifier of the top-level section or particle
+        will be returned instead.
+
+        Args:
+            include_edition: Whether to include the edition when formatting the
+                PDG Identifier.
+
+        Returns:
+            PDG Identifier of this property's parent.
+        """
         p = self
         while p._get_pdgid()['parent_pdgid'] is not None:
             p = self.api.get(p._get_pdgid()['parent_pdgid'], self.edition)
         return p.pdgid if include_edition else p.baseid
 
     def get_particles(self) -> 'PdgParticleList':
-        """Return PdgParticleList for this property's particle."""
+        """Get `PdgParticleList` for this property's particle.
+
+        Raises:
+            :exc:`~pdg.errors.PdgNoDataError`: If the identifier does not have
+                any parent particles.
+
+        Returns:
+            All parent particles for this property.
+        """
         p = self.api.get(self.get_parent_pdgid())
         if p.data_type != 'PART':
             err = 'Identifier %s does not have a parent particle'
@@ -365,8 +492,14 @@ class PdgData(object):
         return cast('PdgParticleList', p)
 
     def get_particle(self) -> 'PdgParticle':
-        """Returns PdgParticle for this property's particle. Raises
-        PdgAmbiguousValueError when there are multiple matches."""
+        """Get `PdgParticle` for this property's particle.
+
+        Raises:
+            :exc:`~pdg.errors.PdgAmbiguousValueError`: If there are multiple matches.
+
+        Returns:
+            The parent particle for this property.
+        """
         ps = self.get_particles()
         assert len(ps) > 0
         if len(ps) > 1:
@@ -375,6 +508,14 @@ class PdgData(object):
         return ps[0]
 
     def get_children(self, recurse: bool=False) -> Iterator['PdgData']:
+        """Get all properties that descend from this one.
+
+        Args:
+            recurse: Whether to scan recursively and return grandchildren, etc.
+
+        Returns:
+            Iterator over descendent properties.
+        """
         pdgid_table = self.api.db.tables['pdgid']
         ## NOTE: Querying on IDs doesn't work because the `parent_id` seems off
         # query = select(pdgid_table.c.pdgid) \
@@ -395,36 +536,38 @@ class PdgData(object):
 
     @property
     def edition(self) -> Optional[str]:
-        """Year of edition for which data is requested."""
+        "Year of edition for which data is requested."
         return self._edition
 
     @edition.setter
     def edition(self, edition: str) -> None:
-        """Set year of edition used for retrieving data (invalidates cache)."""
+        "Set year of edition used for retrieving data (invalidates cache)."
         self._edition = edition
         self.pdgid = make_id(self.baseid, self._edition)
         self.cache = dict()
 
     @property
     def description(self) -> str:
-        """Description of data."""
+        "Description of data."
         return self._get_pdgid()['description']
 
     @property
     def data_type(self) -> str:
-        """Type of data."""
+        "Type of data."
         return self._get_pdgid()['data_type']
 
     @property
     def data_flags(self) -> str:
-        """Flags augmenting data type information."""
+        "Flags augmenting data type information."
         return self._get_pdgid()['flags']
 
     @property
     def cp_charge_flag(self) -> Optional[int]:
-        """The particular "CP charge" (see PdgParticle documentation) that
-        this data corresponds to. This flag will be None if the data applies
-        to all particles listed under the PDG identifier.
+        """The particular "CP charge" that this data corresponds to.
+
+        See :attr:`PdgParticle.cp_charge <pdg.particle.PdgParticle.cp_charge>`
+        documentation for the meaning of the "CP charge". This flag will be `None`
+        if the data applies to ALL particles listed under the PDG identifier.
         """
         digits = [c for c in self.data_flags if c.isdigit()]
         if len(digits) == 0:
@@ -438,14 +581,19 @@ class PdgData(object):
 
 
 class PdgProperty(PdgData):
-    """Base class for containers for data containers for particle properties."""
+    "Base class for containers for data containers for particle properties."
 
     def summary_values(self, summary_table_only: bool=False) -> list[PdgSummaryValue]:
-        """Return list of summary values for this quantity.
+        """Get list of summary values for this quantity.
 
-        By default, all summary values are included, even if they are only shown in the
-        Particle Listings and not listed in the Summary Tables. Set summary_table_only to
-        True to get only summary values listed in the Summary Tables.
+        Args:
+            summary_table_only: Whether to get only summary values listed in the
+                Summary Tables. By default, all summary values are included,
+                even if they are only shown in the Particle Listings and not
+                listed in the Summary Tables.
+
+        Returns:
+            List of summary values.
         """
         if summary_table_only:
             return [v for v in self._get_summary_values() if v.in_summary_table]
@@ -453,25 +601,37 @@ class PdgProperty(PdgData):
             return self._get_summary_values()
 
     def n_summary_table_values(self) -> int:
-        """Return number of summary values in Summary Table for this quantity."""
+        "Get number of summary values in Summary Table for this quantity."
         return len(self.summary_values(summary_table_only=True))
 
     def best_summary(self, summary_table_only: bool=False) \
             -> Optional[PdgSummaryValue]:
-        """Return the PDG "best" summary value for this quantity.
+        """Get the PDG "best" summary value for this quantity.
 
-        If there is either a single summary value in Particle Listings and Summary Tables, or there are multiple
-        summary values but only one is included in the Summary Tables, then this value is returned as the
-        PDG best value.
+        If there is either a single summary value in Particle Listings and
+        Summary Tables, or there are multiple summary values but only one is
+        included in the Summary Tables, then this value is returned as the PDG
+        best value.
 
-        If there are multiple summary values (e.g. based on assuming or not assuming CPT in the evaluation) and
-        PdgApi.pedantic is False, the first value shown in Summary Tables or Particle Listings will be returned.
-        If PdgApi.pedantic is True, a PdgAmbiguousValue Exception will be raised.
+        If there are multiple summary values (e.g. based on assuming or not
+        assuming CPT in the evaluation) and the API is not in pedantic mode, the
+        first value shown in Summary Tables or Particle Listings will be
+        returned. In pedantic mode, a :exc:`~pdg.errors.PdgAmbiguousValueError`
+        exception will be raised.
 
-        If there are no summary values, None is returned.
+        If there are no summary values, `None` is returned.
 
-        If summary_table_only is True, then the best value must be included in the Summary Table and cannot
-        be shown only in the Particle Listings.
+        Args:
+            summary_table_only: If `True`, then the best value must be included
+                in the Summary Table and cannot be shown only in the Particle
+                Listings.
+
+        Returns:
+             "Best" summary value, or `None` (see above).
+
+        Raises:
+            :exc:`~pdg.errors.PdgAmbiguousValueError`: If the API is in pedantic
+                mode and there are multiple relevant summary values.
         """
         if not summary_table_only:
             summaries = self.summary_values(summary_table_only=False)
@@ -492,14 +652,25 @@ class PdgProperty(PdgData):
                     return summaries[0]
 
     def has_best_summary(self, summary_table_only: bool=False) -> bool:
-        """Return True if there is a single PDG "best" value (see best_value() for definition)."""
+        """Query whether there is a single PDG "best" value for this property.
+
+        See documentation of :func:`best_summary` for definition of "best".
+
+        Args:
+            summary_table_only: If `True`, then the best value must be included
+                in the Summary Table and cannot be shown only in the Particle
+                Listings.
+
+        Returns:
+            `True` if there is exactly one "best" value. 
+        """
         try:
             return self.best_summary(summary_table_only) is not None
         except PdgAmbiguousValueError:
             return False
 
     def get_measurements(self) -> Iterator[PdgMeasurement]:
-        """Return all of the measurements associated with this property."""
+        "Get all of the measurements associated with this property."
         pdgmsmt_table = self.api.db.tables['pdgmeasurement']
         query = select(pdgmsmt_table.c.id)
         query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
@@ -509,7 +680,7 @@ class PdgProperty(PdgData):
 
     @property
     def num_measurements(self) -> int:
-        """The number of measurements associated with this property."""
+        "Get the number of measurements associated with this property."
         pdgmsmt_table = self.api.db.tables['pdgmeasurement']
         query = select(func.count('*'))
         query = query.where(pdgmsmt_table.c.pdgid == bindparam('pdgid'))
@@ -520,93 +691,100 @@ class PdgProperty(PdgData):
 
     @property
     def confidence_level(self) -> Optional[float]:
-        """Shortcut for best_summary().confidence_level."""
+        "Shortcut for `best_summary().confidence_level`."
         best = self.best_summary()
         assert best is not None
         return best.confidence_level
 
     @property
     def is_limit(self) -> bool:
-        """Shortcut for best_summary().is_limit."""
+        "Shortcut for `best_summary().is_limit`."
         best = self.best_summary()
         assert best is not None
         return best.is_limit
 
     @property
     def value(self) -> float:
-        """Shortcut for best_summary().value."""
+        "Shortcut for `best_summary().value`."
         best = self.best_summary()
         assert best is not None
         return best.value
 
     @property
     def error(self) -> Optional[float]:
-        """Shortcut for best_summary().error."""
+        "Shortcut for `best_summary().error`."
         best = self.best_summary()
         assert best is not None
         return best.error
 
     @property
     def error_positive(self) -> float:
-        """Shortcut for best_summary().error."""
+        "Shortcut for `best_summary().error`."
         best = self.best_summary()
         assert best is not None
         return best.error_positive
 
     @property
     def error_negative(self) -> float:
-        """Shortcut for best_summary().error."""
+        "Shortcut for `best_summary().error`."
         best = self.best_summary()
         assert best is not None
         return best.error_negative
 
     @property
     def scale_factor(self) -> float:
-        """Shortcut for best_summary().scale_factor."""
+        "Shortcut for `best_summary().scale_factor`."
         best = self.best_summary()
         assert best is not None
         return best.scale_factor
 
     @property
     def units(self) -> str:
-        """Shortcut for best_summary().units."""
+        "Shortcut for `best_summary().units`."
         best = self.best_summary()
         assert best is not None
         return best.units
 
     @property
     def comment(self) -> str:
-        """Shortcut for best_summary().comment."""
+        "Shortcut for `best_summary().comment`."
         best = self.best_summary()
         assert best is not None
         return best.comment
 
     @property
     def value_text(self) -> str:
-        """Shortcut for best_summary().value_text."""
+        "Shortcut for `best_summary().value_text`."
         best = self.best_summary()
         assert best is not None
         return best.value_text
 
     @property
     def display_value_text(self) -> str:
-        """Shortcut for best_summary().display_value_text."""
+        "Shortcut for `best_summary().display_value_text`."
         best = self.best_summary()
         assert best is not None
         return best.display_value_text
 
 
 class PdgMass(PdgProperty):
+    "A `PdgProperty` subclass representing a particle's mass."
     pass
 
 
 class PdgWidth(PdgProperty):
+    "A `PdgProperty` subclass representing a particle's decay width."
     pass
 
 
 class PdgLifetime(PdgProperty):
+    "A `PdgProperty` subclass representing a particle's lifetime."
     pass
 
 
 class PdgText(PdgData):
+    """A `PdgData` subclass representing a generic text.
+
+    Used e.g. to represent subsection headings.
+    """
     pass
