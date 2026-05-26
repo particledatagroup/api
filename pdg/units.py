@@ -3,6 +3,7 @@ Constants and utilities for handling HEP units.
 """
 
 from pdg.errors import PdgApiError
+from typing import Optional
 
 HBAR_IN_GEV_S = 6.582E-25
 
@@ -22,11 +23,12 @@ UNIT_CONVERSION_FACTORS = {
 }
 
 
-def convert(value, old_units=None, new_units=None):
+def convert(value: float, old_units: Optional[str]=None, new_units: Optional[str]=None) -> float:
     """Utility to convert value to a different unit."""
     if new_units is None:
         return value
     else:
+        assert old_units is not None
         try:
             old_factor = UNIT_CONVERSION_FACTORS[old_units]
         except KeyError:

@@ -5,9 +5,16 @@ Definition of top-level particle container class.
 from sqlalchemy import select, bindparam, distinct, func
 from sqlalchemy import and_, or_
 from pdg.errors import PdgApiError, PdgNoDataError, PdgAmbiguousValueError
+from pdg.measurement import PdgMeasurement
 from pdg.utils import make_id
-from pdg.data import PdgData
+from pdg.data import PdgLifetime, PdgMass, PdgWidth, PdgData, PdgProperty
 from pdg.units import HBAR_IN_GEV_S
+from sqlalchemy.engine.row import RowMapping
+from typing import TYPE_CHECKING, Iterator, Optional, cast
+
+if TYPE_CHECKING:
+    from pdg.api import PdgApi
+    from pdg.decay import PdgBranchingFraction
 
 
 class PdgItem:
@@ -18,19 +25,19 @@ class PdgItem:
     queried (via the particle/particles properties) for the associated
     particle(s).
     """
-    def __init__(self, api, pdgitem_id, edition=None):
+    def __init__(self, api: 'PdgApi', pdgitem_id: int, edition: Optional[str]=None):
         """Constructor for a PdgItem. Intended for internal API use."""
         self.api = api
         self.pdgitem_id = pdgitem_id
-        self.cache = {}
+        self.cache: dict[str, bool | RowMapping] = {}
         self.edition = edition
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a human-readable representation of the PdgItem."""
         name = self._get_pdgitem()['name']
         return 'PdgItem("%s")' % name
 
-    def _get_pdgitem(self):
+    def _get_pdgitem(self) -> RowMapping:
         """Load the PdgItem's data from the database."""
         if 'pdgitem' not in self.cache:
             pdgitem_table = self.api.db.tables['pdgitem']
@@ -40,9 +47,9 @@ class PdgItem:
                 if result is None:
                     raise PdgNoDataError('No PDGITEM entry for %s' % self.pdgitem_id)
                 self.cache['pdgitem'] = result._mapping
-        return self.cache['pdgitem']
+        return cast(RowMapping, self.cache['pdgitem'])
 
-    def _get_targets(self):
+    def _get_targets(self) -> Iterator['PdgItem']:
         """Get all PdgItems that this one maps directly to. Does not recurse."""
         pdgitem_map_table = self.api.db.tables['pdgitem_map']
         query = select(pdgitem_map_table).where(pdgitem_map_table.c.pdgitem_id == bindparam('pdgitem_id'))
@@ -52,7 +59,7 @@ class PdgItem:
                 yield PdgItem(self.api, row.target_id)
 
     @property
-    def has_particle(self):
+    def has_particle(self) -> bool:
         """Whether the PdgItem is associated with exactly one particle. The
         property has_particles indicates whether it is associated with one or
         more.
@@ -72,10 +79,10 @@ class PdgItem:
                         self.cache['has_particle'] = True
                     else:
                         self.cache['has_particle'] = False
-        return self.cache['has_particle']
+        return cast(bool, self.cache['has_particle'])
 
     @property
-    def particle(self):
+    def particle(self) -> 'PdgParticle':
         """The particle associated with the PdgItem, if there is exactly one
         such particle. Raises PdgAmbiguousValueError if there are more than one,
         in which case the particles property can be used instead.
@@ -84,12 +91,12 @@ class PdgItem:
             if self.has_particles:
                 raise PdgAmbiguousValueError('No unique PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
             raise PdgNoDataError('No PDGPARTICLE for PDGITEM %s' % self.pdgitem_id)
-        p = self.cache['pdgparticle']
+        p = cast(RowMapping, self.cache['pdgparticle'])
         return PdgParticle(self.api, p['pdgid'], edition=self.edition, set_mcid=p['mcid'],
                            set_name=p['name'])
 
     @property
-    def particles(self):
+    def particles(self) -> list['PdgParticle']:
         """The list of all particles associated with the PdgItem."""
         if self.has_particle:
             return [self.particle]
@@ -101,12 +108,12 @@ class PdgItem:
             return result
 
     @property
-    def has_particles(self):
+    def has_particles(self) -> bool:
         """Whether the PdgItem is associated with at least one particle."""
         return len(list(self.particles)) > 0
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The name of the PdgItem."""
         return self._get_pdgitem()['name']
 
@@ -116,7 +123,7 @@ class PdgItem:
     #     return self._get_pdgitem()['name_tex']
 
     @property
-    def item_type(self):
+    def item_type(self) -> str:
         """The type of the PdgItem. A single character with the following meanings:
               'P': specific state (e.g. "pi+"),
               'A': "also" alias,
@@ -140,22 +147,23 @@ class PdgParticle(PdgData):
     in Particle Listings and Summary Tables, including branching fractions, masses, life-times, etc.
     """
 
-    def __init__(self, api, pdgid, edition=None, set_mcid=None, set_name=None):
+    def __init__(self, api: 'PdgApi', pdgid: str, edition: Optional[str]=None, set_mcid: Optional[int]=None, set_name: Optional[str]=None):
         """Constructor for a PdgParticle given its PDG Identifier and possibly its MC ID."""
         super(PdgParticle, self).__init__(api, pdgid, edition)
         self.set_mcid = set_mcid
         self.set_name = set_name
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             return 'Data for PDG Particle %s: %s' % (self.pdgid, self.name)
         except PdgAmbiguousValueError:
             return 'Data for PDG Particle %s: multiple particle matches' % self.pdgid
 
-    def _repr_extra(self):
+    def _repr_extra(self) -> str:
         return "name='%s'" % self.name
 
-    def best(self, properties, quantity=None):
+    def best(self, properties: Iterator[PdgProperty], quantity: Optional[str]=None) \
+            -> PdgProperty:
         """Return the "best" property from an iterable of properties, using the API's pedantic setting.
 
         quantity is an optional string that describes what was being sought in case of error.
@@ -202,7 +210,7 @@ class PdgParticle(PdgData):
             else:
                 return props[0]
 
-    def _get_particle_data(self):
+    def _get_particle_data(self) -> RowMapping:
         """Get particle data."""
         if 'pdgparticle' not in self.cache:
             pdgparticle_table = self.api.db.tables['pdgparticle']
@@ -237,13 +245,14 @@ class PdgParticle(PdgData):
                     names = [p.name for p in matches_g]
                     mcids = list(set([p.mcid for p in matches]))
                     raise PdgAmbiguousValueError('Multiple particles for %s: MCID %s, names %s' % (self.baseid, mcids, names))
-        return self.cache['pdgparticle']
+        return cast(RowMapping, self.cache['pdgparticle'])
 
     def properties(self,
-                   data_type_key=None,
-                   require_summary_data=True,
-                   in_summary_table=None,
-                   omit_branching_ratios=False):
+                   data_type_key: Optional[str]=None,
+                   require_summary_data: bool=True,
+                   in_summary_table: Optional[bool]=None,
+                   omit_branching_ratios: bool=False) \
+            -> Iterator[PdgData]:
         """Return iterator over specified particle property data.
 
         By default, all properties excluding branching fractions and branching fraction ratios are returned.
@@ -317,7 +326,7 @@ class PdgParticle(PdgData):
                     yield prop
 
 
-    def masses(self, require_summary_data=True):
+    def masses(self, require_summary_data: bool=True) -> Iterator[PdgMass]:
         """Return iterator over mass data.
 
         For most particles, there is only a single mass property, and so the particle's
@@ -328,17 +337,21 @@ class PdgParticle(PdgData):
         For other particles (e.g. for the top quark) there are different ways to determine the mass and the user
         needs to decide which mass value is the most appropriate for their use case.
         """
-        return self.properties('M', require_summary_data)
+        return cast(Iterator[PdgMass],
+                    self.properties('M', require_summary_data))
 
-    def widths(self, require_summary_data=True):
+    def widths(self, require_summary_data: bool=True) -> Iterator[PdgWidth]:
         """Return iterator over width data."""
-        return self.properties('G', require_summary_data)
+        return cast(Iterator[PdgWidth],
+                    self.properties('G', require_summary_data))
 
-    def lifetimes(self, require_summary_data=True):
+    def lifetimes(self, require_summary_data: bool=True) -> Iterator[PdgLifetime]:
         """Return iterator over lifetime data."""
-        return self.properties('T', require_summary_data)
+        return cast(Iterator[PdgLifetime],
+                    self.properties('T', require_summary_data))
 
-    def branching_fractions(self, data_type_key='BF%', require_summary_data=True):
+    def branching_fractions(self, data_type_key: str='BF%', require_summary_data: bool=True) \
+            -> Iterator['PdgBranchingFraction']:
         """Return iterator over given type(s) of branching fraction data.
 
         With data_type_key='BF%' (default), all branching fractions, including subdecay modes, are returned.
@@ -348,9 +361,11 @@ class PdgParticle(PdgData):
         """
         if data_type_key[0:2] != 'BF':
             raise PdgApiError('illegal branching fraction data type key %s' % data_type_key)
-        return self.properties(data_type_key, require_summary_data)
+        return cast(Iterator['PdgBranchingFraction'],
+                    self.properties(data_type_key, require_summary_data))
 
-    def exclusive_branching_fractions(self, include_subdecays=False, require_summary_data=True):
+    def exclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True) \
+            -> Iterator['PdgBranchingFraction']:
         """Return iterator over exclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
@@ -364,7 +379,8 @@ class PdgParticle(PdgData):
         else:
             return self.branching_fractions('BFX', require_summary_data)
 
-    def inclusive_branching_fractions(self, include_subdecays=False, require_summary_data=True):
+    def inclusive_branching_fractions(self, include_subdecays: bool=False, require_summary_data: bool=True) \
+            -> Iterator['PdgBranchingFraction']:
         """Return iterator over inclusive branching fraction data.
 
         Set include_subdecays to True (default is False) to also include
@@ -379,77 +395,78 @@ class PdgParticle(PdgData):
             return self.branching_fractions('BFI', require_summary_data)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Name of particle (ASCII format)."""
         return self._get_particle_data()['name']
 
     @property
-    def mcid(self):
+    def mcid(self) -> int:
         """Monte Carlo ID of particle."""
         return self._get_particle_data()['mcid']
 
     @property
-    def charge(self):
+    def charge(self) -> float:
         """Charge of particle in units of e."""
         return self._get_particle_data()['charge']
 
     @property
-    def quantum_I(self):
+    def quantum_I(self) -> str:
         """Quantum number I (isospin) of particle."""
         return self._get_particle_data()['quantum_i']
 
     @property
-    def quantum_G(self):
+    def quantum_G(self) -> str:
         """Quantum number G (G parity) of particle."""
         return self._get_particle_data()['quantum_g']
 
     @property
-    def quantum_J(self):
+    def quantum_J(self) -> str:
         """Quantum number J (spin) of particle."""
         return self._get_particle_data()['quantum_j']
 
     @property
-    def quantum_P(self):
+    def quantum_P(self) -> str:
         """Quantum number P (parity) of particle."""
         return self._get_particle_data()['quantum_p']
 
     @property
-    def quantum_C(self):
+    def quantum_C(self) -> str:
         """Quantum number C (C parity) of particle."""
         return self._get_particle_data()['quantum_c']
 
     @property
-    def is_boson(self):
+    def is_boson(self) -> bool:
         """True if particle is a gauge boson."""
         return 'G' in self.data_flags
 
     @property
-    def is_quark(self):
+    def is_quark(self) -> bool:
         """True if particle is a quark."""
         return 'Q' in self.data_flags
 
     @property
-    def is_lepton(self):
+    def is_lepton(self) -> bool:
         """True if particle is a lepton."""
         return 'L' in self.data_flags
 
     @property
-    def is_meson(self):
+    def is_meson(self) -> bool:
         """True if particle is a meson."""
         return 'M' in self.data_flags
 
     @property
-    def is_baryon(self):
+    def is_baryon(self) -> bool:
         """True if particle is a baryon."""
         return 'B' in self.data_flags
 
     @staticmethod
-    def _if_not_limit(prop, units, error=False):
+    def _if_not_limit(prop: PdgProperty, units: str, error: bool=False) -> Optional[float]:
         """If a PdgProperty's best summary value is NOT a limit, return it in
         the specified units. Otherwise return None. If error is True, return the
         error instead of the value.
         """
         summary = prop.best_summary()
+        assert summary is not None
         if summary.is_limit:
             return None
         if error:
@@ -457,19 +474,19 @@ class PdgParticle(PdgData):
         return summary.get_value(units)
 
     @property
-    def mass(self):
+    def mass(self) -> Optional[float]:
         """Mass of the particle in GeV."""
         best_mass_property = self.best(self.masses(), '%s mass (%s)' % (self.name, self.pdgid))
         return self._if_not_limit(best_mass_property, 'GeV')
 
     @property
-    def mass_error(self):
+    def mass_error(self) -> Optional[float]:
         """Symmetric error on mass of particle in GeV, or None if mass error are asymmetric or mass is a limit."""
         best_mass_property = self.best(self.masses(), '%s (%s)' % (self.pdgid, self.description))
         return self._if_not_limit(best_mass_property, 'GeV', error=True)
 
     @property
-    def width(self):
+    def width(self) -> Optional[float]:
         """Width of the particle in GeV."""
         try:
             best_width_property = self.best(self.widths(), '%s width (%s)' % (self.name, self.pdgid))
@@ -483,7 +500,7 @@ class PdgParticle(PdgData):
             return HBAR_IN_GEV_S / self.lifetime
 
     @property
-    def width_error(self):
+    def width_error(self) -> Optional[float]:
         """Symmetric error on width of particle in GeV, or None if width error are asymmetric or width is a limit."""
         try:
             best_width_property = self.best(self.widths(), '%s (%s)' % (self.pdgid, self.description))
@@ -494,10 +511,13 @@ class PdgParticle(PdgData):
             # S063 has a lifetime entry but it's NULL
             if (not self.has_lifetime_entry) or (self.lifetime is None):
                 return 0.
-            return self.lifetime_error * HBAR_IN_GEV_S / self.lifetime**2
+            err = self.lifetime_error
+            if err is None:
+                return None
+            return err * HBAR_IN_GEV_S / self.lifetime**2
 
     @property
-    def lifetime(self):
+    def lifetime(self) -> Optional[float]:
         """Lifetime of the particle in seconds."""
         try:
             best_lifetime_property = self.best(self.lifetimes(), '%s lifetime (%s)' % (self.name, self.pdgid))
@@ -505,12 +525,13 @@ class PdgParticle(PdgData):
         except PdgNoDataError:
             if self.api.pedantic:
                 raise
-            if not self.has_width_entry:
+            width = self.width
+            if width is None:
                 return float('inf')
-            return HBAR_IN_GEV_S / self.width
+            return HBAR_IN_GEV_S / width
 
     @property
-    def lifetime_error(self):
+    def lifetime_error(self) -> Optional[float]:
         """Symmetric error on lifetime of particle in seconds, or None if lifetime error are asymmetric or lifetime is a limit."""
         try:
             best_lifetime_property = self.best(self.lifetimes(), '%s (%s)' % (self.pdgid, self.description))
@@ -523,25 +544,28 @@ class PdgParticle(PdgData):
                 raise
             if not self.has_width_entry:
                 return 0.
-            return self.width_error * HBAR_IN_GEV_S / self.width**2
+            width, err = self.width, self.width_error
+            if width is None or err is None:
+                return None
+            return err * HBAR_IN_GEV_S / width**2
 
     @property
-    def has_mass_entry(self):
+    def has_mass_entry(self) -> bool:
         """Whether the particle has at least one defined mass."""
         return next(self.masses(), None) is not None
 
     @property
-    def has_width_entry(self):
+    def has_width_entry(self) -> bool:
         """Whether the particle has at least one defined decay width."""
         return next(self.widths(), None) is not None
 
     @property
-    def has_lifetime_entry(self):
+    def has_lifetime_entry(self) -> bool:
         """Whether the particle has at least one defined lifetime."""
         return next(self.lifetimes(), None) is not None
 
     @property
-    def cp_charge(self):
+    def cp_charge(self) -> int:
         """The charge of the nominal "particle" (as opposed to "antiparticle")
         for this species. E.g., for the proton and antiproton, this is 1.
         Useful for distinguishing e.g. the Sigma_b()+ (and Sigmabar_b()-)
@@ -552,17 +576,20 @@ class PdgParticle(PdgData):
         sign = -1 if cc_type == 'A' else 1
         return sign * int(self.charge)
 
-    def mass_measurements(self, require_summary_data=True):
+    def mass_measurements(self, require_summary_data: bool=True) \
+            -> Iterator[PdgMeasurement]:
         for m in self.masses(require_summary_data=require_summary_data):
             for msmt in m.get_measurements():
                 yield msmt
 
-    def lifetime_measurements(self, require_summary_data=True):
+    def lifetime_measurements(self, require_summary_data: bool=True) \
+            -> Iterator[PdgMeasurement]:
         for t in self.lifetimes(require_summary_data=require_summary_data):
             for msmt in t.get_measurements():
                 yield msmt
 
-    def width_measurements(self, require_summary_data=True):
+    def width_measurements(self, require_summary_data: bool=True) \
+            -> Iterator[PdgMeasurement]:
         for g in self.widths(require_summary_data=require_summary_data):
             for msmt in g.get_measurements():
                 yield msmt
@@ -573,7 +600,7 @@ class PdgParticleList(PdgData, list):
     is returned when PdgApi.get is called with the PDGID of a (group of)
     particles.
     """
-    def __init__(self, api, pdgid, edition=None):
+    def __init__(self, api: 'PdgApi', pdgid: str, edition: Optional[str]=None):
         """Constructor for a PdgParticleList given its PDG Identifier."""
         super(PdgParticleList, self).__init__(api, pdgid, edition)
 

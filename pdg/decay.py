@@ -7,6 +7,8 @@ from sqlalchemy import bindparam, select
 from pdg.data import PdgProperty
 from pdg.errors import PdgAmbiguousValueError, PdgInvalidPdgIdError, PdgNoDataError
 from pdg.particle import PdgItem, PdgParticle
+from sqlalchemy.engine.row import RowMapping
+from typing import Iterator, Optional, cast
 
 
 class PdgDecayProduct(object):
@@ -14,17 +16,14 @@ class PdgDecayProduct(object):
     PdgItem (which may resolve to one or more PdgParticles), its multiplier, and
     its subdecay (if any).
     """
-    def __init__(self, item, multiplier, subdecay):
+    def __init__(self, item: PdgItem, multiplier: int,
+                 subdecay: Optional['PdgBranchingFraction']=None):
         """Instantiate a PdgDecayProduct."""
-        assert isinstance(item, PdgItem)
-        assert isinstance(multiplier, int)
-        assert subdecay is None or isinstance(subdecay, PdgBranchingFraction)
-
         self.item = item
         self.multiplier = multiplier
         self.subdecay = subdecay
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         fmt = "PdgDecayProduct(item='%s', multiplier=%d, subdecay=%r)"
         return fmt % (self.item.name, self.multiplier, self.subdecay)
 
@@ -33,7 +32,7 @@ class PdgBranchingFraction(PdgProperty):
     """Class for all information about a decay, including its branching
     fraction, decay products, and subdecays.
     """
-    def _get_decay(self):
+    def _get_decay(self) -> list[RowMapping]:
         """Load decay information from the database."""
         if 'pdgdecay' not in self.cache:
             pdgdecay_table = self.api.db.tables['pdgdecay']
@@ -43,14 +42,14 @@ class PdgBranchingFraction(PdgProperty):
                     result = conn.execute(query, {'pdgid': self.baseid}).fetchall()
                     self.cache['pdgdecay'] = [row._mapping for row in result]
                 except AttributeError:
-                    raise PdgInvalidPdgIdError('No PDGDECAY entry for ' % self.pdgid)
-        return self.cache['pdgdecay']
+                    raise PdgInvalidPdgIdError('No PDGDECAY entry for %s' % self.pdgid)
+        return cast(list[RowMapping], self.cache['pdgdecay'])
 
-    def _repr_extra(self):
+    def _repr_extra(self) -> str:
         return '"%s"' % self.description
 
     @property
-    def decay_products(self):
+    def decay_products(self) -> list[PdgDecayProduct]:
         """A list of all PdgDecayProducts for the decay."""
         products = []
         for row in self._get_decay():
@@ -66,7 +65,7 @@ class PdgBranchingFraction(PdgProperty):
         return products
 
     @property
-    def mode_number(self):
+    def mode_number(self) -> int:
         """Mode number of this decay.
 
         Note that the decay mode number may change from one edition of the Review of Particle Physics
@@ -74,7 +73,7 @@ class PdgBranchingFraction(PdgProperty):
         return self._get_pdgid()['mode_number']
 
     @property
-    def is_subdecay(self):
+    def is_subdecay(self) -> bool:
         """True if this is a subdecay ("indented") decay mode."""
         data_type_code = self.data_type
         if len(data_type_code) < 4:
@@ -83,14 +82,14 @@ class PdgBranchingFraction(PdgProperty):
             return data_type_code[0:3] == 'BFX' or data_type_code[0:3] == 'BFI'
 
     @property
-    def subdecay_level(self):
+    def subdecay_level(self) -> int:
         """Return indentation level of a decay mode."""
         if self.is_subdecay:
             return int(self.data_type[3])
         else:
             return 0
 
-    def subdecays(self):
+    def subdecays(self) -> Iterator['PdgBranchingFraction']:
         """Return iterator over all subdecays of this decay. Warning: Subdecay
         data is returned as-is from the Particle Listings. Its interpretation
         will depend on the conventions used by the specific section of the
@@ -112,7 +111,7 @@ class PdgBranchingFraction(PdgProperty):
         for row in matches:
             yield PdgBranchingFraction(self.api, row.pdgid, self.edition)
 
-    def branching_ratios(self):
+    def branching_ratios(self) -> Iterator['PdgBranchingRatio']:
         """Return iterator over all branching ratios associated with this
         branching fraction."""
         pdgid_map = self.api.db.tables['pdgid_map']
@@ -126,7 +125,7 @@ class PdgBranchingFraction(PdgProperty):
 
 class PdgBranchingRatio(PdgProperty):
     """Class for all information about a branching ratio."""
-    def branching_fractions(self):
+    def branching_fractions(self) -> Iterator[PdgBranchingFraction]:
         """Return iterator over all branching fractions associated with this
         branching ratio."""
         pdgid_map = self.api.db.tables['pdgid_map']
@@ -137,5 +136,5 @@ class PdgBranchingRatio(PdgProperty):
         for row in matches:
             yield PdgBranchingFraction(self.api, row.source, self.edition)
 
-    def _repr_extra(self):
+    def _repr_extra(self) -> str:
         return '"%s"' % self.description

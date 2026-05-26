@@ -9,11 +9,15 @@ For documentation see https://pdgapi.lbl.gov/doc.
 For general information about PDG and the Review of Particle Physics
 please visit https://pdg.lbl.gov.
 """
+from pdg.api import PdgApi
+
 __author__ = 'Particle Data Group'
 __version__ = '0.2.3'
 
 
 import os
+from typing import Optional
+
 from pdg.api import PdgApi
 from pdg.errors import PdgApiError
 
@@ -23,7 +27,7 @@ SQLITE_FILENAME = 'pdg.sqlite'      # Default SQLite database file used by this 
 MIN_SCHEMA_VERSION = 0.3            # Minimum schema version required by this version of the API
 
 
-def connect(database_url=None, pedantic=False):
+def connect(database_url: Optional[str]=None, pedantic: bool=False) -> PdgApi:
     """Connect to PDG database and return configured PDG API object."""
     if database_url is None:
         api = PdgApi('sqlite:///%s' % os.path.join(os.path.dirname(__file__), SQLITE_FILENAME), pedantic)
