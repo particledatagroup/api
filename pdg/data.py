@@ -453,7 +453,7 @@ class PdgData(object):
             assert count is not None
             return count
 
-    def get_parent_pdgid(self, include_edition: bool=True) -> str:
+    def get_parent_pdgid(self, include_edition: bool=True) -> Optional[str]:
         """Return PDG Identifier of this data's parent.
 
         In most cases, this will be the PDG ID of the particle itself. For those
@@ -470,6 +470,8 @@ class PdgData(object):
         Returns:
             PDG Identifier of this property's parent.
         """
+        if self._get_pdgid()['parent_pdgid'] is None:
+            return None
         p = self
         while p._get_pdgid()['parent_pdgid'] is not None:
             p = self.api.get(p._get_pdgid()['parent_pdgid'], self.edition)
@@ -485,11 +487,13 @@ class PdgData(object):
         Returns:
             All parent particles for this property.
         """
-        p = self.api.get(self.get_parent_pdgid())
-        if p.data_type != 'PART':
-            err = 'Identifier %s does not have a parent particle'
-            raise PdgNoDataError(err)
-        return cast('PdgParticleList', p)
+        parent = self.get_parent_pdgid()
+        if parent is not None:
+            p = self.api.get(parent)
+            if p.data_type == 'PART':
+                return cast('PdgParticleList', p)
+        err = f'Identifier {self.pdgid} does not have a parent particle'
+        raise PdgNoDataError(err)
 
     def get_particle(self) -> 'PdgParticle':
         """Get `PdgParticle` for this property's particle.
