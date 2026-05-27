@@ -744,7 +744,7 @@ class PdgParticle(PdgData):
         return cc_type == 'S'
 
     @property
-    def antiparticle(self) -> PdgParticle:
+    def antiparticle(self) -> 'PdgParticle':
         "This particle's antiparticle (or itself, if self-conjugate)"
         if self.self_conjugate:
             return self
