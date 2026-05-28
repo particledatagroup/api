@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='pdg',
-    version='0.2.2',
+    version='0.2.3',
     author='Particle Data Group',
     author_email='jberinger@lbl.gov',
     description='Python API for accessing PDG data',
@@ -16,13 +16,13 @@ setup(
     license='Modified BSD',
     packages=find_packages(),
     package_data={"pdg": ["pdg.sqlite"]},
-    install_requires=['SQLAlchemy>=1.4'],
+    install_requires=['SQLAlchemy>=1.4', 'typing_extensions>=4.15'],
+    python_requires='>=3.10',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Database :: Front-Ends',
         'Topic :: Scientific/Engineering',

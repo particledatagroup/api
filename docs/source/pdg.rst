@@ -1,4 +1,4 @@
-pdg package
+Python API Reference
 ===========
 
 .. automodule:: pdg

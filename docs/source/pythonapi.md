@@ -1,4 +1,4 @@
-# Python API
+# Python API overview
 
 The PDG Python API provides a high-level tool for programmatically accessing PDG data.
 For most users, this is the recommended way to access PDG data in machine-readable format.
@@ -25,8 +25,15 @@ The `pdg` package is released as open source software and can be found at
 
 ## Requirements
 
-The PDG Python API supports Python 3 and requires SQLAlchemy version 1.4 or greater.
-For the time being, Python 2.7 is still supported.
+The current version of the PDG Python API requires at least Python 3.10 and SQLAlchemy 1.4.
+
+Earlier versions of the PDG API also supported Python 2.7, which has now been deprecated for several years.
+API version 0.2.2 with data from the 2025 update of the *Review of Particle Physics* was the last version that still
+supported Python 2.7 as well as Python 3 versions below 3.10.
+API version 0.2.3 requires at  least Python 3.10 and adds type annotations, resulting in greatly improved documentation.
+This version contains the same data from the 2025 update as version 0.2.2 with a bug fix for a special case
+of measurement data.
+
 
 ## Tutorial
 
@@ -65,7 +72,7 @@ Any use of the PDG Python API starts with importing the package and connecting t
 import pdg
 api = pdg.connect()
 ```
-As discussed below, `connect()` takes two optional arguments:
+As discussed in the [API reference](pdg.rst), `connect()` takes two optional arguments:
 1. The URL of the database to use. The default is to use the SQLite database file installed with the `pdg` package.
 2. Whether the API should operate in pedantic mode or not. Pedantic mode is disabled by default.
 
@@ -207,7 +214,28 @@ For branching fractions one can access the particles in the corresponding decay 
 Each `PdgDecayProduct` specifies the item (`PdgItem`) that appears, a multiplier, and whether the item needs to decay
 in a specific way. `PdgItems` can represent a particle of a specific charge (e.g. a pi+), a generic particle such
 as a kaon without specifying its charge, a lepton (which could be either an electron or a muon), or a textual description
-such as ">= 0 neutrals".
+such as ">= 0 neutrals". These cases can be distinguished using the `PdgItem's` `item_type` property; one can call the `PdgApi`
+object's `doc_item_type_keys` method to view an up-to-date table of the possible item types.
+
+The `name` property of a `PdgItem` corresponds to the way that the decay product
+is expressed in the *Review of Particle Physics*. For a concrete particle, this
+is usually, but not always, the particle's "canonical name", i.e., the `name`
+property of the corresponding `PdgParticle`. In some cases (e.g. for historical
+reasons), the decay product's `PdgItem` may contain a non-canonical `name`. When
+matching and comparing decays, the canonical name should be used (and should
+generally be regarded as the machine-readable name for the particle). The
+`canonical_name` property of a `PdgItem` will give its canonical name. For items
+that don't represent a unique concrete particle, the `canonical_name` is the
+same as the `name`.
+
+As implied above, a `PdgParticle` object can be retrieved from `PdgItem` using
+the `particle` property. This will raise an exception if the item does not refer
+to a single unique particle. Similarly, the `particles` property can be used to
+retrieve multiple particles for, e.g., a "generic" item that represents a
+multiplet. This can also raise an exception, such as in the case of an item that
+represents a purely textual description. The `has_particle` and `has_particles`
+properties can be used to check whether the `particle` and `particles`
+properties can be safely accessed.
 
 In a simple case, all decay products appear with multiplicity 1 and are particles with specified charge. For example:
 ```python
@@ -226,9 +254,33 @@ import pdg
 api = pdg.connect()
 
 for decay in api.get_particle_by_name('B0').exclusive_branching_fractions():
-    decay_products = [p.item.name for p in decay.decay_products]
+    # Note the use of p.item.canonical_name, instead of p.item.name
+    decay_products = [p.item.canonical_name for p in decay.decay_products]
     if 'J/psi(1S)' in decay_products:
         print(format(decay.description,'40s'), decay.display_value_text)
+```
+
+Retrieving the particle properties of decay products requires some care:
+```python
+import pdg
+api = pdg.connect()
+
+for decay in api.get_particle_by_name('B0').exclusive_branching_fractions():
+    print(f'Masses of decay products for {decay.description}')
+    for product in decay.decay_products:
+        item = product.item
+        if item.has_particle:
+            p = item.particle
+            mass = p.mass if p.has_mass_entry else None
+            print(f'{item.name} (concrete): {mass} GeV')
+        elif item.has_particles:
+            masses = [p.mass if p.has_mass_entry else None
+                      for p in item.particles]
+            if all(m == masses[0] for m in masses):
+                print(f'{item.name} (generic): {masses[0]} GeV')
+            else:
+                print(f'{item.name} (generic): No unique mass!')
+    print()
 ```
 
 A given decay may be associated with one or more subdecays, which may in turn have their own subdecays. In the following snippet, we print all of the direct subdecays of the `Lambda_b()0`:
@@ -264,11 +316,7 @@ for p in api.get_particle_by_mcid(211).properties():
 ## Detailed software documentation
 
 Detailed information on all public classes, methods and utility functions provided by the PDG Python API
-is given below, based on the inline code documentation.
-
-```{eval-rst}
-.. include:: pdg.rst
-```
+is given in the [API reference](pdg.rst), based on the inline code documentation.
 
 ## License
 

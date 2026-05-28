@@ -19,10 +19,14 @@ help:
 %: Makefile
 	@if [ -d sphinxvenv ]; then echo "Using Sphinx Python virtual environment in `pwd`/sphinxvenv"; fi;
 	@[ -d sphinxvenv ] && source sphinxvenv/bin/activate; $(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+# Fix double-escaping of ampersands in URLs
+	@if [ -d build/html ]; then find build/html -name '*.html' | xargs -l sed -i 's/&amp;amp;/\&amp;/g'; fi
+
 
 apidoc:
 	@if [ -d sphinxvenv ]; then echo "Using Sphinx Python virtual environment in `pwd`/sphinxvenv"; fi;
 	@[ -d sphinxvenv ] && source sphinxvenv/bin/activate; sphinx-apidoc -f -M -T -e -o source ../pdg
+	@sed -i 's/pdg package/Python API Reference/' source/pdg.rst
 
 sphinxvenv:
 	@echo 'Creating Sphinx Python virtual environment that will be used for building docs in the future'

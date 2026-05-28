@@ -1,0 +1,4 @@
+/* Prevent properties from appearing side-by-side */
+dl.property {
+    display: block !important;
+}
