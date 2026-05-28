@@ -1,6 +1,6 @@
 # Development status
 
-Development of the PDG API is continuing in order to add additional features. See below for what is currently available
+Development of the PDG API is continuing to add additional features. See below for what is currently available
 and what features are still under development and will become available in the future.
 
 Release notes for different versions of the Python API can be found in the
@@ -17,11 +17,9 @@ To provide feedback on the PDG API or to report any bugs:
 * [REST API](restapi.md) with pdgLive JSON download links 
 * [Python API](pythonapi.md) API package [pdg](https://pypi.org/project/pdg/)
 * [PDG database files](schema.md) - see [API page on the PDG website](https://pdg.lbl.gov/api) for available files
-* All the above tools support access to the data published in the Summary Tables (excluding footnotes),
+* All the above tools support access to the data published in both Summary Tables and Particle Listings
   with access both via individual PDG Identifiers and navigation via particles to particle properties,
-  **branching fractions**, and the corresponding Summary Table values.
-* Starting with the 2025 update of the _Review of Particle Physics_, **experimental access to
-  the data from the Particle Listings** is available.
+  **branching fractions**, and the corresponding Summary Table values and associated measurements in the Listings.
 
 ## Limitations and known bugs of the current API version
 - Fit information and correlation matrices are not yet accessible

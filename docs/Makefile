@@ -26,6 +26,7 @@ help:
 apidoc:
 	@if [ -d sphinxvenv ]; then echo "Using Sphinx Python virtual environment in `pwd`/sphinxvenv"; fi;
 	@[ -d sphinxvenv ] && source sphinxvenv/bin/activate; sphinx-apidoc -f -M -T -e -o source ../pdg
+	@sed -i 's/pdg package/Python API Reference/' source/pdg.rst
 
 sphinxvenv:
 	@echo 'Creating Sphinx Python virtual environment that will be used for building docs in the future'

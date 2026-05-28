@@ -4,7 +4,7 @@
 - Drop support for Python 2.7 - minimum Python version is now 3.10
 - Add type annotations and update documentation
 - PdgFootnote.references is deprecated, use PdgFootnote.measurements instead
-- SQLite bug fix for empty measurement values/errors for dimensionless quantites that have exponents
+- SQLite bug fix for empty measurement values/errors for dimensionless quantities that have exponents
 
 ## Version 0.2.2 (December 8, 2025)
 - Add support for iteration over subdecays (PdgBranchingFraction.subdecays)

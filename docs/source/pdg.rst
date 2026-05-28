@@ -1,5 +1,5 @@
-Python API reference
-====================
+Python API Reference
+===========
 
 .. automodule:: pdg
    :members:
