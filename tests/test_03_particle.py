@@ -152,7 +152,7 @@ class TestData(unittest.TestCase):
 
         self.api.pedantic = True
         self.assertEqual(round(ps[0].mass, 3), 0.892)
-        self.assertEqual(round(ps[0].width, 4), 0.0514)
+        self.assertEqual(round(ps[0].width, 4), 0.0485)
         self.assertRaises(PdgNoDataError, lambda: ps[0].lifetime)
         self.assertEqual(ps[0].charge, 1)
 
@@ -171,12 +171,12 @@ class TestData(unittest.TestCase):
         self.api.pedantic = False
         p = self.api.get_particle_by_mcid(323)
         self.assertEqual(round(p.mass, 3), 0.892)
-        self.assertEqual(round(p.width, 4), 0.0514)
-        self.assertEqual(round(p.lifetime * 1e23, 2), 1.28)
+        self.assertEqual(round(p.width, 4), 0.0485)
+        self.assertEqual(round(p.lifetime * 1e23, 2), 1.36)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(323)
         self.assertEqual(round(p.mass, 3), 0.892)
-        self.assertEqual(round(p.width, 4), 0.0514)
+        self.assertEqual(round(p.width, 4), 0.0485)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
         for self.api.pedantic in [True, False]:
@@ -188,12 +188,12 @@ class TestData(unittest.TestCase):
         self.api.pedantic = False
         p = self.api.get_particle_by_mcid(-323)
         self.assertEqual(round(p.mass, 3), 0.892)
-        self.assertEqual(round(p.width, 4), 0.0514)
-        self.assertEqual(round(p.lifetime * 1e23, 2), 1.28)
+        self.assertEqual(round(p.width, 4), 0.0485)
+        self.assertEqual(round(p.lifetime * 1e23, 2), 1.36)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(-323)
         self.assertEqual(round(p.mass, 3), 0.892)
-        self.assertEqual(round(p.width, 4), 0.0514)
+        self.assertEqual(round(p.width, 4), 0.0485)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
         for self.api.pedantic in [True, False]:
@@ -205,12 +205,12 @@ class TestData(unittest.TestCase):
         self.api.pedantic = False
         p = self.api.get_particle_by_mcid(313)
         self.assertEqual(round(p.mass, 3), 0.896)
-        self.assertEqual(round(p.width, 4), 0.0473)
-        self.assertEqual(round(p.lifetime * 1e23, 2), 1.39)
+        self.assertEqual(round(p.width, 4), 0.0471)
+        self.assertEqual(round(p.lifetime * 1e23, 2), 1.40)
         self.api.pedantic = True
         p = self.api.get_particle_by_mcid(313)
         self.assertEqual(round(p.mass, 3), 0.896)
-        self.assertEqual(round(p.width, 4), 0.0473)
+        self.assertEqual(round(p.width, 4), 0.0471)
         self.assertRaises(PdgNoDataError, lambda: p.lifetime)
 
     def test_decay_W2PiGamma(self):
@@ -243,7 +243,7 @@ class TestData(unittest.TestCase):
         decay = self.api.get('S044.23')
         self.assertIsInstance(decay, PdgBranchingFraction)
         self.assertFalse(decay.is_limit)
-        self.assertEqual(decay.value, 0.00351170065655418)
+        self.assertEqual(round(decay.value * 1e2, 4), 0.3512)
         ps = decay.decay_products
         self.assertTrue(isinstance(p, PdgDecayProduct) for p in ps)
 

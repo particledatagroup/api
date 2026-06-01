@@ -1,5 +1,11 @@
 # Release history (latest release first)
 
+## Version 2026.0 (June 1, 2026)
+- Data from 2026 edition of Summary Tables and Particle Listings
+- Switch from semantic versioning to an edition-based versioning scheme where the first 
+  number indicates the edition of the *Review of Particle Physics* and the second number
+  increments for updates for the same edition.
+
 ## Version 0.2.3 (May 27, 2026)
 - Drop support for Python 2.7 - minimum Python version is now 3.10
 - Add type annotations and update documentation

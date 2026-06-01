@@ -30,10 +30,12 @@ The current version of the PDG Python API requires at least Python 3.10 and SQLA
 Earlier versions of the PDG API also supported Python 2.7, which has now been deprecated for several years.
 API version 0.2.2 with data from the 2025 update of the *Review of Particle Physics* was the last version that still
 supported Python 2.7 as well as Python 3 versions below 3.10.
-API version 0.2.3 requires at  least Python 3.10 and adds type annotations, resulting in greatly improved documentation.
-This version contains the same data from the 2025 update as version 0.2.2 with a bug fix for a special case
-of measurement data.
+API versions since 0.2.3 require at least Python 3.10 in order to support type annotations, resulting in greatly improved documentation.
 
+Starting with the 2026 edition of the *Review of Particle Physics*, versioning of the API has switched from semantic
+versioning to an edition-based versioning scheme where the first number indicates the edition of the
+*Review of Particle Physics* and the second number increments for each update for the same edition.
+Thus the initial release of the API for the 2026 edition has version 2026.0 while the first update will be version 2026.1.
 
 ## Tutorial
 
