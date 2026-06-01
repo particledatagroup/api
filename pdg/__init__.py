@@ -12,7 +12,7 @@ please visit https://pdg.lbl.gov.
 from pdg.api import PdgApi
 
 __author__ = 'Particle Data Group'
-__version__ = '2026.0'
+__version__ = '2026.1'
 
 
 import os
